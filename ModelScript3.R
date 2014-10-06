@@ -2,7 +2,7 @@
 library(deSolve)
 
 
-numyears = 30
+numyears = 7
 TIME=365*numyears
 time=seq(1,TIME,1)
 
@@ -74,7 +74,6 @@ state = c(PLANT.C = PLANT.C,
 
 #parameters
 q10 = 2 #q10
-q10p = 8 #sistla paper
 t1 = 0.05 #Rh constant
 t2 = 0.007 #Litter rate constant; Hobbie 2002
 t3 = 0.03 #Decomp rate constant
@@ -84,7 +83,7 @@ t6 = 0.05 #microbial nitrogen uptake constant
 t7 = 5 #plant nitrogen uptake constant 
 t8 = 0.003 #microbial death rate
 t9 = 0.05 #plant half saturation constant for N uptake
-t10 = 0.1 #microbial haf saturation constant for N and C uptake
+t10 = 0.1 #microbial half saturation constant for N and C uptake
 
 
 Temp.d1 <- approxfun(x=time, y=Temp, method="linear", rule=2)
