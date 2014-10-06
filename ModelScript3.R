@@ -2,7 +2,7 @@
 library(deSolve)
 
 
-numyears = 4
+numyears = 30
 TIME=365*numyears
 time=seq(1,TIME,1)
 
@@ -78,7 +78,13 @@ q10p = 8 #sistla paper
 t1 = 0.05 #Rh constant
 t2 = 0.007 #Litter rate constant; Hobbie 2002
 t3 = 0.03 #Decomp rate constant
-
+t4 = 0.8 #constant representing plant and microbial competition for N
+t5 = 0.2 #microbial carbon uptake constant
+t6 = 0.05 #microbial nitrogen uptake constant
+t7 = 5 #plant nitrogen uptake constant 
+t8 = 0.003 #microbial death rate
+t9 = 0.05 #plant half saturation constant for N uptake
+t10 = 0.1 #microbial haf saturation constant for N and C uptake
 
 
 Temp.d1 <- approxfun(x=time, y=Temp, method="linear", rule=2)
@@ -96,7 +102,7 @@ model<-function(t,state,parms)
     
     #FLUXES
     s=1/(1+exp(-Temp))
-    U = (5*(PLANT.C)*(NITROGEN/(0.05+NITROGEN)))*s
+    U = (t7*(PLANT.C)*(NITROGEN/(t9+NITROGEN)))*s
     k=0.01*exp(-0.01*U)
     cue=(U/(k+U))/1.5
     NPP = cue*GPP #cue*GPP
@@ -109,15 +115,15 @@ model<-function(t,state,parms)
     D.C = t3*LITTER.C*q10^(Temp/10)
     D.N = t3*LITTER.N*q10^(Temp/10)
     
-    Mic.C = 0.2*NFIXMIC.C*(SOM.C/(0.1+SOM.C))*s
-    Mic.N = 0.05*NFIXMIC.N*(SOM.N/(0.1+SOM.N))*s
-    A = 0.8*Mic.N
+    Mic.C = t5*NFIXMIC.C*(SOM.C/(t10+SOM.C))*s
+    Mic.N = t6*NFIXMIC.N*(SOM.N/(t10+SOM.N))*s
+    A = t4*Mic.N
   
     Min = 0.0018*(q10^(Temp/10)) #gN/m2*day mineralization rate per day; Hobbie 2002
     Nfix.ml = 0.004*(q10^(Temp/10)) #gN/m2*day #rate of N fixed by mosses and lichens; Porada 2013; could be conservative estimate
     Nfix.f = 0.0025*(q10^(Temp/10)) #gN/m2*day rate of N fixed by fungi/mycorrhizae; Hobbie 2006
-    death.C=0.003*NFIXMIC.C
-    death.N=0.003*NFIXMIC.N    
+    death.C=t8*NFIXMIC.C
+    death.N=t8*NFIXMIC.N    
     Ndep = 0.00015 #gN/m2*day deposition rate
     
     Rh = t1*NFIXMIC.C*q10^(Temp/10)
