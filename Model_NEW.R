@@ -10,7 +10,7 @@ require(FME)
 
 #first upload and viewdata 
 
-data=read.csv(file=file.choose()) #choose file from directory
+data = read.csv("OriginalInputData.csv") #choose file from directory
 names(data) = c("time", "date", "year", "DOY", "Albedo", "Temp_T", "PAR_T", "Temp_ARF", "PAR_ARF", "EVI", "NDVI", "LAI", "NEE", "Re", "GPP")
 head(data) #view table
 
@@ -106,7 +106,7 @@ write.csv(data, "FluxData.csv") #added the updated data to the working directory
 data = read.csv("FluxData.csv")
 head(data)
 
-
+#plot the data
 par(mfrow=c(2,2), mar=c(4,4,0.5,2))
 plot(data$Temp_ARF~data$time, type="l", ylab = "Daily Max Temp (C)", col="red", xlab="")
 abline(h=0)
@@ -333,9 +333,14 @@ plot(param.cor)
 
 plot(s.local)
 
+
+#######################ESTIMATE DATA UNCERTAINTY######################
+
+head(data)
+
 #######################PARAMETER ESTIMATION###########################
 
-
+#need to write MCMC
 
 
 
