@@ -119,10 +119,10 @@ delGDD.d1 <-approxfun(x=data$time, y=data$delGDD, method="linear", rule=2)
 
 
 ######################Parameters and state variables##########################
-params <- c(LitterRate = 0.0014,
-            DecompRateC = 0.00008, 
+params <- c(LitterRate = 0.0012,
+            DecompRateC = 0.00004, 
             DecompRateN = 0.00017,
-            retrans = 0.8,  
+            retrans = 0.9,  
             RespRateSOM = 1E-6, 
             RespRateL = 2.5E-3,
             kCUE = 0.001,
@@ -132,8 +132,8 @@ params <- c(LitterRate = 0.0014,
             Available_N = 0.1, 
             Biomass_C = 200, 
             Biomass_N = 3.5, 
-            Litter_C = 110, 
-            Litter_N = 3, 
+            Litter_C = 90, 
+            Litter_N = 2, 
             SOM_C = 2000, 
             SOM_N = 57)
 
