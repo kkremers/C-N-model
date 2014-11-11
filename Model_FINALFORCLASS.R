@@ -126,9 +126,9 @@ params <- c(LitterRate = 0.0012,
             RespRateSOM = 1E-6, 
             RespRateL = 2.5E-3,
             kCUE = 0.001,
-            UptakeMax = 0.01,
-            kplant = 0.11,
             CUEmax = 0.6,
+            kplant = 0.11,
+            UptakeMax = 0.01,
             Available_N = 0.1, 
             Biomass_C = 200, 
             Biomass_N = 3.5, 
@@ -269,15 +269,9 @@ plot(out$Uptake~out$time, type="l",  xlab = "Time (days)", ylab = "Uptake (g N m
 
 par(mfrow=c(2,1), mar=c(4,4,2,2))
 plot(out$s.GDD~data$delGDD, xlab = "delGDD", ylab = "Scalar (s.GDD)")
-plot(out$LAI~data$delGDD, xlab = "delGDD", ylab = "LAI")
-plot(out$s.GDD~out$time, xlab = "Time (days)", ylab = "Scalar (s.GDD)")
+plot(out$LAI~data$delGDD, xlab = "delGDD", ylab = "LAI (m2 m-2)")
+plot(out$LAI~out$Biomass_C, xlab = "Biomass_C (gC m-2)", ylab = "LAI (m2 m-2)")
 
-
-plot(out$Re~out$time)
-plot(out$Ra~out$time)
-plot(out$Rh1~out$time)
-plot(out$Rh2~out$time)
-plot(out$Uptake)
 
 ############SENSITIVITY ANALYSIS USING LME PACKAGE###############
 
@@ -310,11 +304,11 @@ pairs(s.local)
 
 #global sensitivity analysis
 
+#alter all params by 50%
 parms = as.vector(unlist(params))
 paramsperc =parms*0.5
 params.min =  parms - paramsperc
 params.max = parms + paramsperc
-
 parRanges = data.frame(min = params.min,  max = params.max)
 rownames(parRanges) = names(params)
 parRanges
@@ -329,20 +323,6 @@ par(mfrow=c(3,2))
 plot(s.global.summ, xlab = "day", ylab = "g/m2", mfrow = NULL,
      quant = TRUE, col = c("lightblue", "darkblue"), legpos = "topright")
 
-################FME PACKAGE MONTE CARLO RUNS#################
-
-#set up function
-MODFUNC <- function (params) {
-  out = solvemodel(params)
-  return(out[nrow(out), 2:12])
-}
-
-mcmc1 = modCRL(func = MODFUNC, parms=params, parRange = parRanges, dist="unif", sensvar = sensvars, num=1000)
-head(mcmc1)
-nrow(mcmc1)
-
-plot(mcmc1[,1], type="l")
-plot(mcmc1[,1], mcmc1[,2])
 
 ##############IDENTIFY PARAMS THAT CAN BE ESTIMATED###########
 
@@ -373,21 +353,36 @@ coll1[coll1$collinearity<20 & coll1$N ==7,]
 
 #######################ESTIMATE DATA UNCERTAINTY######################
 
+#######################TEST MCMC###########################
 
-#######################PARAMETER ESTIMATION MCMC###########################
 
-data.assim = read.csv("FluxData_Assim.csv") #load plant and soil data
+#Get fake data ready
+head(out)
+data.assim = out[1:12]
 head(data.assim)
-#Get data ready
 
-#flux data
-data.compare1 = data.assim #pull out columns that you need
-data.compare1 = data.compare1[complete.cases(data.compare1),] #remove rows with NAs
-sigma.obs1 = data.frame(time=data.compare1$time, 
-                        sdLAI = rep(0.1, length=length(data.compare1$time)),
-                        sdNEE = rep(1, length=length(data.compare1$time)), 
-                        sdRe = rep(1, length=length(data.compare1$time)),
-                        sdGPP = rep(1, length=length(data.compare1$time))) #observation erros for each data type - data frame with 288 rows and 4 columns corresponding to each data type
+#add noise to data
+#for (j in 2:length(data.assim)) {
+#  for (i in 2:length(time)){
+#    data.assim[i,j]=data.assim[i,j]+ rnorm(1, 0, (sd(data.assim[,j])/4))
+#      if(data.assim[i,j] < 0){
+#        data.assim[i,j] = data.assim[i-1,j]
+#      }
+#    }
+#  }
+#set.seed(1) #to get same noise every time
+
+#remove some data points
+time.keep  = seq(1, length(time), 10) #keep data for every 10 days
+data.assim = data.assim[match(time.keep, data.assim$time),] 
+head(data.assim)
+
+#plot to see what it looks like
+plot(data.assim[,3])
+
+data.compare1 = data.assim[1:8] #pull out columns that you need
+sigma.obs1 = matrix(1, length(data.compare1$time), 8) #observation erros for each data type - data frame with 288 rows and 4 columns corresponding to each data type
+sigma.obs1[,1] = data.assim$time
 #FOR sigma.obs1: columns need to be in SAME ORDER as data.compare1
 head(data.compare1)
 head(sigma.obs1)
@@ -400,140 +395,119 @@ head(sigma.obs1)
 #head(data.compare2) #make sure in same order
 #head(sigma.obs2)
 
+
+
+###STEP 1: EXPLORE PARAMETER SPACE
+
 #other necessary knowns
 n.param = 17 #number of parameters
 M = 1000 #number of iterations
-D = 4 #number of data types being assimilated (4xflux, 7xplant/soil)
+D = 7 #number of data types being assimilated (4xflux, 7xplant/soil)
 
 #storage matrices
-J = rep(1, M) #storage vector for likelihood ratio
+J = rep(1, M) #storage vector for cost function output
 j=matrix(0, M, D) #to store error calculations for this iteration
 param.est = data.frame(matrix(1, M, n.param)) #storage for parameter estimate iterations; 
 colnames(param.est) = c(names(params)) #, names(state))
 #change values to the starting values
-param.est[,1] = 0.0014 #LitterRate
-param.est[,2] = 0.00008 #DecompRateC
-param.est[,3] = 0.00017 #DecompRateN
-param.est[,4] = 0.8 #retrans
+param.est[,1] = 0.002 #LitterRate
+param.est[,2] = 0.00005 #DecompRateC
+param.est[,3] = 0.00008 #DecompRateN
+param.est[,4] = 0.7 #retrans
 param.est[,5] = 0.00001 #RespRateSOM
-param.est[,6] = 0.0025 #RespRateL
-param.est[,7] = 0.001  #kCUE
-param.est[,8] = 0.01  #UptakeMax
-param.est[,9] = 0.11  #kplant
-param.est[,10] = 0.6 #CUEmax
-param.est[,11] = 0.1 #Available_N
-param.est[,12] = 200 #Biomass_C
-param.est[,13] = 3.5 #Biomass_N
-param.est[,14] = 110 #Litter_C
+param.est[,6] = 0.005 #RespRateL
+param.est[,7] = 0.008  #kCUE
+param.est[,8] = 0.05  #UptakeMax
+param.est[,9] = 0.5  #kplant
+param.est[,10] = 0.4 #CUEmax
+param.est[,11] = 0.3 #Available_N
+param.est[,12] = 250 #Biomass_C
+param.est[,13] = 4 #Biomass_N
+param.est[,14] = 150 #Litter_C
 param.est[,15] = 3 #Litter_N
-param.est[,16] = 2000 #SOM_C
-param.est[,17] = 57 #SOM_N
+param.est[,16] = 3000 #SOM_C
+param.est[,17] = 70 #SOM_N
 
 head(param.est) #check to make sure this is correct
 
 
-#start MCMC
-reject = 0 #set reject counter to 0
-
 print(system.time( #prints the amount of time the MCMC took to run
-for (i in 2:M) { #for each iteration
-  
-  #draw a parameter set from prior distributions
-  #param.est[i,1] = runif(1, 0.0001, 0.1)  #LitterRate
-  #param.est[i,2] = runif(1, 0.000001, 0.01) #DecompRateC
-  #param.est[i,3] = runif(1, 0.00001, 0.01) #DecompRateN
-  #param.est[i,4] = runif(1, 0.1, 0.99) #retrans
-  param.est[i,5] = runif(1, 0.000001, 0.01) #RespRateSOM
-  #param.est[i,6] = runif(1, 0.000001, 0.01)  #RespRateL
-  param.est[i,7] = runif(1, 0.00001, 0.1)  #kCUE
-  #param.est[i,8] = runif(1, 0.0001, 1)  #UptakeMax
-  #param.est[i,9] = runif(1, 0.001, 1)  #kplant
-  param.est[i,10] = runif(1, 0.1, 0.9) #CUEmax
-  param.est[i,11] = runif(1, 0.005, 20) #Available_N
-  param.est[i,12] = runif(1, 10, 500) #Biomass_C
-  param.est[i,13] = runif(1, 1, 15) #Biomass_N
-  param.est[i,14] = runif(1, 10, 300) #Litter_C
-  param.est[i,15] = runif(1, 0.5, 10)  #Litter_N
-  param.est[i,16] = runif(1, 100, 5000) #SOM_C
-  param.est[i,17] = runif(1, 3, 200) #SOM_N
-  
-  
-  
-  #run model and calculate error function 
-  parms = as.numeric(param.est[i,]) #parameters for model run
-  names(parms) = names(params) #fix names
-  out = data.frame(solvemodel(parms)) #run model
-  #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-  out.compare1 = out[match(data.compare1$time, out$time),c(1, 10:12, 9)] 
-  #out.compare2 = out[match(data.compare2$time, out$time),1:8] 
-  
-  
-  for (d in 1:D) { #for each data type
+  for (i in 2:M) { #for each iteration
     
-    j[i,d] = sum(((data.compare1[,d+1] - out.compare1[,d+1])/sigma.obs1[,d+1])^2) #calculate uncertainty weighted error term
+    #draw a parameter set from prior distributions
+    param.est[i,1] = runif(1, 0.0001, 0.1)  #LitterRate
+    param.est[i,2] = runif(1, 0.000001, 0.01) #DecompRateC
+    param.est[i,3] = runif(1, 0.00001, 0.01) #DecompRateN
+    param.est[i,4] = runif(1, 0.1, 0.99) #retrans
+    param.est[i,5] = runif(1, 0.0000001, 0.01) #RespRateSOM
+    param.est[i,6] = runif(1, 0.0000001, 0.01)  #RespRateL
+    param.est[i,7] = runif(1, 0.00001, 0.1)  #kCUE
+    param.est[i,8] = runif(1, 0.1, 1)  #CUEMax
+    param.est[i,9] = runif(1, 0.001, 1)  #kplant
+    param.est[i,10] = runif(1, 0.001, 5) #Uptakemax
+    param.est[i,11] = runif(1, 0.05, 5) #Available_N
+    param.est[i,12] = runif(1, 100, 1000) #Biomass_C
+    param.est[i,13] = runif(1, 3, 30) #Biomass_N
+    param.est[i,14] = runif(1, 10, 500) #Litter_C
+    param.est[i,15] = runif(1, 0.1, 5)  #Litter_N
+    param.est[i,16] = runif(1, 1000, 5000) #SOM_C
+    param.est[i,17] = runif(1, 20, 200) #SOM_N
     
-  } #end of data type loop
+    
+    
+    #run model and calculate error function 
+    parms = as.numeric(param.est[i,]) #parameters for model run
+    names(parms) = names(params) #fix names
+    out = data.frame(solvemodel(parms)) #run model
+    #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
+    out.compare1 = out[match(data.compare1$time, out$time),c(1:12)] 
+    #out.compare2 = out[match(data.compare2$time, out$time),1:8] 
+    
+    
+    for (d in 1:D) { #for each data type
+      
+      j[i,d] = sum(((data.compare1[,d+1] - out.compare1[,d+1])/sigma.obs1[,d+1])^2) #calculate uncertainty weighted error term
+      
+    } #end of data type loop
+    
+    J[i] = prod(j[i,]) #calculate aggregate cost function
+    
+  })) #end of exploration
+
+  parms = param.est[which.min(J),] #new set of parameters is the set with the minimum cost function
+
+
+###STEP 2: MCMC
+
+#other necessary knowns
+n.param = 17 #number of parameters
+M = 1000 #number of iterations
+D = 7 #number of data types being assimilated (4xflux, 7xplant/soil)
+jump = parms*0.1
+
+#storage matrices
+param.est = data.frame(matrix(1, M, n.param)) #storage for parameter estimate iterations; 
+colnames(param.est) = c(names(params)) #, names(state))
+parm.est[1,] = parms #set starting values to the values chosen in step 1
+
+
+reject = 0 #reset reject counter
+
+for(i in 2:M){ #for each iteration
+  for(j in n.param){ 
+  parm.est[i,j] = rnorm(1, parm.est[i-1,], jump[j])} #draw parameter value from proposal distribution
   
-  J[i] = prod(j[i,]) #calculate product of all j's - product of error across all data types
+
+  #calculate f(params), which is the target distribution
+  #Compute ratio f(params proposed)/f(params previous)
+  #draw u
+  #accept or reject
+  #pdf of model could be ~N(mean = ODE solutions, var)
   
-  #ratio = J[i]/J[i-1] #calculate likelihood ratio = J(proposed)/J(current) 
   
-  #u = runif(1,0,1) #draw a random number between 0 and 1 #THIS DOESN'T WORK BECAUSE RATIO ISN'T CONSTRAINED AS BETWEEN 0 and 1
   
-  if(J[i] == "NaN") {
-    reject = reject + 1 #reject and add to rejection counter
-    param.est[i,] = param.est[i-1,] #set current values to previous parameter set
-  }
-
-  if(J[i] == "Inf") {
-    reject = reject + 1 #reject and add to rejection counter
-    param.est[i,] = param.est[i-1,] #set current values to previous parameter set
-  }
-
-  if(J[i] > J[i-1]) {
-    reject = reject + 1 #reject and add to rejection counter
-    param.est[i,] = param.est[i-1,] #set current values to previous parameter set
-  }
-
-})) #end of MCMC
-
-
-
-plot(param.est[,1], type="l")
-plot(param.est[,2], type="l")
-plot(param.est[,3], type="l")
-plot(param.est[,4], type="l")
-plot(param.est[,5], type="l")
-plot(param.est[,6], type="l")
-plot(param.est[,7], type="l")
-plot(param.est[,8], type="l")
-plot(param.est[,9], type="l")
-plot(param.est[,10], type="l")
-plot(param.est[,11], type="l")
-plot(param.est[,12], type="l")
-plot(param.est[,13], type="l")
-plot(param.est[,14], type="l")
-plot(param.est[,15], type="l")
-plot(param.est[,16], type="l")
-plot(param.est[,17], type="l")
-
-hist(param.est[,1])
-hist(param.est[,2])
-hist(param.est[,3])
-hist(param.est[,4])
-hist(param.est[,5])
-hist(param.est[,6])
-hist(param.est[,7])
-hist(param.est[,8])
-hist(param.est[,9])
-hist(param.est[,10])
-hist(param.est[,11])
-hist(param.est[,12])
-hist(param.est[,13])
-hist(param.est[,14])
-hist(param.est[,15])
-hist(param.est[,16])
-hist(param.est[,17])
+  
+}
 
 
 
