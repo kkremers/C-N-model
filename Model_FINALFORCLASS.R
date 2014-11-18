@@ -99,7 +99,7 @@ write.csv(data, "FluxData.csv") #added the updated data to the working directory
 ############re-loading the data
 
 #set working directory to C-N-model
-data = read.csv("InputData_Processed.csv")
+data = read.csv("InputData_Processed.csv") #This is the "FluxData.csv" file, but with added calculations of GDD
 head(data)
 
 #plot the data
