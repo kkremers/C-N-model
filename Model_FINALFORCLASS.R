@@ -155,16 +155,16 @@ solvemodel <- function(params, times=time) {
       
       delGDD.max = max(data$delGDD) 
       delGDD.min = min(data$delGDD) 
-      #constants for PLIRTLE model - Loranty 2011
+      #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
       k=0.63
       Pmax = 1.18
       E0 = 0.03
       q10 = 2
-      LAC = 0.012
+      LAC = 0.012 #calculated from flux data
       
       
       #FLUXES
-      s.GDD = (delGDD - delGDD.min)/(delGDD.max-delGDD.min)
+      s.GDD = (delGDD - delGDD.min)/(delGDD.max-delGDD.min) #growing degree day scalar
       LAI = (Biomass_C*0.4)*LAC*s.GDD
       GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12 
       Uptake =  UptakeMax * LAI * ( Available_N / ( kplant + Available_N ) )
@@ -213,7 +213,7 @@ solvemodel <- function(params, times=time) {
   } #end of model
   
   
-  return(ode(y=params[11:17],times=time,func=model,parms = params[1:10], method="rk4")) #integrate
+  return(ode(y=params[11:17],times=time,func=model,parms = params[1:10], method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 
