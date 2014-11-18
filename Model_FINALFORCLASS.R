@@ -118,7 +118,7 @@ PAR.d1 <- approxfun(x=data$time, y=data$PAR_vis, method="linear", rule=2)
 delGDD.d1 <-approxfun(x=data$time, y=data$delGDD, method="linear", rule=2)
 
 
-######################Parameters and state variables##########################
+######################Parameters and initial state variables##########################
 params <- c(LitterRate = 0.0012,
             DecompRateC = 0.00004, 
             DecompRateN = 0.00017,
