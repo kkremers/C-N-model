@@ -129,6 +129,7 @@ params <- c(LitterRate = 0.0012,
             CUEmax = 0.6,
             kplant = 0.11,
             UptakeMax = 0.01,
+            netNrate = 0.000003,
             Available_N = 0.1, 
             Biomass_C = 200, 
             Biomass_N = 3.5, 
@@ -176,7 +177,7 @@ solvemodel <- function(params, times=time) {
       Litterfall_N =  LitterRate * Biomass_N * ( 1 - retrans )
       Litterfall_C =  LitterRate * Biomass_C
       Ra =  ( 1 - cue ) * GPP
-      NetN =  0.00015 * ( q10 ^ (-Temp / 10 ) )
+      NetN =  netNrate * SOM_N * ( q10 ^ (-Temp / 10 ) )
       N_dep = 0.00008
       
             
@@ -213,7 +214,7 @@ solvemodel <- function(params, times=time) {
   } #end of model
   
   
-  return(ode(y=params[11:17],times=time,func=model,parms = params[1:10], method="rk4")) #integrate using runge-kutta 4 method
+  return(ode(y=params[12:18],times=time,func=model,parms = params[1:11], method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 
@@ -351,3 +352,58 @@ plot(coll1, log="y")
 abline(h=20, col="red") #if collinearity is less than 20, it is generally okay to estimate those parameters
 head(coll1)
 coll1[coll1$collinearity<20 & coll1$N ==7,]
+
+
+##################MCMC using FME package###########
+
+
+#First, I am going to use fake data that is the output from the model with the parameters that I specified above
+#doing this will allow us to know if the MCMC is picking the correct values for the model
+
+
+
+#Get fake data ready
+head(out)
+data.assim = out[,c(1:4, 11)]
+head(data.assim)
+
+#add noise to data
+for (j in 2:length(data.assim)) { #for each column except the "time" column
+  for (i in 1:length(time)){ #for each row of the data (or for each time step)
+    data.assim[i,j]=data.assim[i,j]+ rnorm(1, 0, (sd(data.assim[,j])/2)) #add some noise
+     }
+    }
+set.seed(1) #to get same noise every time
+
+#remove some data points
+time.keep  = seq(1, length(time), 20) #keep data for every 20 days
+data.assim = data.assim[match(time.keep, data.assim$time),] 
+head(data.assim)
+
+#plot to see what it looks like
+plot(data.assim[,2])
+plot(data.assim[,3])
+plot(data.assim[,4])
+plot(data.assim[,5])
+
+
+
+#let's start with noninformative priors
+#we don't need to specify a function for the priors because noninformative priors are the default for the functions used to fit the model and run the MCMC
+
+#First, fit the model to the data
+residual <- function(params) {
+  modout = solvemodel(params)
+  modout = data.frame(modout[,c(1:4, 11)]) #choose columns that you want
+  modout1 = modout[match(data.assim$time, modout$time),] #only include time points for that have data
+  return(data.assim - modout1)
+  
+}
+residual(params)
+
+
+
+
+
+
+
