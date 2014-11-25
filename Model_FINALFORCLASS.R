@@ -29,7 +29,7 @@ linmod.t = lm(data$Temp_ARF~data$Temp_T + 0) #linear model, set intercept = 0
 summary(linmod.t) #summary
 slope.t = summary(linmod.t)$coefficients[1,1] #slope value
 
-par(mfrow=c(1,2))
+par(mfrow=c(1,1))
 plot(data$Temp_ARF~data$Temp_T, ylab = "ARF", xlab="Toolik", main="Temperature", pch=16, col="red")
 abline(linmod.t, lwd = 2) #linear regression line
 
@@ -245,20 +245,51 @@ plot(out$Available_N~out$time, type="l", col="darkolivegreen3", main = "Availabl
 
 
 #see how well data matches
-par(mfrow=c(2,2), mar=c(4,4,2,2))
+#to compare on 1:1 line with data, need to select only points for which data is available
+data.compare=read.csv("ALLData_Assim.csv")
+data.compare=data.compare[,1:5]
+data.compare=data.compare[complete.cases(data.compare),]
+head(data.compare)
+out.compare = out[match(data.compare$time, out$time),]
+
+par(mfrow=c(4,2), mar=c(4,4,2,2))
 plot(out$GPP~out$time, col="forestgreen", pch=18, ylim=c(0,6), main="GPP", ylab="Flux (gC m-2 day-1)", xlab="")
 points(data$GPP, col="blue", pch=16, cex=0.6)
+plot(data.compare$GPP, out.compare$GPP)
+abline(0,1, col="red")
 
 plot(out$LAI~out$time, col="orange", pch=18, ylim=c(0,1), main="LAI", ylab="LAI (m2 leaf m-2 ground)", xlab="" )
 points(data$LAI, col="blue", pch=16, cex=0.6)
+plot(data.compare$LAI, out.compare$LAI)
+abline(0,1, col="red")
 
 plot(-out$Re~out$time, col="red", pch=16, ylim=c(-5,0), main="Re", xlab="Time (days)", ylab="Flux (gC m-2 day-1)")
 points(-data$Re, col="blue", pch=16, cex=0.6)
 abline(h=0)
+plot(data.compare$Re, out.compare$Re)
+abline(0,1, col="red")
 
 plot(out$NEE~out$time, col="olivedrab3", pch=18, ylim=c(-3,2), main="NEE", xlab="Time (days)", ylab="Flux (gC m-2 day-1)")
 points(data$NEE, col="blue", pch=16, cex=0.6)
 abline(h=0)
+plot(data.compare$NEE, out.compare$NEE, ylim=c(-4, 1))
+abline(0,1, col="red")
+
+
+par(mfrow=c(2,2), mar=c(4,4,2,2))
+plot(data$GPP~data$PAR_vis, pch=16, ylab="GPP", xlab="PAR_vis")
+points(out$GPP~data$PAR_vis, col="red")
+
+plot(data$LAI~data$Temp_ARF, pch=16, ylab="LAI", xlab="Temperature")
+points(out$LAI~data$Temp_ARF, col="red")
+
+plot(data$Re~data$Temp_ARF, pch=16, ylab="Re", xlab="Temperature")
+points(out$Re~data$Temp_ARF, col="red")
+
+plot(data$NEE~data$Temp_ARF, pch=16, ylab="NEE", xlab="Temperature")
+points(out$NEE~data$Temp_ARF, col="red")
+
+
 
 
 #plot CUE and LAI
@@ -305,7 +336,7 @@ pairs(s.local)
 
 #global sensitivity analysis
 
-#alter all params by 50%
+#alter all params by 20%
 parms = as.vector(unlist(params))
 paramsperc =parms*0.5
 params.min =  parms - paramsperc
@@ -321,7 +352,7 @@ s.global.summ = summary(s.global)
 head(s.global.summ)
 #plots 
 par(mfrow=c(3,2)) 
-plot(s.global.summ, xlab = "day", ylab = "g/m2", mfrow = NULL,
+plot(s.global.summ, xlab = "Time (days)", mfrow = NULL,
      quant = TRUE, col = c("lightblue", "darkblue"), legpos = "topright")
 
 
@@ -364,27 +395,34 @@ coll1[coll1$collinearity<20 & coll1$N ==7,]
 
 #Get fake data ready
 head(out)
-data.assim = out[,c(1:4, 11)]
+data.assim = out[,c(1:8, 11)]
 head(data.assim)
 
-#add noise to data
-for (j in 2:length(data.assim)) { #for each column except the "time" column
-  for (i in 1:length(time)){ #for each row of the data (or for each time step)
-    data.assim[i,j]=data.assim[i,j]+ rnorm(1, 0, (sd(data.assim[,j])/2)) #add some noise
-     }
-    }
-set.seed(1) #to get same noise every time
+#add some noise to the data
+for (i in 1:1826){
+  for (j in 2:length(data.assim)){
+    data.assim[i,j] = data.assim[i,j] + rnorm(1, 0, abs((data.assim[i,j]/100)))
+    
+  } 
+}
 
 #remove some data points
-time.keep  = seq(1, length(time), 20) #keep data for every 20 days
+time.keep  = seq(1, length(time), 15) #keep data for every 15 days
 data.assim = data.assim[match(time.keep, data.assim$time),] 
 head(data.assim)
 
-#plot to see what it looks like
+#plot to view data
+par(mfrow=c(3,2))
+head(data.assim)
 plot(data.assim[,2])
 plot(data.assim[,3])
 plot(data.assim[,4])
 plot(data.assim[,5])
+plot(data.assim[,6])
+plot(data.assim[,7])
+plot(data.assim[,8])
+plot(data.assim[,9])
+plot(data.assim[,10])
 
 
 
@@ -392,18 +430,17 @@ plot(data.assim[,5])
 #we don't need to specify a function for the priors because noninformative priors are the default for the functions used to fit the model and run the MCMC
 
 #First, fit the model to the data
-residual <- function(params) {
+
+residuals <- function(params){ 
   modout = solvemodel(params)
-  modout = data.frame(modout[,c(1:4, 11)]) #choose columns that you want
+  modout = data.frame(modout[,c(1:8, 11)]) #choose columns that you want
   modout1 = modout[match(data.assim$time, modout$time),] #only include time points for that have data
-  return(data.assim - modout1)
-  
+  resid = as.vector(unlist(data.assim[,2:length(data.assim)]-modout1[,2:length(modout1)]))
 }
-residual(params)
 
+Fit = modFit(p=params, f=residuals, lower=rep(0, length=length(params)))
+sFit = summary(Fit)
 
-
-
-
-
-
+mse = sFit$var_ms_unweighted
+Cov = sFit$cov.sclaed
+print(system.time(modMCMC(f=residual, p=Fit$par, jum=Cov, lower=c(0,0), )))
