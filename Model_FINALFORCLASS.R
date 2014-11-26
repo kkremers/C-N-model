@@ -110,40 +110,52 @@ plot(data$delGDD~data$time, type="l", ylab = "delGDD (change in degrees C /day)"
 plot(data$PAR_ARF~data$time, type="l", ylab = "Daily PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
 plot(data$PAR_vis~data$time, type="l", ylab = "Daily Plant Avail. PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
 
+#need to figure out which DOY was the maximum delGDD for each year
+years = unique(data$year) #tells you which years we have data for 
+DOY.sen = NA
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data, data$year==year.i)
+  delGDDmax.day = data.year$DOY[which(data.year$delGDD == max(data.year$delGDD))]
+  DOY.s = rep(delGDDmax.day, length=length(data.year[,1]))
+  DOY.sen = c(DOY.sen, DOY.s)
+}
 
+DOY.sen = DOY.sen[2:length(DOY.sen)]
+
+data = data.frame(data, DOY.sen = DOY.sen)
 
 #make into functions so that it will be continuous in the model
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
 PAR.d1 <- approxfun(x=data$time, y=data$PAR_vis, method="linear", rule=2)
 delGDD.d1 <-approxfun(x=data$time, y=data$delGDD, method="linear", rule=2)
-
+DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
+DOYsen.d1 <- approxfun(x=data$time, y=data$DOY.sen, method="linear", rule=2)
 
 ######################Parameters and initial state variables##########################
 params <- c(LitterRate = 0.0012,
             DecompRateC = 0.00004, 
             DecompRateN = 0.00017,
-            retrans = 0.9,  
+            retrans = 0.8,  
             RespRateSOM = 1E-6, 
             RespRateL = 2.5E-3,
             kCUE = 0.001,
             CUEmax = 0.6,
             kplant = 0.11,
             UptakeMax = 0.01,
-            netNrate = 0.000003,
             Available_N = 0.1, 
             Biomass_C = 200, 
             Biomass_N = 3.5, 
             Litter_C = 90, 
             Litter_N = 2, 
             SOM_C = 2000, 
-            SOM_N = 57)
+            SOM_N = 56)
 
 
 ####################MODEL#################################
 time = seq(1, 1826, 1)
 
 solvemodel <- function(params, times=time) {
-  
   
   model<-function(t,state,params)
   { 
@@ -153,17 +165,20 @@ solvemodel <- function(params, times=time) {
       Temp=Temp.d1(t)
       PAR=PAR.d1(t)
       delGDD = delGDD.d1(t)
-      
+      DOY = DOY.d1(t)
+      DOY.sen = DOYsen.d1(t)
       delGDD.max = max(data$delGDD) 
-      delGDD.min = min(data$delGDD) 
+      delGDD.min = min(data$delGDD)
+      
+      
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
       k=0.63
       Pmax = 1.18
       E0 = 0.03
       q10 = 2
       LAC = 0.012 #calculated from flux data
-      
-      
+      qSOM = 35.7 #g C / g N ; Moorehead and Reynolds 1993
+            
       #FLUXES
       s.GDD = (delGDD - delGDD.min)/(delGDD.max-delGDD.min) #growing degree day scalar
       LAI = (Biomass_C*0.4)*LAC*s.GDD
@@ -174,12 +189,16 @@ solvemodel <- function(params, times=time) {
       Rh2 =  RespRateSOM * SOM_C * ( q10 ^ ( Temp / 10 ) )
       Decomp_C =  DecompRateC * Litter_C * ( q10 ^ ( Temp / 10 ) )
       Decomp_N =  DecompRateN* Litter_N * ( q10 ^ ( Temp / 10 ) )
-      Litterfall_N =  LitterRate * Biomass_N * ( 1 - retrans )
-      Litterfall_C =  LitterRate * Biomass_C
       Ra =  ( 1 - cue ) * GPP
-      NetN =  netNrate * SOM_N * ( q10 ^ (-Temp / 10 ) )
+      NetN =  Decomp_N - (Decomp_C - Rh2)/qSOM
       N_dep = 0.00008
+      Litterfall_N  =  LitterRate * Biomass_N * ( 1 - retrans )
+      Litterfall_C =  LitterRate * Biomass_C
       
+      if(DOY < DOY.sen){
+        Litterfall_N = 0
+        Litterfall_C = 0
+      }
             
       
       #calculated variables to use for model fitting and analysis
@@ -214,7 +233,7 @@ solvemodel <- function(params, times=time) {
   } #end of model
   
   
-  return(ode(y=params[12:18],times=time,func=model,parms = params[1:11], method="rk4")) #integrate using runge-kutta 4 method
+  return(ode(y=params[11:17],times=time,func=model,parms = params[1:10], method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 
