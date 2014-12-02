@@ -134,20 +134,17 @@ DOYsen.d1 <- approxfun(x=data$time, y=data$DOY.sen, method="linear", rule=2)
 
 ######################Parameters and initial state variables##########################
 params <- c(LitterRate = 0.0012,
-            DecompRateC = 0.00004, 
-            DecompRateN = 0.00017,
+            DecompRate = 0.001, 
             retrans = 0.8,  
-            RespRateSOM = 1E-6, 
-            RespRateL = 2.5E-3,
+            RespRate = 1E-4, 
+            PropResp = 0.5,
             kCUE = 0.001,
-            CUEmax = 0.6,
-            kplant = 0.11,
-            UptakeMax = 0.01,
-            Available_N = 0.1, 
-            Biomass_C = 200, 
-            Biomass_N = 3.5, 
-            Litter_C = 90, 
-            Litter_N = 2, 
+            kplant = 15,
+            UptakeRate = 5E-5,
+            Biomass_C = 900, 
+            Biomass_N = 15, 
+            Litter_C = 500, 
+            Litter_N = 7, 
             SOM_C = 2000, 
             SOM_N = 56)
 
@@ -176,21 +173,22 @@ solvemodel <- function(params, times=time) {
       Pmax = 1.18
       E0 = 0.03
       q10 = 2
-      LAC = 0.012 #calculated from flux data
+      LAC = 0.012 #calculated from LTER data
       qSOM = 35.7 #g C / g N ; Moorehead and Reynolds 1993
-            
+      CUEmax = 0.9
+      
       #FLUXES
       s.GDD = (delGDD - delGDD.min)/(delGDD.max-delGDD.min) #growing degree day scalar
-      LAI = (Biomass_C*0.4)*LAC*s.GDD
+      LAI = (Biomass_C*0.25)*LAC*s.GDD
       GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12 
-      Uptake =  UptakeMax * LAI * ( Available_N / ( kplant + Available_N ) )
+      Uptake =  UptakeRate * (Biomass_C*0.5) * ( SOM_N / ( kplant + SOM_N ) ) * s.GDD
       cue = CUEmax * (Uptake/(kCUE + Uptake))
-      Rh1 =  RespRateL * Litter_C * ( q10 ^ ( Temp / 10 ) )
-      Rh2 =  RespRateSOM * SOM_C * ( q10 ^ ( Temp / 10 ) )
-      Decomp_C =  DecompRateC * Litter_C * ( q10 ^ ( Temp / 10 ) )
-      Decomp_N =  DecompRateN* Litter_N * ( q10 ^ ( Temp / 10 ) )
+      Re = RespRate * (q10 ^ ( ( Temp - 10 )/ 10 ) )
+      Rh1 =  PropResp * RespRate
+      Rh2 =  (1-PropResp) * RespRate
+      Decomp_C =  DecompRate * Litter_C * ( q10 ^ ( Temp / 10 ) )
+      Decomp_N =  DecompRate * Litter_N * ( q10 ^ ( Temp / 10 ) )
       Ra =  ( 1 - cue ) * GPP
-      NetN =  Decomp_N - (Decomp_C - Rh2)/qSOM
       N_dep = 0.00008
       Litterfall_N  =  LitterRate * Biomass_N * ( 1 - retrans )
       Litterfall_C =  LitterRate * Biomass_C
@@ -199,7 +197,7 @@ solvemodel <- function(params, times=time) {
         Litterfall_N = 0
         Litterfall_C = 0
       }
-            
+      
       
       #calculated variables to use for model fitting and analysis
       Re= Ra+Rh1+Rh2
@@ -207,19 +205,17 @@ solvemodel <- function(params, times=time) {
       
       
       #differential equations
-      dAvailable_N = NetN  + N_dep  - Uptake 
       dBiomass_C = GPP  - Ra  - Litterfall_C 
       dBiomass_N = Uptake  - Litterfall_N 
       dLitter_C = Litterfall_C  - Rh1  - Decomp_C 
       dLitter_N = Litterfall_N  - Decomp_N 
       dSOM_C = Decomp_C  - Rh2 
-      dSOM_N = Decomp_N  - NetN
+      dSOM_N = Decomp_N  + N_dep - Uptake
       
       
       #what to output
       
-      list(c(dAvailable_N, 
-             dBiomass_C, 
+      list(c(dBiomass_C, 
              dBiomass_N, 
              dLitter_C, 
              dLitter_N, 
@@ -233,7 +229,7 @@ solvemodel <- function(params, times=time) {
   } #end of model
   
   
-  return(ode(y=params[11:17],times=time,func=model,parms = params[1:10], method="rk4")) #integrate using runge-kutta 4 method
+  return(ode(y=params[9:14],times=time,func=model,parms = params[1:8], method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 
@@ -259,7 +255,6 @@ plot(out$Litter_C~out$time, type="l", col="orange", main = "Litter C", xlab="", 
 plot(out$Litter_N~out$time, type="l", col="orange", main = "Litter N", xlab="", ylab="g N m-2", lty=2)
 plot(out$SOM_C~out$time, type="l", col="red", main = "SOM C", xlab="Time (days)", ylab="g C m-2")
 plot(out$SOM_N~out$time, type="l", col="red", main = "SOM N", xlab="Time (days)", ylab="g N m-2",lty=2)
-plot(out$Available_N~out$time, type="l", col="darkolivegreen3", main = "Available N", xlab="", ylab="g N m-2")
 
 
 
@@ -332,7 +327,6 @@ sensvars = c("Biomass_C",
              "Litter_N", 
              "SOM_C", 
              "SOM_N",
-             "Available_N",
              "GPP",
              "NEE",
              "Re",
