@@ -202,7 +202,6 @@ solvemodel <- function(params, times=time) {
       
       
       #calculated variables to use for model fitting and analysis
-      Re= Ra+Rh1+Rh2
       NEE = Re - GPP
       
       
