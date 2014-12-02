@@ -183,12 +183,14 @@ solvemodel <- function(params, times=time) {
       GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12 
       Uptake =  UptakeRate * (Biomass_C*0.5) * ( SOM_N / ( kplant + SOM_N ) ) * s.GDD
       cue = CUEmax * (Uptake/(kCUE + Uptake))
+      Ra =  ( 1 - cue ) * GPP
       Re = RespRate * (q10 ^ ( ( Temp - 10 )/ 10 ) )
-      Rh1 =  PropResp * RespRate
-      Rh2 =  (1-PropResp) * RespRate
+      Rh = Re - Ra
+      Rh1 =  PropResp * Rh
+      Rh2 =  (1-PropResp) * Rh
       Decomp_C =  DecompRate * Litter_C * ( q10 ^ ( Temp / 10 ) )
       Decomp_N =  DecompRate * Litter_N * ( q10 ^ ( Temp / 10 ) )
-      Ra =  ( 1 - cue ) * GPP
+      
       N_dep = 0.00008
       Litterfall_N  =  LitterRate * Biomass_N * ( 1 - retrans )
       Litterfall_C =  LitterRate * Biomass_C
