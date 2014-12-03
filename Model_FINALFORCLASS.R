@@ -119,19 +119,19 @@ for (i in 2: length(data$GDD)){
 }
 
 plot(GDD.slope, ylim=c(0, 30)) #this is really just temperature but for only positive values
-data = cbind(data, delGDD=GDD.slope)
+data = cbind(data, TempPos=GDD.slope)
 head(data)
 
-plot(data$delGDD)
-data$time[which(data$delGDD == min(data$delGDD))]
-data$delGDD[731] = 0
-data$time[which(data$delGDD == min(data$delGDD))]
-data$delGDD[1462] = 0
-data$time[which(data$delGDD == min(data$delGDD))]
-data$delGDD[366] = 0
-data$time[which(data$delGDD == min(data$delGDD))]
-data$delGDD[1096] = 0
-plot(data$delGDD)
+plot(data$TempPos)
+data$time[which(data$TempPos == min(data$TempPos))]
+data$TempPos[731] = 0
+data$time[which(data$TempPos == min(data$TempPos))]
+data$TempPos[1462] = 0
+data$time[which(data$TempPos == min(data$TempPos))]
+data$TempPos[366] = 0
+data$time[which(data$TempPos == min(data$TempPos))]
+data$TempPos[1096] = 0
+plot(data$TempPos)
 
 #need to figure out which DOY was the day when GDDs level off
 years = unique(data$year) #tells you which years we have data for 
@@ -139,7 +139,7 @@ delGDDmax.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  delGDDmax = data.year$DOY[which(data.year$delGDD < 1)]
+  delGDDmax = data.year$DOY[which(data.year$TempPos < 1)]
   delGDDmax.day = c(delGDDmax.day, delGDDmax)
 }
 delGDDmax.day #looked at this data to determine cutoff point
@@ -159,7 +159,7 @@ abline(v=257+365+365+365+366)
 #make into functions so that it will be continuous in the model
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
 PAR.d1 <- approxfun(x=data$time, y=data$PAR_vis, method="linear", rule=2)
-delGDD.d1 <-approxfun(x=data$time, y=data$delGDD, method="linear", rule=2)
+TempPos.d1 <-approxfun(x=data$time, y=data$TempPos, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 DOYsen.d1 <- approxfun(x=data$time, y=data$DOY.sen, method="linear", rule=2)
 
@@ -195,11 +195,11 @@ solvemodel <- function(params, times=time) {
       #forcing data
       Temp=Temp.d1(t)
       PAR=PAR.d1(t)
-      delGDD = delGDD.d1(t)
+      TempPos = TempPos.d1(t)
       DOY = DOY.d1(t)
       DOY.sen = DOYsen.d1(t)
-      delGDD.max = max(data$delGDD) 
-      delGDD.min = min(data$delGDD)
+      TempPos.max = max(data$TempPos) 
+      TempPos.min = min(data$TempPos)
       
       
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
@@ -211,7 +211,7 @@ solvemodel <- function(params, times=time) {
       LAC = 0.012 #calculated from LTER data
       
       #FLUXES
-      s.GDD = (delGDD - delGDD.min)/(delGDD.max-delGDD.min) #growing degree day scalar
+      s.GDD = (TempPos - TempPos.min)/(TempPos.max-TempPos.min) #growing degree day scalar
       LAI = (Biomass_C*0.25)*LAC*s.GDD
       GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12 
       Uptake =  UptakeRate * (Biomass_C*0.5) * ( Available_N / ( kplant + Available_N ) ) * s.GDD
@@ -357,8 +357,8 @@ plot(out$Uptake~out$Available_N, xlab = "Available N (g N m-2)", ylab = "Uptake 
 plot(out$Uptake~out$time, type="l",  xlab = "Time (days)", ylab = "Uptake (g N m-2 day-1)")
 
 par(mfrow=c(2,1), mar=c(4,4,2,2))
-plot(out$s.GDD~data$delGDD, xlab = "delGDD", ylab = "Scalar (s.GDD)")
-plot(out$LAI~data$delGDD, xlab = "delGDD", ylab = "LAI (m2 m-2)")
+plot(out$s.GDD~data$TempPos, xlab = "TempPos", ylab = "Scalar (s.GDD)")
+plot(out$LAI~data$TempPos, xlab = "TempPos", ylab = "LAI (m2 m-2)")
 plot(out$LAI~out$Biomass_C, xlab = "Biomass_C (gC m-2)", ylab = "LAI (m2 m-2)")
 
 
@@ -370,6 +370,7 @@ sensvars = c("Biomass_C",
              "Litter_N", 
              "SOM_C", 
              "SOM_N",
+             "Available_N",
              "GPP",
              "NEE",
              "Re",
