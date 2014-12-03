@@ -122,6 +122,17 @@ plot(GDD.slope, ylim=c(0, 30)) #this is really just temperature but for only pos
 data = cbind(data, delGDD=GDD.slope)
 head(data)
 
+plot(data$delGDD)
+data$time[which(data$delGDD == min(data$delGDD))]
+data$delGDD[731] = 0
+data$time[which(data$delGDD == min(data$delGDD))]
+data$delGDD[1462] = 0
+data$time[which(data$delGDD == min(data$delGDD))]
+data$delGDD[366] = 0
+data$time[which(data$delGDD == min(data$delGDD))]
+data$delGDD[1096] = 0
+plot(data$delGDD)
+
 #need to figure out which DOY was the day when GDDs level off
 years = unique(data$year) #tells you which years we have data for 
 delGDDmax.day = NA
@@ -153,23 +164,23 @@ DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 DOYsen.d1 <- approxfun(x=data$time, y=data$DOY.sen, method="linear", rule=2)
 
 ######################Parameters and initial state variables##########################
-params <- c(LitterRate = 0.0015,
+params <- c(kplant = 0.11,
+            LitterRate = 0.0015,
             DecompRateC = 0.005,
-            DecompRateN = 0.0018,
+            DecompRateN = 0.0007,
             retrans = 0.7,  
             RespRateSOM = 0.00001, 
             PropResp = 0.5,
-            kCUE = 0.007,
-            kplant = 0.5,
-            UptakeRate = 0.00005,
-            netNrate = 0.002,
-            Biomass_C = 800, 
-            Biomass_N = 13, 
+            kCUE = 0.004,
+            UptakeRate = 0.0001,
+            netNrate = 0.0008,
+            Biomass_C = 400, 
+            Biomass_N = 4.75, 
             Litter_C = 100, 
-            Litter_N = 2, 
+            Litter_N = 1.6, 
             SOM_C = 2000, 
             SOM_N = 56,
-            Available_N = 0.05)
+            Available_N = 0.1)
 
 
 ####################MODEL#################################
@@ -196,9 +207,8 @@ solvemodel <- function(params, times=time) {
       Pmax = 1.18
       E0 = 0.03
       q10 = 2
-      LAC = 0.012 #calculated from LTER data
-      qSOM = 35.7 #g C / g N ; Moorehead and Reynolds 1993
       CUEmax = 0.7
+      LAC = 0.012 #calculated from LTER data
       
       #FLUXES
       s.GDD = (delGDD - delGDD.min)/(delGDD.max-delGDD.min) #growing degree day scalar
@@ -299,12 +309,12 @@ head(data.compare)
 out.compare = out[match(data.compare$time, out$time),]
 
 par(mfrow=c(4,2), mar=c(4,4,2,2))
-plot(out$GPP~out$time, col="forestgreen", pch=18, ylim=c(0,6), main="GPP", ylab="Flux (gC m-2 day-1)", xlab="")
+plot(out$GPP~out$time, col="forestgreen", pch=18, main="GPP", ylab="Flux (gC m-2 day-1)", xlab="")
 points(data$GPP, col="blue", pch=16, cex=0.6)
 plot(data.compare$GPP, out.compare$GPP)
 abline(0,1, col="red")
 
-plot(out$LAI~out$time, col="orange", pch=18, ylim=c(0,1), main="LAI", ylab="LAI (m2 leaf m-2 ground)", xlab="" )
+plot(out$LAI~out$time, col="orange", pch=18, main="LAI", ylab="LAI (m2 leaf m-2 ground)", xlab="" )
 points(data$LAI, col="blue", pch=16, cex=0.6)
 plot(data.compare$LAI, out.compare$LAI)
 abline(0,1, col="red")
