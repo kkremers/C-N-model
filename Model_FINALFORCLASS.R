@@ -486,18 +486,36 @@ plot(data.assim[,10])
 #let's start with noninformative priors
 #we don't need to specify a function for the priors because noninformative priors are the default for the functions used to fit the model and run the MCMC
 
-#First, fit the model to the data
 
-residuals <- function(params){ 
+#First, create function that returns the "model cost" or the residuals
+
+cost <- function(params){
   modout = solvemodel(params)
   modout = data.frame(modout[,c(1:8, 11)]) #choose columns that you want
   modout1 = modout[match(data.assim$time, modout$time),] #only include time points for that have data
-  resid = as.vector(unlist(data.assim[,2:length(data.assim)]-modout1[,2:length(modout1)]))
+  return(modCost(modout1, data.assim, x="time"))
 }
 
-Fit = modFit(p=params, f=residuals, lower=rep(0, length=length(params)))
-sFit = summary(Fit)
+#Fit the model to the data
+Fit = modFit(p=params, f=cost, lower=rep(0, length=length(params)))
+sFit = summary(Fit) #summarize the fit
 
-mse = sFit$var_ms_unweighted
-Cov = sFit$cov.sclaed
-print(system.time(modMCMC(f=residual, p=Fit$par, jum=Cov, lower=c(0,0), )))
+mse = Fit$var_ms_unweighted #initial model variance for MCMC
+#Cov = sFit$cov.scaled  #proposal distribution (initial jumping width) for MCMC
+params.jump = params/1000  #proposal distribution (initial jumping width) for MCMC
+MCMC =  modMCMC(f=cost, p=Fit$par, jump=params.jump, updatecov = 100, 
+                lower=rep(0, length=length(params)), var0=mse, niter=10000) #adaptive metropolis
+
+par(mfrow=c(3,2), mar=c(4,4,2,2))
+plot(MCMC, Full=TRUE)
+
+#plot effects of estimated parameters on model output
+sR= sensRange(func=solvemodel, parms=params, sensvar = sensvars, parInput = MCMC$pars)
+sR.summ = summary(sR)
+#plots 
+par(mfrow=c(3,2)) 
+plot(sR.summ, xlab = "Time (days)")
+
+
+
+
