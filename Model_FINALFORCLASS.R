@@ -106,24 +106,44 @@ head(data)
 par(mfrow=c(2,2), mar=c(4,4,0.5,2))
 plot(data$Temp_ARF~data$time, type="l", ylab = "Daily Max Temp (C)", col="red", xlab="")
 abline(h=0)
-plot(data$delGDD~data$time, type="l", ylab = "delGDD (change in degrees C /day)",  xlab="", col="forestgreen")
+plot(data$GDD~data$time, type="l", ylab = "Growing Degree Days (GDD) ",  xlab="", col="forestgreen")
 plot(data$PAR_ARF~data$time, type="l", ylab = "Daily PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
 plot(data$PAR_vis~data$time, type="l", ylab = "Daily Plant Avail. PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
 
-#need to figure out which DOY was the maximum delGDD for each year
+
+
+
+GDD.slope = rep(0, length = length(data$GDD))
+for (i in 2: length(data$GDD)){
+  GDD.slope[i] = data$GDD[i] - data$GDD[i-1]
+}
+
+plot(GDD.slope, ylim=c(0, 30)) #this is really just temperature but for only positive values
+data = cbind(data, delGDD=GDD.slope)
+head(data)
+
+#need to figure out which DOY was the day when GDDs level off
 years = unique(data$year) #tells you which years we have data for 
-DOY.sen = NA
+delGDDmax.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  delGDDmax.day = data.year$DOY[which(data.year$delGDD == max(data.year$delGDD))]
-  DOY.s = rep(delGDDmax.day, length=length(data.year[,1]))
-  DOY.sen = c(DOY.sen, DOY.s)
+  delGDDmax = data.year$DOY[which(data.year$delGDD < 1)]
+  delGDDmax.day = c(delGDDmax.day, delGDDmax)
 }
-
-DOY.sen = DOY.sen[2:length(DOY.sen)]
-
+delGDDmax.day #looked at this data to determine cutoff point
+DOY.sen = rep(c(261, 264, 252, 269, 257), c(365, 365, 365, 366, 365))
 data = data.frame(data, DOY.sen = DOY.sen)
+head(data)
+par(mfrow=c(1,1))
+data$DOY
+plot(data$GDD~data$time, type="l", ylab = "Growing Degree Days (GDD) ",  xlab="", col="forestgreen")
+abline(v=261)
+abline(v=264+365)
+abline(v=252+365+365)
+abline(v=269+365+365+365)
+abline(v=257+365+365+365+366)
+
 
 #make into functions so that it will be continuous in the model
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
@@ -133,22 +153,23 @@ DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 DOYsen.d1 <- approxfun(x=data$time, y=data$DOY.sen, method="linear", rule=2)
 
 ######################Parameters and initial state variables##########################
-params <- c(LitterRate = 0.002,
-            DecompRate = 0.003, 
+params <- c(LitterRate = 0.0015,
+            DecompRateC = 0.005,
+            DecompRateN = 0.0018,
             retrans = 0.7,  
-            RespRate = 1, 
+            RespRateSOM = 0.00001, 
             PropResp = 0.5,
-            kCUE = 0.0005,
-            kplant = 15,
-            UptakeRate = 0.003,
-            netNrate = 0.005,
-            Biomass_C = 900, 
-            Biomass_N = 15, 
-            Litter_C = 900, 
-            Litter_N = 9, 
+            kCUE = 0.007,
+            kplant = 0.5,
+            UptakeRate = 0.00005,
+            netNrate = 0.002,
+            Biomass_C = 800, 
+            Biomass_N = 13, 
+            Litter_C = 100, 
+            Litter_N = 2, 
             SOM_C = 2000, 
             SOM_N = 56,
-            Available_N = 0.5)
+            Available_N = 0.05)
 
 
 ####################MODEL#################################
@@ -186,13 +207,12 @@ solvemodel <- function(params, times=time) {
       Uptake =  UptakeRate * (Biomass_C*0.5) * ( Available_N / ( kplant + Available_N ) ) * s.GDD
       cue = CUEmax * (Uptake/(kCUE + Uptake))
       Ra =  ( 1 - cue ) * GPP
-      Re = RespRate * (q10 ^ ( ( Temp - 10 )/ 10 ) )
-      Decomposition_C =  DecompRate * Litter_C * ( q10 ^ ( (Temp-10) / 10 ) )
+      Rh2 = RespRateSOM * SOM_C * (q10 ^ ( ( Temp - 10 )/ 10 ) )
+      Decomposition_C =  DecompRateC * Litter_C * ( q10 ^ ( (Temp-10) / 10 ) )
       Rh1 =  PropResp * Decomposition_C
       Decomp_C = (1-PropResp) * Decomposition_C
-      Decomp_N =  DecompRate * Litter_N * ( q10 ^ ( (Temp-10) / 10 ) )
-      Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 10 ) )
-      Rh2 =  Re - Ra - Rh1
+      Decomp_N =  DecompRateN * Litter_N * ( q10 ^ ( (Temp-10) / 10 ) )
+      Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 50 ) )
       
       
       N_dep = 0.00008
@@ -206,6 +226,7 @@ solvemodel <- function(params, times=time) {
       
       
       #calculated variables to use for model fitting and analysis
+      Re = Ra+Rh1+Rh2
       NEE = Re - GPP
       
       #differential equations
@@ -235,7 +256,7 @@ solvemodel <- function(params, times=time) {
   } #end of model
   
   
-  return(ode(y=params[10:16],times=time,func=model,parms = params[1:9], method="rk4")) #integrate using runge-kutta 4 method
+  return(ode(y=params[11:17],times=time,func=model,parms = params[1:10], method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 
@@ -264,7 +285,7 @@ plot(out$SOM_N~out$time, type="l", col="red", main = "SOM N", xlab="Time (days)"
 plot(out$Available_N~out$time, type="l", col="green", main = "Available N", xlab="Time (days)", ylab="g N m-2",lty=2)
 
 
-
+plot(out$Ntrans)
 
 
 
@@ -290,6 +311,7 @@ abline(0,1, col="red")
 
 plot(-out$Re~out$time, col="red", pch=16, ylim=c(-5,0), main="Re", xlab="Time (days)", ylab="Flux (gC m-2 day-1)")
 points(-data$Re, col="blue", pch=16, cex=0.6)
+points(-out$Rh2~out$time, col="yellow", pch=16, cex=0.6)
 abline(h=0)
 plot(data.compare$Re, out.compare$Re)
 abline(0,1, col="red")
