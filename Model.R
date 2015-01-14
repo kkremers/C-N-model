@@ -1,0 +1,111 @@
+require(deSolve)
+require(FME)
+
+params <- c(kplant = 0.11,
+            LitterRate = 0.0015,
+            DecompRateC = 0.005,
+            DecompRateN = 0.0007,
+            retrans = 0.7,  
+            RespRateSOM = 0.00001, 
+            PropResp = 0.5,
+            UptakeRate = 0.0001,
+            netNrate = 0.0008,
+            Biomass_C = 400, 
+            Biomass_N = 4.75, 
+            Litter_C = 100, 
+            Litter_N = 1.6, 
+            SOM_C = 2000, 
+            SOM_N = 56,
+            Available_N = 0.1)
+
+
+####################MODEL#################################
+time = seq(1, 1826, 1)
+
+solvemodel <- function(params, times=time) {
+  
+  model<-function(t,state,params)
+  { 
+    with(as.list(c(state, params)),{ #start of with(as.list(...
+      
+      #forcing data
+      Temp=Temp.d1(t)
+      PAR=PAR.d1(t)
+      TempPos = TempPos.d1(t)
+      DOY = DOY.d1(t)
+      DOY.sen = DOYsen.d1(t)
+      TempPos.max = max(data$TempPos) 
+      TempPos.min = min(data$TempPos)
+      
+      
+      #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
+      k=0.63
+      Pmax = 1.18
+      E0 = 0.03
+      q10 = 2
+      cue = 0.5
+      propN_fol = 0.3
+      
+      #FLUXES
+      s.GDD = (TempPos - TempPos.min)/(TempPos.max-TempPos.min) #growing degree day scalar
+      TFN=propN_fol*Biomass_N
+      LAI = ((TFN-0.31)/1.29)*s.GDD #Williams and Rastetter 1999
+      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12 
+      Uptake =  UptakeRate * (Biomass_C*0.5) * ( Available_N / ( kplant + Available_N ) ) * s.GDD
+      Ra =  ( 1 - cue ) * GPP
+      Rh2 = RespRateSOM * SOM_C * (q10 ^ ( ( Temp - 10 )/ 10 ) )
+      Decomposition_C =  DecompRateC * Litter_C * ( q10 ^ ( (Temp-10) / 10 ) )
+      Rh1 =  PropResp * Decomposition_C
+      Decomp_C = (1-PropResp) * Decomposition_C
+      Decomp_N =  DecompRateN * Litter_N * ( q10 ^ ( (Temp-10) / 10 ) )
+      Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 50 ) )
+      
+      
+      N_dep = 0.00008
+      Litterfall_N  =  LitterRate * Biomass_N * ( 1 - retrans )
+      Litterfall_C =  LitterRate * Biomass_C
+      
+      if(DOY < DOY.sen){
+        Litterfall_N = 0
+        Litterfall_C = 0
+      }
+      
+      
+      #calculated variables to use for model fitting and analysis
+      Re = Ra+Rh1+Rh2
+      NEE = Re - GPP
+      
+      #differential equations
+      dBiomass_C = GPP  - Ra  - Litterfall_C 
+      dBiomass_N = Uptake  - Litterfall_N 
+      dLitter_C = Litterfall_C  - Rh1  - Decomp_C 
+      dLitter_N = Litterfall_N  - Decomp_N 
+      dSOM_C = Decomp_C  - Rh2 
+      dSOM_N = Decomp_N  + N_dep - Ntrans
+      dAvailable_N = Ntrans - Uptake
+      
+      
+      #what to output
+      
+      list(c(dBiomass_C, 
+             dBiomass_N, 
+             dLitter_C, 
+             dLitter_N, 
+             dSOM_C, 
+             dSOM_N,
+             dAvailable_N),
+           c(GPP=GPP, LAI=LAI, NEE=NEE, Re=Re, 
+             cue=cue, Ra=Ra, Rh1=Rh1, Rh2=Rh2, 
+             Uptake = Uptake, s.GDD=s.GDD, Ntrans=Ntrans))
+      
+    })  #end of with(as.list(...
+  } #end of model
+  
+  
+  return(ode(y=params[10:16],times=time,func=model,parms = params[1:9], method="rk4")) #integrate using runge-kutta 4 method
+  
+} #end of solve model
+
+#####################################################################
+
+out = data.frame(solvemodel(params)) #creates table of model output

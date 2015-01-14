@@ -3,6 +3,7 @@ require(deSolve)
 require(FME)
 
 
+
 #
 ####################################
 
@@ -29,7 +30,7 @@ linmod.t = lm(data$Temp_ARF~data$Temp_T + 0) #linear model, set intercept = 0
 summary(linmod.t) #summary
 slope.t = summary(linmod.t)$coefficients[1,1] #slope value
 
-par(mfrow=c(1,2))
+par(mfrow=c(1,1))
 plot(data$Temp_ARF~data$Temp_T, ylab = "ARF", xlab="Toolik", main="Temperature", pch=16, col="red")
 abline(linmod.t, lwd = 2) #linear regression line
 
@@ -99,50 +100,93 @@ write.csv(data, "FluxData.csv") #added the updated data to the working directory
 ############re-loading the data
 
 #set working directory to C-N-model
-data = read.csv("InputData_Processed.csv")
+data = read.csv("InputData_Processed.csv") #This is the "FluxData.csv" file, but with added calculations of GDD
 head(data)
 
 #plot the data
 par(mfrow=c(2,2), mar=c(4,4,0.5,2))
 plot(data$Temp_ARF~data$time, type="l", ylab = "Daily Max Temp (C)", col="red", xlab="")
 abline(h=0)
-plot(data$delGDD~data$time, type="l", ylab = "delGDD (change in degrees C /day)",  xlab="", col="forestgreen")
+plot(data$GDD~data$time, type="l", ylab = "Growing Degree Days (GDD) ",  xlab="", col="forestgreen")
 plot(data$PAR_ARF~data$time, type="l", ylab = "Daily PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
 plot(data$PAR_vis~data$time, type="l", ylab = "Daily Plant Avail. PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
 
 
 
+
+GDD.slope = rep(0, length = length(data$GDD))
+for (i in 2: length(data$GDD)){
+  GDD.slope[i] = data$GDD[i] - data$GDD[i-1]
+}
+
+plot(GDD.slope, ylim=c(0, 30)) #this is really just temperature but for only positive values
+data = cbind(data, TempPos=GDD.slope)
+head(data)
+
+plot(data$TempPos)
+data$time[which(data$TempPos == min(data$TempPos))]
+data$TempPos[731] = 0
+data$time[which(data$TempPos == min(data$TempPos))]
+data$TempPos[1462] = 0
+data$time[which(data$TempPos == min(data$TempPos))]
+data$TempPos[366] = 0
+data$time[which(data$TempPos == min(data$TempPos))]
+data$TempPos[1096] = 0
+plot(data$TempPos)
+
+#need to figure out which DOY was the day when GDDs level off
+years = unique(data$year) #tells you which years we have data for 
+delGDDmax.day = NA
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data, data$year==year.i)
+  delGDDmax = data.year$DOY[which(data.year$TempPos < 1)]
+  delGDDmax.day = c(delGDDmax.day, delGDDmax)
+}
+delGDDmax.day #looked at this data to determine cutoff point
+DOY.sen = rep(c(261, 264, 252, 269, 257), c(365, 365, 365, 366, 365))
+data = data.frame(data, DOY.sen = DOY.sen)
+head(data)
+par(mfrow=c(1,1))
+data$DOY
+plot(data$GDD~data$time, type="l", ylab = "Growing Degree Days (GDD) ",  xlab="", col="forestgreen")
+abline(v=261)
+abline(v=264+365)
+abline(v=252+365+365)
+abline(v=269+365+365+365)
+abline(v=257+365+365+365+366)
+
+
 #make into functions so that it will be continuous in the model
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
 PAR.d1 <- approxfun(x=data$time, y=data$PAR_vis, method="linear", rule=2)
-delGDD.d1 <-approxfun(x=data$time, y=data$delGDD, method="linear", rule=2)
+TempPos.d1 <-approxfun(x=data$time, y=data$TempPos, method="linear", rule=2)
+DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
+DOYsen.d1 <- approxfun(x=data$time, y=data$DOY.sen, method="linear", rule=2)
 
-
-######################Parameters and state variables##########################
-params <- c(LitterRate = 0.0012,
-            DecompRateC = 0.00004, 
-            DecompRateN = 0.00017,
-            retrans = 0.9,  
-            RespRateSOM = 1E-6, 
-            RespRateL = 2.5E-3,
-            kCUE = 0.001,
-            CUEmax = 0.6,
-            kplant = 0.11,
-            UptakeMax = 0.01,
-            Available_N = 0.1, 
-            Biomass_C = 200, 
-            Biomass_N = 3.5, 
-            Litter_C = 90, 
-            Litter_N = 2, 
+######################Parameters and initial state variables##########################
+params <- c(kplant = 0.11,
+            LitterRate = 0.0015,
+            DecompRateC = 0.005,
+            DecompRateN = 0.0007,
+            retrans = 0.7,  
+            RespRateSOM = 0.00001, 
+            PropResp = 0.5,
+            UptakeRate = 0.0001,
+            netNrate = 0.0008,
+            Biomass_C = 400, 
+            Biomass_N = 4.75, 
+            Litter_C = 100, 
+            Litter_N = 1.6, 
             SOM_C = 2000, 
-            SOM_N = 57)
+            SOM_N = 56,
+            Available_N = 0.1)
 
 
 ####################MODEL#################################
 time = seq(1, 1826, 1)
 
 solvemodel <- function(params, times=time) {
-  
   
   model<-function(t,state,params)
   { 
@@ -151,69 +195,78 @@ solvemodel <- function(params, times=time) {
       #forcing data
       Temp=Temp.d1(t)
       PAR=PAR.d1(t)
-      delGDD = delGDD.d1(t)
+      TempPos = TempPos.d1(t)
+      DOY = DOY.d1(t)
+      DOY.sen = DOYsen.d1(t)
+      TempPos.max = max(data$TempPos) 
+      TempPos.min = min(data$TempPos)
       
-      delGDD.max = max(data$delGDD) 
-      delGDD.min = min(data$delGDD) 
-      #constants for PLIRTLE model - Loranty 2011
+      
+      #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
       k=0.63
       Pmax = 1.18
       E0 = 0.03
       q10 = 2
-      LAC = 0.012
-      
+      cue = 0.5
+      propN_fol = 0.3
       
       #FLUXES
-      s.GDD = (delGDD - delGDD.min)/(delGDD.max-delGDD.min)
-      LAI = (Biomass_C*0.4)*LAC*s.GDD
+      s.GDD = (TempPos - TempPos.min)/(TempPos.max-TempPos.min) #growing degree day scalar
+      TFN=propN_fol*Biomass_N
+      LAI = ((TFN-0.31)/1.29)*s.GDD #Williams and Rastetter 1999
       GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12 
-      Uptake =  UptakeMax * LAI * ( Available_N / ( kplant + Available_N ) )
-      cue = CUEmax * (Uptake/(kCUE + Uptake))
-      Rh1 =  RespRateL * Litter_C * ( q10 ^ ( Temp / 10 ) )
-      Rh2 =  RespRateSOM * SOM_C * ( q10 ^ ( Temp / 10 ) )
-      Decomp_C =  DecompRateC * Litter_C * ( q10 ^ ( Temp / 10 ) )
-      Decomp_N =  DecompRateN* Litter_N * ( q10 ^ ( Temp / 10 ) )
-      Litterfall_N =  LitterRate * Biomass_N * ( 1 - retrans )
-      Litterfall_C =  LitterRate * Biomass_C
+      Uptake =  UptakeRate * (Biomass_C*0.5) * ( Available_N / ( kplant + Available_N ) ) * s.GDD
       Ra =  ( 1 - cue ) * GPP
-      NetN =  0.00015 * ( q10 ^ (-Temp / 10 ) )
-      N_dep = 0.00008
+      Rh2 = RespRateSOM * SOM_C * (q10 ^ ( ( Temp - 10 )/ 10 ) )
+      Decomposition_C =  DecompRateC * Litter_C * ( q10 ^ ( (Temp-10) / 10 ) )
+      Rh1 =  PropResp * Decomposition_C
+      Decomp_C = (1-PropResp) * Decomposition_C
+      Decomp_N =  DecompRateN * Litter_N * ( q10 ^ ( (Temp-10) / 10 ) )
+      Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 50 ) )
       
-            
+      
+      N_dep = 0.00008
+      Litterfall_N  =  LitterRate * Biomass_N * ( 1 - retrans )
+      Litterfall_C =  LitterRate * Biomass_C
+      
+      if(DOY < DOY.sen){
+        Litterfall_N = 0
+        Litterfall_C = 0
+      }
+      
       
       #calculated variables to use for model fitting and analysis
-      Re= Ra+Rh1+Rh2
+      Re = Ra+Rh1+Rh2
       NEE = Re - GPP
       
-      
       #differential equations
-      dAvailable_N = NetN  + N_dep  - Uptake 
       dBiomass_C = GPP  - Ra  - Litterfall_C 
       dBiomass_N = Uptake  - Litterfall_N 
       dLitter_C = Litterfall_C  - Rh1  - Decomp_C 
       dLitter_N = Litterfall_N  - Decomp_N 
       dSOM_C = Decomp_C  - Rh2 
-      dSOM_N = Decomp_N  - NetN
+      dSOM_N = Decomp_N  + N_dep - Ntrans
+      dAvailable_N = Ntrans - Uptake
       
       
       #what to output
       
-      list(c(dAvailable_N, 
-             dBiomass_C, 
+      list(c(dBiomass_C, 
              dBiomass_N, 
              dLitter_C, 
              dLitter_N, 
              dSOM_C, 
-             dSOM_N),
+             dSOM_N,
+             dAvailable_N),
            c(GPP=GPP, LAI=LAI, NEE=NEE, Re=Re, 
              cue=cue, Ra=Ra, Rh1=Rh1, Rh2=Rh2, 
-             Uptake = Uptake, s.GDD=s.GDD))
+             Uptake = Uptake, s.GDD=s.GDD, Ntrans=Ntrans))
       
     })  #end of with(as.list(...
   } #end of model
   
   
-  return(ode(y=params[11:17],times=time,func=model,parms = params[1:10], method="rk4")) #integrate
+  return(ode(y=params[10:16],times=time,func=model,parms = params[1:9], method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 
@@ -239,38 +292,71 @@ plot(out$Litter_C~out$time, type="l", col="orange", main = "Litter C", xlab="", 
 plot(out$Litter_N~out$time, type="l", col="orange", main = "Litter N", xlab="", ylab="g N m-2", lty=2)
 plot(out$SOM_C~out$time, type="l", col="red", main = "SOM C", xlab="Time (days)", ylab="g C m-2")
 plot(out$SOM_N~out$time, type="l", col="red", main = "SOM N", xlab="Time (days)", ylab="g N m-2",lty=2)
-plot(out$Available_N~out$time, type="l", col="darkolivegreen3", main = "Available N", xlab="", ylab="g N m-2")
+plot(out$Available_N~out$time, type="l", col="green", main = "Available N", xlab="Time (days)", ylab="g N m-2",lty=2)
+
+
+plot(out$Ntrans)
+plot(out$cue)
 
 
 
 #see how well data matches
-par(mfrow=c(2,2), mar=c(4,4,2,2))
-plot(out$GPP~out$time, col="forestgreen", pch=18, ylim=c(0,6), main="GPP", ylab="Flux (gC m-2 day-1)", xlab="")
-points(data$GPP, col="blue", pch=16, cex=0.6)
+#to compare on 1:1 line with data, need to select only points for which data is available
+data.compare=read.csv("ALLData_Assim.csv")
+data.compare=data.compare[,1:5]
+data.compare=data.compare[complete.cases(data.compare),]
+head(data.compare)
+out.compare = out[match(data.compare$time, out$time),]
 
-plot(out$LAI~out$time, col="orange", pch=18, ylim=c(0,1), main="LAI", ylab="LAI (m2 leaf m-2 ground)", xlab="" )
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+plot(out$GPP~out$time, col="forestgreen", pch=18, main="GPP", ylab="Flux (gC m-2 day-1)", xlab="")
+points(data$GPP, col="blue", pch=16, cex=0.6)
+plot(data.compare$GPP, out.compare$GPP)
+abline(0,1, col="red")
+
+plot(out$LAI~out$time, col="orange", pch=18, main="LAI", ylab="LAI (m2 leaf m-2 ground)", xlab="" )
 points(data$LAI, col="blue", pch=16, cex=0.6)
+plot(data.compare$LAI, out.compare$LAI)
+abline(0,1, col="red")
 
 plot(-out$Re~out$time, col="red", pch=16, ylim=c(-5,0), main="Re", xlab="Time (days)", ylab="Flux (gC m-2 day-1)")
 points(-data$Re, col="blue", pch=16, cex=0.6)
 abline(h=0)
+plot(data.compare$Re, out.compare$Re)
+abline(0,1, col="red")
 
 plot(out$NEE~out$time, col="olivedrab3", pch=18, ylim=c(-3,2), main="NEE", xlab="Time (days)", ylab="Flux (gC m-2 day-1)")
 points(data$NEE, col="blue", pch=16, cex=0.6)
 abline(h=0)
+plot(data.compare$NEE, out.compare$NEE, ylim=c(-4, 1))
+abline(0,1, col="red")
+
+
+par(mfrow=c(2,2), mar=c(4,4,2,2))
+plot(data$GPP~data$PAR_vis, pch=16, ylab="GPP", xlab="PAR_vis")
+points(out$GPP~data$PAR_vis, col="red")
+
+plot(data$LAI~data$Temp_ARF, pch=16, ylab="LAI", xlab="Temperature")
+points(out$LAI~data$Temp_ARF, col="red")
+
+plot(data$Re~data$Temp_ARF, pch=16, ylab="Re", xlab="Temperature")
+points(out$Re~data$Temp_ARF, col="red")
+
+plot(data$NEE~data$Temp_ARF, pch=16, ylab="NEE", xlab="Temperature")
+points(out$NEE~data$Temp_ARF, col="red")
+
+
 
 
 #plot CUE and LAI
 par(mfrow=c(2,1), mar=c(4,4,2,2))
-plot(out$cue~out$Uptake, xlab = "Uptake (g N m-2 day-1)", ylab = "Carbon Use Efficiency (CUE)")
-plot(out$cue~out$time, type="l",  xlab = "Time (days)", ylab = "Carbon Use Efficiency (CUE)")
 plot(out$Uptake~out$Available_N, xlab = "Available N (g N m-2)", ylab = "Uptake (g N m-2 day-1)")
 plot(out$Uptake~out$time, type="l",  xlab = "Time (days)", ylab = "Uptake (g N m-2 day-1)")
 
 par(mfrow=c(2,1), mar=c(4,4,2,2))
-plot(out$s.GDD~data$delGDD, xlab = "delGDD", ylab = "Scalar (s.GDD)")
-plot(out$LAI~data$delGDD, xlab = "delGDD", ylab = "LAI (m2 m-2)")
-plot(out$LAI~out$Biomass_C, xlab = "Biomass_C (gC m-2)", ylab = "LAI (m2 m-2)")
+plot(out$s.GDD~data$TempPos, xlab = "TempPos", ylab = "Scalar (s.GDD)")
+plot(out$LAI~data$TempPos, xlab = "TempPos", ylab = "LAI (m2 m-2)")
+plot(out$LAI~out$Biomass_N, xlab = "Biomass_N (gN m-2)", ylab = "LAI (m2 m-2)")
 
 
 ############SENSITIVITY ANALYSIS USING LME PACKAGE###############
@@ -304,7 +390,7 @@ pairs(s.local)
 
 #global sensitivity analysis
 
-#alter all params by 50%
+#alter all params by 20%
 parms = as.vector(unlist(params))
 paramsperc =parms*0.5
 params.min =  parms - paramsperc
@@ -320,12 +406,13 @@ s.global.summ = summary(s.global)
 head(s.global.summ)
 #plots 
 par(mfrow=c(3,2)) 
-plot(s.global.summ, xlab = "day", ylab = "g/m2", mfrow = NULL,
+plot(s.global.summ, xlab = "Time (days)", mfrow = NULL,
      quant = TRUE, col = c("lightblue", "darkblue"), legpos = "topright")
 
 
 ##############IDENTIFY PARAMS THAT CAN BE ESTIMATED###########
 
+#this code is currently a little wonky - need to work on it
 
 #load data to assimilate
 
@@ -351,34 +438,45 @@ abline(h=20, col="red") #if collinearity is less than 20, it is generally okay t
 head(coll1)
 coll1[coll1$collinearity<20 & coll1$N ==7,]
 
-#######################ESTIMATE DATA UNCERTAINTY######################
-
 #######################TEST MCMC###########################
+
+
+#First, I am going to use fake data that is the output from the model with the parameters that I specified above
+#doing this will allow us to know if the MCMC is picking the correct values for the model
+
 
 
 #Get fake data ready
 head(out)
-data.assim = out[,c(1,9:12)]
+data.assim = out[,c(1:8, 10,11)]
 head(data.assim)
 
-#add noise to data
-#for (j in 2:length(data.assim)) {
-#  for (i in 2:length(time)){
-#    data.assim[i,j]=data.assim[i,j]+ rnorm(1, 0, (sd(data.assim[,j])/4))
-#      if(data.assim[i,j] < 0){
-#        data.assim[i,j] = data.assim[i-1,j]
-#      }
-#    }
-#  }
-#set.seed(1) #to get same noise every time
+#add some noise to the data
+for (i in 1:1826){
+  for (j in 2:length(data.assim)){
+    data.assim[i,j] = data.assim[i,j] + rnorm(1, 0, abs((data.assim[i,j]/100)))
+    
+  } 
+}
 
 #remove some data points
-time.keep  = seq(1, length(time), 10) #keep data for every 10 days
+time.keep  = seq(1, length(time), 15) #keep data for every 15 days
 data.assim = data.assim[match(time.keep, data.assim$time),] 
 head(data.assim)
 
-#plot to see what it looks like
-plot(data.assim[,3])
+#plot to view data
+par(mfrow=c(3,2))
+head(data.assim)
+plot(data.assim$Biomass_C~data.assim$time, pch=16, ylab="Biomass_C", xlab="Time (days)")
+plot(data.assim$Biomass_N~data.assim$time, pch=16, ylab="Biomass_N", xlab="Time (days)")
+plot(data.assim[,4])
+plot(data.assim[,5])
+plot(data.assim[,6])
+plot(data.assim[,7]
+     plot(data.assim[,8])
+     plot(data.assim[,9])
+     plot(data.assim[,10])
+     
 
 data.compare1 = data.assim[1:5] #pull out columns that you need
 sigma.obs1 = matrix(1, length(data.compare1$time), 5) #observation erros for each data type - data frame with 288 rows and 4 columns corresponding to each data type
