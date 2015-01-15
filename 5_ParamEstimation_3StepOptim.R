@@ -23,20 +23,21 @@ par(mfrow=c(3,2))
 head(data.assim)
 plot(data.assim$Biomass_C~data.assim$time, pch=16, ylab="Biomass_C", xlab="Time (days)")
 plot(data.assim$Biomass_N~data.assim$time, pch=16, ylab="Biomass_N", xlab="Time (days)")
-plot(data.assim[,4])
-plot(data.assim[,5])
-plot(data.assim[,6])
-plot(data.assim[,7]
-     plot(data.assim[,8])
-     plot(data.assim[,9])
-     plot(data.assim[,10])
+plot(data.assim$Litter_C~data.assim$time, pch=16, ylab="Litter_C", xlab="Time (days)")
+plot(data.assim$Litter_N~data.assim$time, pch=16, ylab="Litter_N", xlab="Time (days)")
+plot(data.assim$SOM_C~data.assim$time, pch=16, ylab="SOM_C", xlab="Time (days)")
+plot(data.assim$SOM_N~data.assim$time, pch=16, ylab="SOM_N", xlab="Time (days)")
+plot(data.assim$Available_N~data.assim$time, pch=16, ylab="Available_N", xlab="Time (days)")
+plot(data.assim$LAI~data.assim$time, pch=16, ylab="LAI", xlab="Time (days)")
+plot(data.assim$NEE~data.assim$time, pch=16, ylab="NEE", xlab="Time (days)")
+
      
 
-data.compare1 = data.assim[1:5] #pull out columns that you need
-sigma.obs1 = matrix(1, length(data.compare1$time), 5) #observation erros for each data type - data frame with 288 rows and 4 columns corresponding to each data type
+data.compare1 = data.assim[,c(1,9,10)] #pull out columns for data that you want to assimilate
+sigma.obs1 = data.frame(matrix(1, length(data.compare1$time), length(data.compare1))) #observation errors for each data type 
 sigma.obs1[,1] = data.assim$time
-sigma.obs1[,3] = 0.1
-#FOR sigma.obs1: columns need to be in SAME ORDER as data.compare1
+colnames(sigma.obs1) = colnames(data.compare1)
+#sigma.obs1: columns need to be in SAME ORDER as data.compare1
 head(data.compare1)
 head(sigma.obs1)
 
@@ -44,51 +45,52 @@ head(sigma.obs1)
 ###STEP 1: EXPLORE PARAMETER SPACE
 
 #other necessary knowns
-n.param = 17 #number of parameters
-M = 100000 #number of iterations
-D = 4 #number of data types being assimilated (4xflux, 7xplant/soil)
+n.param = 16 #number of parameters
+M = 100 #number of iterations
+D = length(data.compare1)-1 #number of data types being assimilated (number of columns in data.compare1, minus the "time" column)
 
 #storage matrices
-J = rep(1, M) #storage vector for cost function output
+J = rep(100000000000, M) #storage vector for cost function output
 j=matrix(0, M, D) #to store error calculations for this iteration
 param.est = data.frame(matrix(1, M, n.param)) #storage for parameter estimate iterations; 
 colnames(param.est) = c(names(params)) #, names(state))
 #change values to the starting values
-param.est[,1] = 0.002 #LitterRate
-param.est[,2] = 0.00005 #DecompRateC
-param.est[,3] = 0.00008 #DecompRateN
-param.est[,4] = 0.7 #retrans
-param.est[,5] = 0.00001 #RespRateSOM
-param.est[,6] = 0.005 #RespRateL
-param.est[,7] = 0.008  #kCUE
-param.est[,8] = 0.4  #CUEMax
-param.est[,9] = 0.5  #kplant
-param.est[,10] = 0.05 #Uptakemax
-param.est[,11] = 0.3 #Available_N
-param.est[,12] = 250 #Biomass_C
-param.est[,13] = 4 #Biomass_N
-param.est[,14] = 150 #Litter_C
-param.est[,15] = 3 #Litter_N
-param.est[,16] = 3000 #SOM_C
-param.est[,17] = 70 #SOM_N
+param.est[,1] = params[1]
+param.est[,2] = params[2]
+param.est[,3] = params[3]
+param.est[,4] = params[4]
+param.est[,5] = params[5]
+param.est[,6] = params[6]
+param.est[,7] = params[7]
+param.est[,8] = params[8]
+param.est[,9] = params[9]
+param.est[,10] = params[10]
+param.est[,11] = params[11]
+param.est[,12] = params[12]
+param.est[,13] = params[13]
+param.est[,14] = params[14]
+param.est[,15] = params[15]
+param.est[,16] = params[16]
+
 
 head(param.est) #check to make sure this is correct
 
 #set up vectors with min and max values for each parameter
-param.max=c(0.05, 0.001, 0.001, 0.99, 0.001, 0.01, 0.1, 0.9, 1, 1, 10, 1000, 10, 1000, 10, 5000, 200)
-param.min=c(0, 0, 0, 0, 0, 0, 0, 0.3, 0, 0.1, 0.05, 100, 1, 20, 0.2, 1000, 20)
+param.max=c(1, 0.01, 0.1, 0.1, 1, 0.1, 0.9, 0.1, 0.1, 700, 20, 600, 10, 5000, 150, 10)
+param.min=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 200, 2, 50, 1, 800, 20, 0.01)
 
 #set t to initial value
-t = 1
+t = 0.5
 reject=0 #reset reject counter
 
-print(system.time( #prints the amount of time the MCMC took to run
-  for (i in 2:M) { #for each iteration
+#start exploration
+for (i in 2:M) { #for each iteration
     
     #draw a parameter set from proposal distribution
     for(p in 1:n.param){ #for each parameter
       repeat { #repeat until proposed parameter is within specified range
-      param.est[i,p] = param.est[i-1,p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
+      r = runif(1, -0.5*t, 0.5*t) #draw value of r between +/- 0.5*t
+      param.est[i,p] = param.est[i-1,p] + r*(param.max[p]-param.min[p]) #draw new parameter set
       if(param.est[i,p]>param.min[p] && param.est[i,p]<param.max[p]){ #if the proposed parameter is in the specified range
         break #break the repeat loop
       }#end of if loop
@@ -101,7 +103,7 @@ print(system.time( #prints the amount of time the MCMC took to run
     names(parms) = names(params) #fix names
     out = data.frame(solvemodel(parms)) #run model
     #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-    out.compare1 = out[match(data.compare1$time, out$time),c(1:8)] 
+    out.compare1 = out[match(data.compare1$time, out$time),c(1,9,10)] #these columns need to match the ones that were pulled out before
     
     
     for (d in 1:D) { #for each data type
@@ -112,33 +114,74 @@ print(system.time( #prints the amount of time the MCMC took to run
     
     J[i] = sum(j[i,])/D #calculate aggregate cost function
     
-    if(J[i]>J[i-1]){
-      reject = reject +1
-      param.est[i,] = param.est[i-1,]
-      t = 0.99*t
-    } else {
-      t = 1.01*t
+    tnew = NULL
+    if(J[i]>J[i-1]){ #if current J is greater than previous J
+      reject = reject +1 #reject parameter set
+      param.est[i,] = param.est[i-1,] #set current parameter set to previous one
+      J[i] = J[i-1] #set current J to previous J (the minimum J so far)
+      tnew = 0.99*t #decrease the size of the parameter space
+    } else { #if parameter set is accepted
+      tnew=1.01*t #increase t 
+    } 
+    
+    acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
+    
+    
+    #if the acceptance rate is greater than 50% or less than 30% adjust the t value accordingly
+    if(acceptance > 0.5) {
+      t = tnew
+    }
+    
+    if (acceptance < 0.3) {
+      t = tnew
     }
     
     
-  })) #end of exploration
+  } #end of exploration
   
 
-plot(param.est[10000:25000,17], type="l")
-plot(density(param.est[10000:25000,17]))
+#The final iteration should be the smallest J
+min(J)
+J[M] #last element in this should match min(J)
+param.est[M,] #final parameter set will be the one that resulted in the smallest J
+
 
 ###STEP 2: MCMC
-#necessary knowns
-n.param = 17 #number of parameters
-M = 10000 #number of iterations
-D = 7 #number of data types being assimilated
 
 #storage matrices
 J = rep(1, M) #storage vector for cost function output
 j=matrix(0, M, D) #to store error calculations for this iteration
-param.est = data.frame(matrix(1, M, n.param)) #storage for CCaN parameter estimate iterations
-param.est[1,] = parms.opt
-colnames(param.est) = c(names(params)) 
+param.est = data.frame(matrix(1, M, n.param)) #storage for parameter estimate iterations 
+colnames(param.est) = c(names(params)) #, names(state))
+#change values to the starting values (the parameters that resulted in the smallest J in step 1)
+param.est[,1] = params[1]
+param.est[,2] = params[2]
+param.est[,3] = params[3]
+param.est[,4] = params[4]
+param.est[,5] = params[5]
+param.est[,6] = params[6]
+param.est[,7] = params[7]
+param.est[,8] = params[8]
+param.est[,9] = params[9]
+param.est[,10] = params[10]
+param.est[,11] = params[11]
+param.est[,12] = params[12]
+param.est[,13] = params[13]
+param.est[,14] = params[14]
+param.est[,15] = params[15]
+param.est[,16] = params[16]
+
+
+head(param.est) #check to make sure this is correct
+
+
+
+
+
+
+
+
+
 
 reject = 0 #reset rejection counter
 
@@ -155,7 +198,7 @@ print(system.time( #prints the amount of time the MCMC took to run
   names(parms) = names(params) #fix names
   out = data.frame(solvemodel(parms)) #run model
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-  out.compare1 = out[match(data.compare1$time, out$time),c(1:8)] 
+  out.compare1 = out[match(data.compare1$time, out$time),c(1,9,10)] #these columns need to match the ones that were pulled out to create assimilation data 
   
   
   for (d in 1:D) { #for each data type
