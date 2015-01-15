@@ -31,7 +31,7 @@ plot(data.assim$Available_N~data.assim$time, pch=16, ylab="Available_N", xlab="T
 plot(data.assim$LAI~data.assim$time, pch=16, ylab="LAI", xlab="Time (days)")
 plot(data.assim$NEE~data.assim$time, pch=16, ylab="NEE", xlab="Time (days)")
 
-     
+
 
 data.compare1 = data.assim[,c(1,9,10)] #pull out columns for data that you want to assimilate
 sigma.obs1 = data.frame(matrix(1, length(data.compare1$time), length(data.compare1))) #observation errors for each data type 
@@ -85,60 +85,60 @@ reject=0 #reset reject counter
 
 #start exploration
 for (i in 2:M) { #for each iteration
-    
-    #draw a parameter set from proposal distribution
-    for(p in 1:n.param){ #for each parameter
-      repeat { #repeat until proposed parameter is within specified range
+  
+  #draw a parameter set from proposal distribution
+  for(p in 1:n.param){ #for each parameter
+    repeat { #repeat until proposed parameter is within specified range
       r = runif(1, -0.5*t, 0.5*t) #draw value of r between +/- 0.5*t
       param.est[i,p] = param.est[i-1,p] + r*(param.max[p]-param.min[p]) #draw new parameter set
       if(param.est[i,p]>param.min[p] && param.est[i,p]<param.max[p]){ #if the proposed parameter is in the specified range
         break #break the repeat loop
       }#end of if loop
-      } #end of repreat loop
-    } #end of parameter loop
-    
-    
-    #run model and calculate error function 
-    parms = as.numeric(param.est[i,]) #parameters for model run
-    names(parms) = names(params) #fix names
-    out = data.frame(solvemodel(parms)) #run model
-    #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-    out.compare1 = out[match(data.compare1$time, out$time),c(1,9,10)] #these columns need to match the ones that were pulled out before
-    
-    
-    for (d in 1:D) { #for each data type
-      
-      j[i,d] = sum(((data.compare1[,d+1] - out.compare1[,d+1])/sigma.obs1[,d+1])^2)/length(data.compare1[1,d+1]) #calculate uncertainty weighted error term
-      
-    } #end of data type loop
-    
-    J[i] = sum(j[i,])/D #calculate aggregate cost function
-    
-    tnew = NULL
-    if(J[i]>J[i-1]){ #if current J is greater than previous J
-      reject = reject +1 #reject parameter set
-      param.est[i,] = param.est[i-1,] #set current parameter set to previous one
-      J[i] = J[i-1] #set current J to previous J (the minimum J so far)
-      tnew = 0.99*t #decrease the size of the parameter space
-    } else { #if parameter set is accepted
-      tnew=1.01*t #increase t 
-    } 
-    
-    acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
-    
-    
-    #if the acceptance rate is greater than 50% or less than 30% adjust the t value accordingly
-    if(acceptance > 0.5) {
-      t = tnew
-    }
-    
-    if (acceptance < 0.3) {
-      t = tnew
-    }
-    
-    
-  } #end of exploration
+    } #end of repreat loop
+  } #end of parameter loop
   
+  
+  #run model and calculate error function 
+  parms = as.numeric(param.est[i,]) #parameters for model run
+  names(parms) = names(params) #fix names
+  out = data.frame(solvemodel(parms)) #run model
+  #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
+  out.compare1 = out[match(data.compare1$time, out$time),c(1,9,10)] #these columns need to match the ones that were pulled out before
+  
+  
+  for (d in 1:D) { #for each data type
+    
+    j[i,d] = sum(((data.compare1[,d+1] - out.compare1[,d+1])/sigma.obs1[,d+1])^2)/length(data.compare1[1,d+1]) #calculate uncertainty weighted error term
+    
+  } #end of data type loop
+  
+  J[i] = sum(j[i,])/D #calculate aggregate cost function
+  
+  tnew = NULL
+  if(J[i]>J[i-1]){ #if current J is greater than previous J
+    reject = reject +1 #reject parameter set
+    param.est[i,] = param.est[i-1,] #set current parameter set to previous one
+    J[i] = J[i-1] #set current J to previous J (the minimum J so far)
+    tnew = 0.99*t #decrease the size of the parameter space
+  } else { #if parameter set is accepted
+    tnew=1.01*t #increase t 
+  } 
+  
+  acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
+  
+  
+  #if the acceptance rate is greater than 50% or less than 30% adjust the t value accordingly
+  if(acceptance > 0.5) {
+    t = tnew
+  }
+  
+  if (acceptance < 0.3) {
+    t = tnew
+  }
+  
+  
+} #end of exploration
+
 
 #The final iteration should be the smallest J
 min(J)
@@ -189,58 +189,58 @@ reject = 0 #reset rejection counter
 print(system.time( #prints the amount of time the MCMC took to run
   for (i in 2:M) { #for each iteration
     
-  #draw a parameter set from proposal distribution
- ###########NEED TO DO THIS############
-  
+    #draw a parameter set from proposal distribution
+    ###########NEED TO DO THIS############
     
-  #run model and calculate error function 
-  parms = as.numeric(param.est[i,]) #parameters for model run
-  names(parms) = names(params) #fix names
-  out = data.frame(solvemodel(parms)) #run model
-  #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-  out.compare1 = out[match(data.compare1$time, out$time),c(1,9,10)] #these columns need to match the ones that were pulled out to create assimilation data 
-  
-  
-  for (d in 1:D) { #for each data type
     
-    j[i,d] = sum(((data.compare1[,d+1] - out.compare1[,d+1])/sigma.obs1[,d+1])^2) #calculate uncertainty weighted error term
+    #run model and calculate error function 
+    parms = as.numeric(param.est[i,]) #parameters for model run
+    names(parms) = names(params) #fix names
+    out = data.frame(solvemodel(parms)) #run model
+    #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
+    out.compare1 = out[match(data.compare1$time, out$time),c(1,9,10)] #these columns need to match the ones that were pulled out to create assimilation data 
     
-  } #end of data type loop
-  
-  J[i] = prod(j[i,]) #calculate aggregate cost function
-  
-  if (J[i] == "NaN"){
-    reject = reject+1 #add to number of rejections
-    param.est[i,] = param.est[i-1,] #set parameter values to previous set
-    J[i] = J[i-1]
-  }
-  
-  if(J[i] != "NaN"){
-    if (J[i] == "Inf"){
+    
+    for (d in 1:D) { #for each data type
+      
+      j[i,d] = sum(((data.compare1[,d+1] - out.compare1[,d+1])/sigma.obs1[,d+1])^2) #calculate uncertainty weighted error term
+      
+    } #end of data type loop
+    
+    J[i] = prod(j[i,]) #calculate aggregate cost function
+    
+    if (J[i] == "NaN"){
       reject = reject+1 #add to number of rejections
       param.est[i,] = param.est[i-1,] #set parameter values to previous set
+      J[i] = J[i-1]
     }
     
-    if (J[i] != "Inf"){
-      #calculate likelihood ratio
-      ratio = exp(-J[i]+J[i-1])
-      
-      u = runif(1, 0, 1)
-      
-      if(ratio < u){
+    if(J[i] != "NaN"){
+      if (J[i] == "Inf"){
         reject = reject+1 #add to number of rejections
         param.est[i,] = param.est[i-1,] #set parameter values to previous set
-      }  
-    }
-  } 
-}))
-  
+      }
+      
+      if (J[i] != "Inf"){
+        #calculate likelihood ratio
+        ratio = exp(-J[i]+J[i-1])
+        
+        u = runif(1, 0, 1)
+        
+        if(ratio < u){
+          reject = reject+1 #add to number of rejections
+          param.est[i,] = param.est[i-1,] #set parameter values to previous set
+        }  
+      }
+    } 
+  }))
+
 
 #check trace plots
 head(param.est)
 tail(param.est)
 plot(param.est[,1], type="l")
-  
+
 
 
 
@@ -296,34 +296,34 @@ print(system.time( #prints the amount of time the MCMC took to run
     
     #draw a hyper-parameter set from proposal distribution
     s[i,1] = runif(1, s[i-1,1]-0.1), s[i-1,1]+0.1)
-    s[i,2] = runif(1, s[i-1,2]-0.1), s[i-1,2]+0.1)
-    for (p in 1:n.param){
-    theta[i,p] = runif(1, theta[i-1,p]-0.1), theta[i-1,p]+0.1)
-    tau[i,p] = runif(1, tau[i-1,p]-0.1), tau[i-1,p]+0.1)
-    } 
-      
-    #draw parameters
-    sigma[i,1] = rinvgamma(1, s[i,1], s[i,2])
-    for(p in 1:n.param){
-      param.est[i,p] = rnorm(1, theta[i,p], tau[i,p])
-    }
-    
-    #calculate ratio
-    parms1 = as.numeric(param.est[i,]) #parameters for model run
-    names(parms1) = names(params) #fix names
-    out1 = data.frame(solvemodel(parms1))     
-    out1 = out1[,1:8]    #pull out columns to compare
+  s[i,2] = runif(1, s[i-1,2]-0.1), s[i-1,2]+0.1)
+for (p in 1:n.param){
+  theta[i,p] = runif(1, theta[i-1,p]-0.1), theta[i-1,p]+0.1)
+tau[i,p] = runif(1, tau[i-1,p]-0.1), tau[i-1,p]+0.1)
+} 
 
-    parms0 = as.numeric(param.est[i-1,]) #parameters for model run
-    names(parms0) = names(params) #fix names
-    out0 = data.frame(solvemodel(parms0))
-    out0 = out0[,1:8] #pull out columns to compare
+#draw parameters
+sigma[i,1] = rinvgamma(1, s[i,1], s[i,2])
+for(p in 1:n.param){
+  param.est[i,p] = rnorm(1, theta[i,p], tau[i,p])
+}
 
-    #calculate likelihood for EACH data type
-    
-    #multiply likelihoods
+#calculate ratio
+parms1 = as.numeric(param.est[i,]) #parameters for model run
+names(parms1) = names(params) #fix names
+out1 = data.frame(solvemodel(parms1))     
+out1 = out1[,1:8]    #pull out columns to compare
 
-    #draw u
-    #accept or reject
-    
+parms0 = as.numeric(param.est[i-1,]) #parameters for model run
+names(parms0) = names(params) #fix names
+out0 = data.frame(solvemodel(parms0))
+out0 = out0[,1:8] #pull out columns to compare
+
+#calculate likelihood for EACH data type
+
+#multiply likelihoods
+
+#draw u
+#accept or reject
+
   }))
