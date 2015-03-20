@@ -36,23 +36,25 @@ plot(data.assim$NEE~data.assim$time, pch=16, ylab="NEE", xlab="Time (days)")
 data.compare1 = data.assim[,c(1,9,10)] #pull out columns for data that you want to assimilate
 sigma.obs1 = data.frame(matrix(1, length(data.compare1$time), length(data.compare1))) #observation errors for each data type 
 sigma.obs1[,1] = data.assim$time
+#set observation error estimate to the standard deviation that was used to add noise to the data
+#sigma.obs1[,2]= abs(data.compare1[,2]/100) 
+#sigma.obs1[,3]= abs(data.compare1[,3]/100)
 colnames(sigma.obs1) = colnames(data.compare1)
 #sigma.obs1: columns need to be in SAME ORDER as data.compare1
 head(data.compare1)
 head(sigma.obs1)
 
-
 ###STEP 1: EXPLORE PARAMETER SPACE
 
 #other necessary knowns
 n.param = 16 #number of parameters
-M = 10 #number of iterations
+M = 1000 #number of iterations
 D = length(data.compare1)-1 #number of data types being assimilated (number of columns in data.compare1, minus the "time" column)
 n.time = length(data.compare1$time)
 
 #storage matrices
-J = rep(999999999999, M) #storage vector for cost function output
-j=matrix(0, M, D) #to store error calculations for this iteration
+J = rep(1, M) #storage vector for cost function output
+j=matrix(1, M, D) #to store error calculations for this iteration
 param.est = data.frame(matrix(1, M, n.param)) #storage for parameter estimate iterations; 
 colnames(param.est) = c(names(params)) #, names(state))
 #change values to the starting values
@@ -73,15 +75,18 @@ param.est[,14] = params[14]
 param.est[,15] = params[15]
 param.est[,16] = params[16]
 
-
 head(param.est) #check to make sure this is correct
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
 param.max=c(1, 0.01, 0.1, 0.1, 1, 0.1, 0.9, 0.1, 0.1, 700, 20, 600, 10, 5000, 150, 10)
 param.min=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 200, 2, 50, 1, 800, 20, 0.01)
 
+
 #set t to initial value
-t = 0.5   # t is used to adjust the step size to keep acceptance rate at 50 % +/- 2.5% -- helps with mixing
+t = 0.5  # t is used to adjust the step size to keep acceptance rate at 50 % +/- 2.5% -- helps with mixing
+anneal.temp0=5000 #starting temperature
+anneal.temp=5000 #starting temperature
+iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 
 #start exploration
@@ -90,8 +95,8 @@ for (i in 2:M) { #for each iteration
   #draw a parameter set from proposal distribution
   for(p in 1:n.param){ #for each parameter
     repeat { #repeat until proposed parameter is within specified range
-      r = runif(1, -0.5*t, 0.5*t) #draw value of r between +/- 0.5*t
-      param.est[i,p] = param.est[i-1,p] + r*(param.max[p]-param.min[p]) #draw new parameter set
+      step.size = t*(param.max[p]-param.min[p]) #step size is a fraction of the inital parameter range
+      param.est[i,p] = param.est[i-1,p] +  rnorm(1, 0, step.size) #draw new parameter set
       if(param.est[i,p]>param.min[p] && param.est[i,p]<param.max[p]){ #if the proposed parameter is in the specified range
         break #break the repeat loop
       }#end of if loop
@@ -110,34 +115,61 @@ for (i in 2:M) { #for each iteration
   for (d in 1:D) { #for each data type
     
     j[i,d] = sum(((data.compare1[,d+1] - out.compare1[,d+1])/sigma.obs1[,d+1])^2)/n.time #calculate uncertainty weighted error term
+    if(is.na(j[i,d])) {
+      j[i,d]=999999999999 #If it's NaN, make the cost function a HUGE number
+    }
     
   } #end of data type loop
   
   J[i] = sum(j[i,])/D #calculate aggregate cost function
   
   tnew = NULL
-  if(J[i]>J[i-1]){ #if current J is greater than previous J
-    reject = reject +1 #reject parameter set
+  
+  diff=J[i]-J[i-1] #calculate probability that proposed parameter is accepted
+ 
+  
+  if(diff>0){ #if difference is > 0 (or if the current J is greater than the previous J)
+    
+    u=runif(1, 0, 1) #draw random number between 0 and 1
+    prob=exp((-1*diff)/anneal.temp)
+    
+    if(u>=prob){    
+    reject = reject+1 #reject parameter set
     param.est[i,] = param.est[i-1,] #set current parameter set to previous one
     J[i] = J[i-1] #set current J to previous J (the minimum J so far) - This makes it easier to find the minimum J at the end of the MCMC - it will always be the last value
-    tnew = 0.99*t #decrease the size of the parameter space
-  } else { #if parameter set is accepted
-    tnew=1.01*t #increase t 
+    anneal.temp=anneal.temp0-(5*iter) #decrease temperature
+    tnew = 0.9*t #decrease the size of the parameter space
+  } else { #if u<prob (accept)
+    tnew=1.1*t #increase t 
   } 
+  }
+  
+  if (diff<=0) {#accept
+    tnew=1.1*t #increase t
+  } #end of if diff
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
   
-  #If the acceptance rate is 50% +/- 2.5%, then DON'T adjust "t"
-  if(acceptance > 0.525) {
+  #If the acceptance rate is 20% +/- 2.5%, then DON'T adjust "t"
+  if(acceptance > 0.225) {
     t = tnew
   } 
-  if (acceptance < 0.475) {
+  if (acceptance < 0.175) {
     t = tnew
+  }
+  
+  iter=iter+1 #increase number of iterations
+  
+  if(anneal.temp<anneal.temp0/3){ #if temperature drops to 1/3 of inital value
+    anneal.temp0=(2/3)*anneal.temp0 #change initial temp to 2/3 of previous initial
+    anneal.temp=anneal.temp0 #jump back up to that temp
+    iter=1 #reset iteration counter
   }
   
   
 } #end of exploration
 
+plot(param.est[,1], type="l") #make plots to check for mixing
 
 #The final iteration should be the smallest J
 min(J)
@@ -149,7 +181,11 @@ j.best = j[M,]
 params.best
 j.best
 
-###STEP 2: MCMC
+
+
+
+
+#######STEP 2: MCMC
 
 #need to calculate the variance of the errors for the minimum j's
 
@@ -171,14 +207,14 @@ var.jbest
 
 #storage matrices
 j = rep(0, D)
-error=matrix(0, n.time, D)
-param.keep = NULL
+param.keep = data.frame(matrix(1, 1000, n.param)) #storage for parameter estimate iterations; 
+colnames(param.keep) = c(names(params.best))
+head(param.keep)#check to make sure this is correct
 
 #set inital values
-param.est = params.best #storage for parameter estimate iterations 
-param.est #check to make sure this is correct
-t = t #keep "t" at the same value as it was at the end of exploration step
-num.accepted = 0
+param.est = params params.best #estimated parameters
+
+t = t #keep the step size that was used in previous step
 
 #also need to know degrees of freedom for chi square test
 df = rep(0, D)
@@ -188,39 +224,58 @@ for (d in 1:D) { #for each data type
 df #check values
 
 #start loop
-repeat { #repeat until we have accepted 1000 parameter sets
-  
-  #draw a parameter set from proposal distribution
-  for(p in 1:n.param){ #for each parameter
+  reject = 0
+  num.accepted = 0
+  num.reps = 0
+ 
+  repeat { #repeat until desired number of parameter sets are accepted
+    
+    num.reps=num.reps+1
+      
+    for(p in 1:n.param){ #for each parameter
     repeat { #repeat until proposed parameter is within specified range
-      r = runif(1, -0.5*t, 0.5*t) #draw value of r between +/- 0.5*t
-      param.est[p] = param.est[p] + r*(param.max[p]-param.min[p]) #draw new parameter set
+      r = runif(1, -0.5*t, 0.5*t) #draw value of r 
+      param.est[p] = params.best[p] + r*(param.max[p]-param.min[p]) #draw new parameter set
       if(param.est[p]>param.min[p] && param.est[p]<param.max[p]){ #if the proposed parameter is in the specified range
         break #break the repeat loop
       }#end of if loop
     } #end of repreat loop
   } #end of parameter loop
-  
-  
-  #run model and calculate error function 
-  parms = as.numeric(param.est) #parameters for model run
-  names(parms) = names(params) #fix names
-  out = data.frame(solvemodel(parms)) #run model
-  #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-  out.compare1 = out[match(data.compare1$time, out$time),c(1,9,10)] #these columns need to match the ones that were pulled out before
-  
+
+
+#run model and calculate error function 
+parms = as.numeric(param.est) #parameters for model run
+names(parms) = names(params) #fix names
+out = data.frame(solvemodel(parms)) #run model
+#pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
+out.compare1 = out[match(data.compare1$time, out$time),c(1,9,10)] #these columns need to match the ones that were pulled out before
+#remove the time column - no longer needed
+data.comp = data.compare1[,-1]
+out.comp = out.compare1[,-1]
+sigma = sigma.obs1[,-1]
+
   #determine if parameter set is accepted or rejected
-  error = matrix(0, n.time, D)
+
+  error = matrix(0, length(data.comp[,1]), 2)
+  var.error=rep(0,D)
   for (d in 1:D) { #for each data type
-    error[,d] = (data.compare1[,d+1] - out.compare1[,d+1])/sigma.obs1[,d+1]
-    error[,d] = (error[,d]*var(error[,d]))/var.jbest[d] #variance normalization
+    error[,d] = (data.comp[,d]-out.comp[,d])/sigma[,d] #calculate the uncertainty weighted error term
+    var.error[d] = var(error[,d])
     
-    j[d] = sum((error[,d]^2))/n.time #calculate uncertainty weighted error term after variance normalizaiton
+    for (m in 1:length(out.comp[,1])) {  
+      error[m,d] = (error[m,d]*sqrt(var.jbest[d]))/sqrt(var.error[d]) #variance normalization
+    }
+    
+    j[d] = sum(error[,d]^2)/n.time #calculate uncertainty weighted error term after variance normalizaiton
+    
     
     #chi-square test
     accept = rep (0, D)
     chi = rep(0, D)
-    chi[d] = (j[d] - 1)^2
+    chi = (j - 1)^2
+    if (is.na(chi[d])) {
+      chi[d] = 0
+    }
     if((1 - pchisq(chi[d], df[d])) < 0.1) {
       accept[d] = 1}
   } #end of data type loop
@@ -228,16 +283,29 @@ repeat { #repeat until we have accepted 1000 parameter sets
   d.accept = sum(accept) #calculate the number of j's accepted
   
   if(d.accept==D) { #if all j's accepted
-    param.keep = rbind(param.keep, parms) #keep parameter set
-    num.accepted = num.accepted + 1 #add to number of parameter sets accepted
+    num.accepted = num.accepted+1 #add to number of parameter sets accepted
+    tnew=1.1*t #increase the step size
+    param.keep[num.accepted,]=param.est #store the parameter set in a dataframe
+  }
+  if(d.accept<D) { #if any j's rejected
+    reject = reject+1 #reject parameter set
+    tnew=0.9*t #decrease the step size
   }
     
-      
-  if(num.accepted == 10) {
-    break
-  } #end of if statement
-} #end of repeat
+  acceptance = 1 - (reject / num.reps) #calculate proportion of accepted iterations
 
+  #If the acceptance rate is 20% +/- 2.5%, then DON'T adjust "t"
+  if(acceptance > 0.225) {
+    t = tnew
+  } 
+  if (acceptance < 0.175) {
+    t = tnew
+  }
+
+  if (num.accepted==5) { #if you have accepted the number of parameter sets you want (i.e., 1000)
+    break  #break repeat loop
+  } 
+ } #end of repeat
 
 
 
