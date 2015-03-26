@@ -1,27 +1,34 @@
 ####Install package for sounds (alerts you when script is done running)
 #install.packages("beepr")   #run this line of code only if the package hasn't been installed yet
 require(beepr)
-#beep(8) #test sounds; there are 9 options; don't need to run this every time, just to choose a sound
+#beep(5) #test sounds; there are 9 options; don't need to run this every time, just to choose a sound
 
 ######Synthetic data experiments######
 
 #Get data ready
 head(out) #this is the output from the model run
-data.assim = out[,c(1:8, 10,11)]
-head(data.assim)
+data.assim = out[,c(1:8, 10,11)] #choose columns that you want
+head(data.assim) #preview table
 
 #add some noise to the data
-for (i in 1:1826){
+for (i in 1:length(data.assim[,1])){
   for (j in 2:length(data.assim)){
     data.assim[i,j] = data.assim[i,j] + rnorm(1, 0, abs((data.assim[i,j]/100)))
     
   } 
 }
+head(data.assim) #check output
 
-#remove some data points
+
+#remove some data points from LAI data
 time.keep  = seq(1, length(time), 15) #keep data for every 15 days
-data.assim = data.assim[match(time.keep, data.assim$time),] 
-head(data.assim)
+LAI.assim = data.assim$LAI[match(time.keep, data.assim$time)]  #create vector of LAI data for only those timesteps
+LAI.assim = data.frame(time=time.keep, LAI.assim) #create a dataframe of the new LAI data and the corresponding timesteps
+head(LAI.assim) #check table
+data.assim$LAI=LAI.assim$LAI.assim[match(data.assim$time, LAI.assim$time)] #change the LAI data in the assimilation table to NAs
+head(data.assim) #preview
+data.assim$LAI #check
+
 
 #plot to view data
 par(mfrow=c(3,2))
@@ -35,7 +42,6 @@ plot(data.assim$SOM_N~data.assim$time, pch=16, ylab="SOM_N", xlab="Time (days)")
 plot(data.assim$Available_N~data.assim$time, pch=16, ylab="Available_N", xlab="Time (days)")
 plot(data.assim$LAI~data.assim$time, pch=16, ylab="LAI", xlab="Time (days)")
 plot(data.assim$NEE~data.assim$time, pch=16, ylab="NEE", xlab="Time (days)")
-
 
 
 data.compare1 = data.assim[,c(1,9,10)] #pull out columns for data that you want to assimilate
@@ -54,9 +60,13 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = 16 #number of parameters
-M = 100000 #number of iterations
+M = 1000 #number of iterations
 D = length(data.compare1)-1 #number of data types being assimilated (number of columns in data.compare1, minus the "time" column)
-n.time = length(data.compare1$time)
+n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
+  for(d in 1:D) { #for each data type
+    n.time[d]=sum(!is.na(data.compare1[,d+1])) #calculate the number of time points that DO NOT have NA's
+  } #end of for loop
+n.time #check 
 
 #storage matrices
 J = rep(1, M) #storage vector for cost function output
@@ -90,8 +100,8 @@ param.min=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 200, 2, 50, 1, 800, 20, 0.01)
 
 #set t to initial value
 t = 0.5  # t is used to adjust the step size to keep acceptance rate at 50 % +/- 2.5% -- helps with mixing
-anneal.temp0=15000 #starting temperature
-anneal.temp=15000 #starting temperature
+anneal.temp0=500 #starting temperature
+anneal.temp=500 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 
@@ -115,17 +125,23 @@ for (i in 2:M) { #for each iteration
   names(parms) = names(params) #fix names
   out = data.frame(solvemodel(parms)) #run model
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-  out.compare1 = out[match(data.compare1$time, out$time),c(1,9,10)] #these columns need to match the ones that were pulled out before
-  
-  
+  out.compare1 = out[match(data.compare1$time, out$time),c(1,10,11)] #these columns need to match the ones that were pulled out before
+    
+  error.time=matrix(0, length(data.compare1$time), D)
   for (d in 1:D) { #for each data type
+    for (m in 1:length(data.compare1$time)){ #for each timestep
+    if(!is.na(data.compare1[m,d+1])){ #if there is data at that timestep
+      error.time[m,d]=((data.compare1[m,d+1] - out.compare1[m,d+1])/sigma.obs1[m,d+1])^2 #calculates the error at that timestep
+      } #end of if statement
+      #if there was no data at that timestep, the error will remain "0" so that it will not impact the sum calculation in the next step
+    } #end of time step loop
     
-    j[i,d] = sum(((data.compare1[,d+1] - out.compare1[,d+1])/sigma.obs1[,d+1])^2)/n.time #calculate uncertainty weighted error term
-    if(is.na(j[i,d])) {
-      j[i,d]=999999999999 #If it's NaN, make the cost function a HUGE number
-    }
+      j[i,d] = sum(error.time[,d])/n.time[d] #calculate uncertainty weighted error term
+      if(is.na(j[i,d])) { #If it's NaN (only occurs if the model parameters were so far off that there were NaNs in the model output)
+        j[i,d]=999999999999 #make the cost function a HUGE number
+      }
     
-  } #end of data type loop
+    } #end of data type loop
   
   J[i] = sum(j[i,])/D #calculate aggregate cost function
   
@@ -166,8 +182,8 @@ for (i in 2:M) { #for each iteration
   
   iter=iter+1 #increase number of iterations counter
   
-  if(anneal.temp<anneal.temp0/10){ #if temperature drops to 1/3 of inital value
-    anneal.temp0=(9/10)*anneal.temp0 #change initial temp to 2/3 of previous initial
+  if(anneal.temp<100){ #if temperature drops to less than 100
+    anneal.temp0=(9/10)*anneal.temp0 #change initial temp to 9/10 of previous initial
     anneal.temp=anneal.temp0 #jump back up to that temp
     iter=1 #reset iteration counter
   }
