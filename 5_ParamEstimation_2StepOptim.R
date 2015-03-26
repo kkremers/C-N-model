@@ -60,7 +60,7 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = 16 #number of parameters
-M = 1000 #number of iterations
+M = 50000 #number of iterations
 D = length(data.compare1)-1 #number of data types being assimilated (number of columns in data.compare1, minus the "time" column)
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
   for(d in 1:D) { #for each data type
@@ -100,8 +100,8 @@ param.min=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 200, 2, 50, 1, 800, 20, 0.01)
 
 #set t to initial value
 t = 0.5  # t is used to adjust the step size to keep acceptance rate at 50 % +/- 2.5% -- helps with mixing
-anneal.temp0=500 #starting temperature
-anneal.temp=500 #starting temperature
+anneal.temp0=7000 #starting temperature
+anneal.temp=7000 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 
@@ -127,21 +127,21 @@ for (i in 2:M) { #for each iteration
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
   out.compare1 = out[match(data.compare1$time, out$time),c(1,10,11)] #these columns need to match the ones that were pulled out before
     
-  error.time=matrix(0, length(data.compare1$time), D)
+  error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
   for (d in 1:D) { #for each data type
     for (m in 1:length(data.compare1$time)){ #for each timestep
-    if(!is.na(data.compare1[m,d+1])){ #if there is data at that timestep
-      error.time[m,d]=((data.compare1[m,d+1] - out.compare1[m,d+1])/sigma.obs1[m,d+1])^2 #calculates the error at that timestep
+    if(!is.na(data.compare1[m,d+1])){ #if there is data at that timestep for that data stream
+      error.time[m,d]=((data.compare1[m,d+1] - out.compare1[m,d+1])/sigma.obs1[m,d+1])^2 #calculates the error at that timestep for that data stream
       } #end of if statement
       #if there was no data at that timestep, the error will remain "0" so that it will not impact the sum calculation in the next step
     } #end of time step loop
     
-      j[i,d] = sum(error.time[,d])/n.time[d] #calculate uncertainty weighted error term
+    j[i,d] = sum(error.time[,d])/n.time[d] #calculate uncertainty weighted error term
       if(is.na(j[i,d])) { #If it's NaN (only occurs if the model parameters were so far off that there were NaNs in the model output)
-        j[i,d]=999999999999 #make the cost function a HUGE number
+      j[i,d]=999999999999 #make the cost function a HUGE number
       }
     
-    } #end of data type loop
+  } #end of data type loop
   
   J[i] = sum(j[i,])/D #calculate aggregate cost function
   
@@ -166,13 +166,13 @@ for (i in 2:M) { #for each iteration
     } 
   }
   
-  if (diff<=0) {#accept
+  if (diff<=0) {#accept all of these because current J is smaller than previous J
     tnew=1.1*t #increase t
   } #end of if diff
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
   
-  #If the acceptance rate is 20% +/- 2.5%, then DON'T adjust "t"
+  #If the acceptance rate is not 20% +/- 2.5%, then adjust "t"
   if(acceptance > 0.275) {
     t = tnew
   } 
