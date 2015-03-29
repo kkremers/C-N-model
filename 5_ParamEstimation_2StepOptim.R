@@ -60,7 +60,7 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = 16 #number of parameters
-M = 50000 #number of iterations
+M = 100000 #number of iterations
 D = length(data.compare1)-1 #number of data types being assimilated (number of columns in data.compare1, minus the "time" column)
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
   for(d in 1:D) { #for each data type
@@ -100,8 +100,8 @@ param.min=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 200, 2, 50, 1, 800, 20, 0.01)
 
 #set t to initial value
 t = 0.5  # t is used to adjust the step size to keep acceptance rate at 50 % +/- 2.5% -- helps with mixing
-anneal.temp0=7000 #starting temperature
-anneal.temp=7000 #starting temperature
+anneal.temp0=12000 #starting temperature
+anneal.temp=12000 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 
@@ -218,24 +218,30 @@ param.step1 = param.est #storing the iterations under a different name in case y
 
 out = data.frame(solvemodel(param.best)) #run model
 #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-out.compare1 = out[match(data.compare1$time, out$time),c(1,9,10)] #these columns need to match the ones that were pulled out before
+out.compare1 = out[match(data.compare1$time, out$time),c(1,10,11)] #these columns need to match the ones that were pulled out before
+head(out.compare1)
+head(data.compare1)
+
 
 #create storage matrices for error and variance
-error.jbest = matrix(0, n.time, D)
 var.jbest = rep(0, D)
-
+error.jbest=matrix(NA, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
 for (d in 1:D) { #for each data type
-  for (m in 1:n.time){ #for each timestep
-  error.jbest[m,d] = (data.compare1[m,d+1] - out.compare1[m,d+1])/sigma.obs1[m,d+1] #calcualte error
-  }
-  var.jbest[d] = var(error.jbest[,d]) #calculate variance of the errors
-}
+  for (m in 1:length(data.compare1$time)){ #for each timestep
+    if(!is.na(data.compare1[m,d+1])){ #if there is data at that timestep for that data stream
+      error.jbest[m,d]=((data.compare1[m,d+1] - out.compare1[m,d+1])/sigma.obs1[m,d+1])^2 #calculates the error at that timestep for that data stream
+    } #end of if statement
+  } #end of time step loop
+  
+  var.jbest[d] = var(error.jbest[!is.na(data.compare1[,d+1]),d]) #calculate variance of the errors (excludes NAs)
+  
+} #end of data type loop
 
 var.jbest #preview
 
 #storage matrices for Monte Carlo reps
 j = rep(0, D)
-param.keep = data.frame(matrix(1, 1000, n.param)) #storage for parameter estimate iterations; 
+param.keep = data.frame(matrix(1, 5, n.param)) #storage for parameter estimate iterations; 
 colnames(param.keep) = c(names(param.best))
 head(param.keep)#check to make sure this is correct
 
@@ -243,9 +249,6 @@ head(param.keep)#check to make sure this is correct
 #set initial values
 param.est = param.best #set initial values for parameters
 t = t #keep the step size that was used in previous step
-anneal.temp0=5000 #reset starting temperature
-anneal.temp=5000 #reset starting temperature
-iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 num.accepted = 0 #counter for number of accepted parameters - when this gets to 1000, loop will stop
 num.reps = 0 #counter for number of repititions - calculates acceptance rate
@@ -253,13 +256,13 @@ num.reps = 0 #counter for number of repititions - calculates acceptance rate
 #also need to know degrees of freedom for chi square test
 df = rep(0, D)
 for (d in 1:D) { #for each data type
-  df[d] = length(data.compare1[,d+1]) - n.param
+  df[d] = n.time[d] - n.param
 } #end of data loop
 df #check values
 
 #start loop
 
-  repeat { #repeat until desired number of parameter sets are accepted
+repeat { #repeat until desired number of parameter sets are accepted
     
     num.reps=num.reps+1 #add to number of reps counter
       
@@ -267,43 +270,49 @@ df #check values
     for(p in 1:n.param){ #for each parameter
       repeat { #repeat until proposed parameter is within specified range
         step.size = t*(param.max[p]-param.min[p]) #step size is a fraction of the inital parameter range
-        param.est[i,p] = param.est[i-1,p] +  rnorm(1, 0, step.size) #draw new parameter set
-        if(param.est[i,p]>param.min[p] && param.est[i,p]<param.max[p]){ #if the proposed parameter is in the specified range
+        param.est[p] = param.est[p] +  rnorm(1, 0, step.size) #draw new parameter set
+        if(param.est[p]>param.min[p] && param.est[p]<param.max[p]){ #if the proposed parameter is in the specified range
           break #break the repeat loop
         }#end of if loop
       } #end of repreat loop
     } #end of parameter loop
 
 
-#run model and calculate error function 
-parms = as.numeric(param.est) #parameters for model run
-names(parms) = names(params) #fix names
-out = data.frame(solvemodel(parms)) #run model
-#pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-out.compare1 = out[match(data.compare1$time, out$time),c(1,9,10)] #these columns need to match the ones that were pulled out before
-#remove the time column - no longer needed
-data.comp = data.compare1[,-1]
-out.comp = out.compare1[,-1]
-sigma = sigma.obs1[,-1]
+  #run model and calculate error function 
+  parms = as.numeric(param.est) #parameters for model run
+  names(parms) = names(params) #fix names
+  out = data.frame(solvemodel(parms)) #run model
+  #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
+  out.compare1 = out[match(data.compare1$time, out$time),c(1,10,11)] #these columns need to match the ones that were pulled out before
+  #remove the time column - no longer needed
+  data.comp = data.compare1[,-1]
+  out.comp = out.compare1[,-1]
+  sigma = sigma.obs1[,-1]
 
   #determine if parameter set is accepted or rejected
-
-  error = matrix(0, length(data.comp[,1]), 2)
-  var.error=rep(0,D)
+  error = matrix(NA, length(data.comp[,1]), D)
+  var.error=rep(0,D)  
   for (d in 1:D) { #for each data type
-    error[,d] = (data.comp[,d]-out.comp[,d])/sigma[,d] #calculate the uncertainty weighted error
-    var.error[d] = var(error[,d]) #calcualte the variance of the errors
+    for (m in 1:length(data.comp[,1])){ #for each timestep
+      if(!is.na(data.comp[m,d])){ #if there is data at that timestep for that data stream
+        error[m,d]=((data.comp[m,d] - out.comp[m,d])/sigma[m,d])^2 #calculates the error at that timestep for that data stream
+      } #end of if statement
+    } #end of time step loop
+    var.error[d] = var(error[!is.na(data.comp[,d]),d]) #calculate variance of the errors (excludes NAs)
+  } #end of data type loop
+  
+  for (d in 1:D) { #for each data type
+    for (m in 1:length(data.comp[,1])){ #for each timestep
+        error[m,d] = (error[m,d]*sqrt(var.jbest[d]))/sqrt(var.error[d]) #variance normalization
+    } #end of time step loop  
     
-    for (m in 1:length(out.comp[,1])) {  #for each value (or row)
-      error[m,d] = (error[m,d]*sqrt(var.jbest[d]))/sqrt(var.error[d]) #variance normalization
-    } #end of row loop
-    
-    j[d] = sum(error[,d]^2)/n.time #calculate uncertainty weighted error term after variance normalizaiton
-    
-    
+    j[d] = sum(error[!is.na(data.comp[,d]),d]^2)/n.time[d] #calculate uncertainty weighted error term after variance normalizaiton
+  } #end of data type loop
+  
     #chi-square test
     accept = rep (0, D) #vector to keep track of if each j has been accepted or rejected; 1=accept, 0=reject
     chi = rep(0, D) #to store chi values for each data type
+  for (d in 1:D) { #for each data type  
     chi[d] = (j[d] - 1)^2 #calcualte chi squared value for each data type
     if (is.na(chi[d])) { #if a chi value is NA
       chi[d] = 0 #set to 0
@@ -322,32 +331,23 @@ sigma = sigma.obs1[,-1]
   if(d.accept<D) { #if any j's rejected
     reject = reject+1 #reject parameter set
     tnew=0.9*t #decrease the step size
-    anneal.temp=anneal.temp0-(2*iter) #decrease temperature
   }
     
   acceptance = 1 - (reject / num.reps) #calculate proportion of accepted iterations
 
-  #If the acceptance rate is 20% +/- 2.5%, then DON'T adjust "t"
-  if(acceptance > 0.225) {
+  #If the acceptance rate is not 20% +/- 2.5%, then adjust "t"
+  if(acceptance > 0.275) {
     t = tnew
   } 
-  if (acceptance < 0.175) {
+  if (acceptance < 0.225) {
     t = tnew
   }
 
-  iter=iter+1 #increase number of iterations
-
-  if(anneal.temp<anneal.temp0/3){ #if temperature drops to 1/3 of inital value
-    anneal.temp0=(2/3)*anneal.temp0 #change initial temp to 2/3 of previous initial
-    anneal.temp=anneal.temp0 #jump back up to that temp
-    iter=1 #reset iteration counter
-  }
-
-  if (num.accepted==1000) { #if you have accepted the number of parameter sets you want (i.e., 1000)
+  if (num.accepted==5) { #if you have accepted the number of parameter sets you want (i.e., 1000)
     break  #break repeat loop
   } 
 
- } #end of repeat
+} #end of repeat
 
-
+beep(5)
 
