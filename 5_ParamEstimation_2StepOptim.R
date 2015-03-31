@@ -13,7 +13,7 @@ head(data.assim) #preview table
 #add some noise to the data
 for (i in 1:length(data.assim[,1])){
   for (j in 2:length(data.assim)){
-    data.assim[i,j] = data.assim[i,j] + rnorm(1, 0, abs((data.assim[i,j]/100)))
+    data.assim[i,j] = data.assim[i,j] + rnorm(1, 0, abs((min(data.assim[,j])/1000)))
     
   } 
 }
@@ -60,9 +60,6 @@ plot(data.assim$NEE~data.assim$time, pch=16, ylab="NEE", xlab="Time (days)")
 data.compare1 = data.assim[,c(1,9,10)] #pull out columns for data that you want to assimilate
 sigma.obs1 = data.frame(matrix(1, length(data.compare1$time), length(data.compare1))) #observation errors for each data type 
 sigma.obs1[,1] = data.assim$time
-#set observation error estimate to the standard deviation that was used to add noise to the data
-#sigma.obs1[,2]= abs(data.compare1[,2]/100) + 0.00001 #have to add 0.0001 so that it won't be zero
-#sigma.obs1[,3]= abs(data.compare1[,3]/100) + 0.00001 #have to add 0.0001 so that it won't be zero
 colnames(sigma.obs1) = colnames(data.compare1)
 #sigma.obs1: columns need to be in SAME ORDER as data.compare1
 head(data.compare1)
@@ -75,7 +72,7 @@ save.image(file="Workspace033115.Rdata")
 ###STEP 1: EXPLORE PARAMETER SPACE
 
 #other necessary knowns
-n.param = 16 #number of parameters
+n.param = 17 #number of parameters
 M = 100000 #number of iterations
 D = length(data.compare1)-1 #number of data types being assimilated (number of columns in data.compare1, minus the "time" column)
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
@@ -106,12 +103,13 @@ param.est[,13] = params[13]
 param.est[,14] = params[14]
 param.est[,15] = params[15]
 param.est[,16] = params[16]
+param.est[,17] = params[17]
 
 head(param.est) #check to make sure this is correct
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(1, 0.01, 0.1, 0.1, 1, 0.1, 0.9, 0.1, 0.1, 700, 20, 600, 10, 5000, 150, 10)
-param.min=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 200, 2, 50, 1, 800, 20, 0.01)
+param.max=c(1, 0.01, 0.1, 0.1, 1, 0.1, 0.9, 0.1, 0.1, 4, 700, 20, 600, 10, 5000, 150, 10)
+param.min=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 200, 2, 50, 1, 800, 20, 0.01)
 
 
 #set t to initial value
