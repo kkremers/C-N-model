@@ -260,7 +260,7 @@ for (d in 1:D) { #for each data type
 } #end of data loop
 df #check values
 
-#start loop
+#start loop (8:20AM, 03/31/15)
 
 repeat { #repeat until desired number of parameter sets are accepted
     
@@ -343,7 +343,7 @@ repeat { #repeat until desired number of parameter sets are accepted
     t = tnew
   }
 
-  if (num.accepted==5) { #if you have accepted the number of parameter sets you want (i.e., 1000)
+  if (num.accepted==1000) { #if you have accepted the number of parameter sets you want (i.e., 1000)
     break  #break repeat loop
   } 
 
