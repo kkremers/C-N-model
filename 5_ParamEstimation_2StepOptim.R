@@ -1,6 +1,6 @@
 ####Install package for sounds (alerts you when script is done running)
 #install.packages("beepr")   #run this line of code only if the package hasn't been installed yet
-require(beepr)
+#require(beepr)
 #beep(5) #test sounds; there are 9 options; don't need to run this every time, just to choose a sound
 
 ######Synthetic data experiments######
@@ -20,29 +20,42 @@ for (i in 1:length(data.assim[,1])){
 head(data.assim) #check output
 
 
-#remove some data points from LAI data
-time.keep  = seq(1, length(time), 15) #keep data for every 15 days
-LAI.assim = data.assim$LAI[match(time.keep, data.assim$time)]  #create vector of LAI data for only those timesteps
-LAI.assim = data.frame(time=time.keep, LAI.assim) #create a dataframe of the new LAI data and the corresponding timesteps
+#####remove some data points from LAI data
+time.keepLAI  = seq(1, length(time), 15) #keep LAI data for every 15 days
+LAI.assim = data.assim$LAI[match(time.keepLAI, data.assim$time)]  #create vector of LAI data for only those timesteps
+LAI.assim = data.frame(time=time.keepLAI, LAI.assim) #create a dataframe of the new LAI data and the corresponding timesteps
 head(LAI.assim) #check table
 data.assim$LAI=LAI.assim$LAI.assim[match(data.assim$time, LAI.assim$time)] #change the LAI data in the assimilation table to NAs
 head(data.assim) #preview
 data.assim$LAI #check
 
+#####remove some data points for Stock data
+time.keepSTOCK  = seq(200, length(time), 365) #keep data for once per year (~twice per year)
+#Biomass_C
+BiomassC.assim = data.assim$Biomass_C[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
+BiomassC.assim = data.frame(time=time.keepSTOCK, BiomassC.assim) #create a dataframe of the new data and the corresponding timesteps
+head(BiomassC.assim) #check table
+data.assim$Biomass_C=BiomassC.assim$BiomassC.assim[match(data.assim$time, BiomassC.assim$time)] #change the data in the assimilation table to NAs
+#Biomass_N
+BiomassN.assim = data.assim$Biomass_N[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
+BiomassN.assim = data.frame(time=time.keepSTOCK, BiomassN.assim) #create a dataframe of the new data and the corresponding timesteps
+head(BiomassN.assim)
+data.assim$Biomass_N=BiomassN.assim$BiomassN.assim[match(data.assim$time, BiomassN.assim$time)] #change the data in the assimilation table to NAs
+#Available_N
+AvailN.assim = data.assim$Available_N[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
+AvailN.assim = data.frame(time=time.keepSTOCK, AvailN.assim) #create a dataframe of the new data and the corresponding timesteps
+head(AvailN.assim)
+data.assim$Available_N=AvailN.assim$AvailN.assim[match(data.assim$time, AvailN.assim$time)] #change the data in the assimilation table to NAs
+head(data.assim) #preview
 
 #plot to view data
 par(mfrow=c(3,2))
 head(data.assim)
 plot(data.assim$Biomass_C~data.assim$time, pch=16, ylab="Biomass_C", xlab="Time (days)")
 plot(data.assim$Biomass_N~data.assim$time, pch=16, ylab="Biomass_N", xlab="Time (days)")
-plot(data.assim$Litter_C~data.assim$time, pch=16, ylab="Litter_C", xlab="Time (days)")
-plot(data.assim$Litter_N~data.assim$time, pch=16, ylab="Litter_N", xlab="Time (days)")
-plot(data.assim$SOM_C~data.assim$time, pch=16, ylab="SOM_C", xlab="Time (days)")
-plot(data.assim$SOM_N~data.assim$time, pch=16, ylab="SOM_N", xlab="Time (days)")
 plot(data.assim$Available_N~data.assim$time, pch=16, ylab="Available_N", xlab="Time (days)")
 plot(data.assim$LAI~data.assim$time, pch=16, ylab="LAI", xlab="Time (days)")
 plot(data.assim$NEE~data.assim$time, pch=16, ylab="NEE", xlab="Time (days)")
-
 
 data.compare1 = data.assim[,c(1,9,10)] #pull out columns for data that you want to assimilate
 sigma.obs1 = data.frame(matrix(1, length(data.compare1$time), length(data.compare1))) #observation errors for each data type 
@@ -55,6 +68,9 @@ colnames(sigma.obs1) = colnames(data.compare1)
 head(data.compare1)
 head(sigma.obs1)
 
+
+#save workspace - need this to run optimizaiton using CRC Super Computer
+save.image(file="Workspace033115.Rdata")
 
 ###STEP 1: EXPLORE PARAMETER SPACE
 
@@ -191,7 +207,7 @@ for (i in 2:M) { #for each iteration
   
 } #end of exploration
 
-beep(5)
+#beep(5)
 
 plot(param.est[,1], type="l") #make plots to check for mixing
 
@@ -349,5 +365,5 @@ repeat { #repeat until desired number of parameter sets are accepted
 
 } #end of repeat
 
-beep(5)
+#beep(5)
 

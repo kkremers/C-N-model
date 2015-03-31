@@ -10,6 +10,7 @@ params <- c(kplant = 0.11,
             PropResp = 0.5,
             UptakeRate = 0.0001,
             netNrate = 0.0008,
+            q10 = 2,
             Biomass_C = 400, 
             Biomass_N = 4.75, 
             Litter_C = 100, 
@@ -42,7 +43,6 @@ solvemodel <- function(params, times=time) {
       k=0.63
       Pmax = 1.18
       E0 = 0.03
-      q10 = 2
       cue = 0.5
       propN_fol = 0.3
       
@@ -102,7 +102,7 @@ solvemodel <- function(params, times=time) {
   } #end of model
   
   
-  return(ode(y=params[10:16],times=time,func=model,parms = params[1:9], method="rk4")) #integrate using runge-kutta 4 method
+  return(ode(y=params[11:17],times=time,func=model,parms = params[1:10], method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 
