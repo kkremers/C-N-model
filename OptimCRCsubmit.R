@@ -1,14 +1,13 @@
-#load workspace
+#load packages and workspace
 install.packages("deSolve")
-requre(deSolve)
+require(deSolve)
 
-load("Workspace033115.Rdata")
-
+load("Workspace040115.Rdata")
 
 ###STEP 1: EXPLORE PARAMETER SPACE
 
 #other necessary knowns
-n.param = 17 #number of parameters
+n.param = 10 #number of parameters
 M = 100000 #number of iterations
 D = length(data.compare1)-1 #number of data types being assimilated (number of columns in data.compare1, minus the "time" column)
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
@@ -33,19 +32,21 @@ param.est[,7] = params[7]
 param.est[,8] = params[8]
 param.est[,9] = params[9]
 param.est[,10] = params[10]
-param.est[,11] = params[11]
-param.est[,12] = params[12]
-param.est[,13] = params[13]
-param.est[,14] = params[14]
-param.est[,15] = params[15]
-param.est[,16] = params[16]
-param.est[,17] = params[17]
 
 head(param.est) #check to make sure this is correct
 
+#starting values for states
+state <- c(Biomass_C = 400, 
+           Biomass_N = 4.75, 
+           Litter_C = 100, 
+           Litter_N = 1.6, 
+           SOM_C = 2000, 
+           SOM_N = 56,
+           Available_N = 0.1)
+
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(1, 0.01, 0.1, 0.1, 1, 0.1, 0.9, 0.1, 0.1, 4, 700, 20, 600, 10, 5000, 150, 10)
-param.min=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 200, 2, 50, 1, 800, 20, 0.01)
+param.max=c(1, 0.01, 0.1, 0.1, 1, 0.1, 0.9, 0.1, 0.1, 4)
+param.min=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
 
 
 #set t to initial value
@@ -73,7 +74,7 @@ for (i in 2:M) { #for each iteration
   #run model and calculate error function 
   parms = as.numeric(param.est[i,]) #parameters for model run
   names(parms) = names(params) #fix names
-  out = data.frame(solvemodel(parms)) #run model
+  out = data.frame(solvemodel(parms, state)) #run model
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
   out.compare1 = out[match(data.compare1$time, out$time),c(1,10,11)] #these columns need to match the ones that were pulled out before
   
