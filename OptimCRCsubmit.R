@@ -142,3 +142,5 @@ for (i in 2:M) { #for each iteration
   
 } #end of exploration
 
+
+save.image(file="CRCoutput040115.Rdata")
