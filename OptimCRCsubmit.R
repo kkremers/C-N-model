@@ -1,7 +1,7 @@
 #load packages and workspace
 require(deSolve)
 
-load("Workspace040215.Rdata")
+load("Workspace_CRCsubmit.Rdata")
 
 ###STEP 1: EXPLORE PARAMETER SPACE
 
@@ -120,4 +120,4 @@ for (i in 2:M) { #for each iteration
 } #end of exploration
 
 
-save.image(file="CRCoutput040115.Rdata")
+save.image(file="CRCoutput.Rdata")

@@ -57,7 +57,7 @@ head(sigma.obs1)
 
 
 #save workspace - need this to run optimizaiton using CRC Super Computer
-save.image(file="Workspace040215.Rdata")
+save.image(file="Workspace_CRCsubmit.Rdata")
 
 ###STEP 1: EXPLORE PARAMETER SPACE
 
