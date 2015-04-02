@@ -113,7 +113,7 @@ param.min=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 200, 2, 50, 1, 800, 20, 0.01)
 
 
 #set t to initial value
-t = 0.5  # t is used to adjust the step size to keep acceptance rate at 50 % +/- 2.5% -- helps with mixing
+#t = 0.5  # t is used to adjust the step size to keep acceptance rate at 50 % +/- 2.5% -- helps with mixing
 anneal.temp0=12000 #starting temperature
 anneal.temp=12000 #starting temperature
 iter=1 #simulated annealing iteration counter
@@ -124,13 +124,13 @@ for (i in 2:M) { #for each iteration
   
   #draw a parameter set from proposal distribution
   for(p in 1:n.param){ #for each parameter
-    repeat { #repeat until proposed parameter is within specified range
-      step.size = t*(param.max[p]-param.min[p]) #step size is a fraction of the inital parameter range
-      param.est[i,p] = param.est[i-1,p] +  rnorm(1, 0, step.size) #draw new parameter set
-      if(param.est[i,p]>param.min[p] && param.est[i,p]<param.max[p]){ #if the proposed parameter is in the specified range
-        break #break the repeat loop
-      }#end of if loop
-    } #end of repreat loop
+    #repeat { #repeat until proposed parameter is within specified range
+      #step.size = t*(param.max[p]-param.min[p]) #step size is a fraction of the inital parameter range
+      param.est[i,p] = runif(1, param.min[p], param.max[p]) #param.est[i-1,p] +  rnorm(1, 0, step.size) #draw new parameter set
+      #if(param.est[i,p]>param.min[p] && param.est[i,p]<param.max[p]){ #if the proposed parameter is in the specified range
+       # break #break the repeat loop
+      #}#end of if loop
+    #} #end of repreat loop
   } #end of parameter loop
   
   
@@ -159,7 +159,7 @@ for (i in 2:M) { #for each iteration
   
   J[i] = sum(j[i,])/D #calculate aggregate cost function
   
-  tnew = NULL
+  #tnew = NULL
   
   diff=J[i]-J[i-1] #calculate probability that proposed parameter is accepted
  
@@ -174,25 +174,25 @@ for (i in 2:M) { #for each iteration
     param.est[i,] = param.est[i-1,] #set current parameter set to previous one
     J[i] = J[i-1] #set current J to previous J (the minimum J so far) - This makes it easier to find the minimum J at the end of the MCMC - it will always be the last value
     anneal.temp=anneal.temp0-(1*iter) #decrease temperature
-    tnew = 0.9*t #decrease the size of the parameter space
-    } else { #if u<prob (accept)
-      tnew=1.1*t #increase t 
-    } 
+    #tnew = 0.9*t #decrease the size of the parameter space
+    } #else { #if u<prob (accept)
+      #tnew=1.1*t #increase t 
+    #} 
   }
   
-  if (diff<=0) {#accept all of these because current J is smaller than previous J
-    tnew=1.1*t #increase t
-  } #end of if diff
+  #if (diff<=0) {#accept all of these because current J is smaller than previous J
+  #  tnew=1.1*t #increase t
+  #} #end of if diff
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
   
   #If the acceptance rate is not 20% +/- 2.5%, then adjust "t"
-  if(acceptance > 0.275) {
-    t = tnew
-  } 
-  if (acceptance < 0.225) {
-    t = tnew
-  }
+  #if(acceptance > 0.275) {
+  #  t = tnew
+  #} 
+  #if (acceptance < 0.225) {
+  #  t = tnew
+  #}
   
   iter=iter+1 #increase number of iterations counter
   
@@ -331,7 +331,7 @@ repeat { #repeat until desired number of parameter sets are accepted
     if (is.na(chi[d])) { #if a chi value is NA
       chi[d] = 0 #set to 0
     }
-    if((1 - pchisq(chi[d], df[d])) < 0.1) { #conduct chi square test
+    if(pchisq(chi[d], df[d]) < 0.9) { #conduct chi square test
       accept[d] = 1} #if accepted, change value in accept vector to 1
   } #end of data type loop
     
