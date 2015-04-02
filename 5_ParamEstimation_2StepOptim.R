@@ -10,16 +10,6 @@ head(out) #this is the output from the model run
 data.assim = out[,c(1:8, 10,11)] #choose columns that you want
 head(data.assim) #preview table
 
-#add some noise to the data
-for (i in 1:length(data.assim[,1])){
-  for (j in 2:length(data.assim)){
-    data.assim[i,j] = data.assim[i,j] + rnorm(1, 0, abs((min(data.assim[,j])/1000)))
-    
-  } 
-}
-head(data.assim) #check output
-
-
 #####remove some data points from LAI data
 time.keepLAI  = seq(1, length(time), 15) #keep LAI data for every 15 days
 LAI.assim = data.assim$LAI[match(time.keepLAI, data.assim$time)]  #create vector of LAI data for only those timesteps
@@ -30,7 +20,7 @@ head(data.assim) #preview
 data.assim$LAI #check
 
 #####remove some data points for Stock data
-time.keepSTOCK  = seq(200, length(time), 365) #keep data for once per year (~twice per year)
+time.keepSTOCK  = seq(200, length(time), 365) #keep data for once per year (~once per year)
 #Biomass_C
 BiomassC.assim = data.assim$Biomass_C[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
 BiomassC.assim = data.frame(time=time.keepSTOCK, BiomassC.assim) #create a dataframe of the new data and the corresponding timesteps
@@ -67,7 +57,7 @@ head(sigma.obs1)
 
 
 #save workspace - need this to run optimizaiton using CRC Super Computer
-save.image(file="Workspace040115.Rdata")
+save.image(file="Workspace040215.Rdata")
 
 ###STEP 1: EXPLORE PARAMETER SPACE
 
