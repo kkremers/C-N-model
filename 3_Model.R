@@ -3,11 +3,10 @@ require(FME)
 
 params <- c(kplant = 0.11,
             LitterRate = 0.0015,
-            DecompRateC = 0.005,
+            DecompRateC = 0.0025,
             DecompRateN = 0.0007,
             retrans = 0.7,  
-            RespRateSOM = 0.00001, 
-            PropResp = 0.5,
+            RespRate = 1, 
             UptakeRate = 0.0001,
             netNrate = 0.0008,
             q10 = 2)
@@ -47,22 +46,21 @@ solvemodel <- function(params, state, times) {
       E0 = 0.03
       cue = 0.5
       propN_fol = 0.3
+      propN_roots = 0.5
       
       #FLUXES
       s.GDD = (TempPos - TempPos.min)/(TempPos.max-TempPos.min) #growing degree day scalar
       TFN=propN_fol*Biomass_N
       LAI = ((TFN-0.31)/1.29)*s.GDD #Williams and Rastetter 1999
       GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12 
-      Uptake =  UptakeRate * (Biomass_C*0.5) * ( Available_N / ( kplant + Available_N ) ) * s.GDD
+      Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) * s.GDD
       Ra =  ( 1 - cue ) * GPP
-      Rh2 = RespRateSOM * SOM_C * (q10 ^ ( ( Temp - 10 )/ 10 ) )
-      Decomposition_C =  DecompRateC * Litter_C * ( q10 ^ ( (Temp-10) / 10 ) )
-      Rh1 =  PropResp * Decomposition_C
-      Decomp_C = (1-PropResp) * Decomposition_C
-      Decomp_N =  DecompRateN * Litter_N * ( q10 ^ ( (Temp-10) / 10 ) )
+      Re = RespRate * (q10 ^ ( ( Temp - 10 )/ 10 ) )
+      Rh = Re - Ra
+      Decomp_C = DecompRateC * Litter_C * ( q10 ^ ( (Temp-10) / 10 ) )
+      Decomp_N = DecompRateN * Litter_N * ( q10 ^ ( (Temp-10) / 10 ) )
       Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 50 ) )
-      
-      
+            
       N_dep = 0.00008
       Litterfall_N  =  LitterRate * Biomass_N * ( 1 - retrans )
       Litterfall_C =  LitterRate * Biomass_C
@@ -74,15 +72,14 @@ solvemodel <- function(params, state, times) {
       
       
       #calculated variables to use for model fitting and analysis
-      Re = Ra+Rh1+Rh2
       NEE = Re - GPP
       
       #differential equations
       dBiomass_C = GPP  - Ra  - Litterfall_C 
       dBiomass_N = Uptake  - Litterfall_N 
-      dLitter_C = Litterfall_C  - Rh1  - Decomp_C 
+      dLitter_C = Litterfall_C  - Decomp_C 
       dLitter_N = Litterfall_N  - Decomp_N 
-      dSOM_C = Decomp_C  - Rh2 
+      dSOM_C = Decomp_C  - Rh
       dSOM_N = Decomp_N  + N_dep - Ntrans
       dAvailable_N = Ntrans - Uptake
       
@@ -97,8 +94,9 @@ solvemodel <- function(params, state, times) {
              dSOM_N,
              dAvailable_N),
            c(GPP=GPP, LAI=LAI, NEE=NEE, Re=Re, 
-             cue=cue, Ra=Ra, Rh1=Rh1, Rh2=Rh2, 
-             Uptake = Uptake, s.GDD=s.GDD, Ntrans=Ntrans))
+             Ra=Ra, Rh=Rh, Uptake = Uptake, Ntrans=Ntrans,
+             Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, 
+             Decomp_C = Decomp_C, Decomp_N = Decomp_N, s.GDD=s.GDD))
       
     })  #end of with(as.list(...
   } #end of model
