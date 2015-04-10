@@ -2,18 +2,18 @@ require(deSolve)
 require(FME)
 
 params <- c(kplant = 0.11,
-            LitterRate = 0.0015,
-            DecompRateC = 0.0025,
+            LitterRate = 0.0025,
+            DecompRateC = 0.005,
             DecompRateN = 0.0007,
-            retrans = 0.7,  
+            retrans = 0.8,  
             RespRate = 1, 
             UptakeRate = 0.0001,
             netNrate = 0.0008,
             q10 = 2)
 
 state <- c(Biomass_C = 400, 
-           Biomass_N = 4.75, 
-           Litter_C = 100, 
+           Biomass_N = 4.5, 
+           Litter_C = 160, 
            Litter_N = 1.6, 
            SOM_C = 2000, 
            SOM_N = 56,
