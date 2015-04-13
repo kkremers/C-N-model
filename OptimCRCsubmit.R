@@ -90,7 +90,7 @@ for (i in 2:M) { #for each iteration
   
   #tnew = NULL
   
-  diff=J[i]-J[i-1] #calculate probability that proposed parameter is accepted
+  diff=J[i]-J[i-1] #difference between current J and previous J
   
   
   if(diff>0){ #if difference is > 0 (or if the current J is greater than the previous J)
@@ -102,11 +102,12 @@ for (i in 2:M) { #for each iteration
       reject = reject+1 #reject parameter set
       param.est[i,] = param.est[i-1,] #set current parameter set to previous one
       J[i] = J[i-1] #set current J to previous J (the minimum J so far) - This makes it easier to find the minimum J at the end of the MCMC - it will always be the last value
-      anneal.temp=anneal.temp0-(1*iter) #decrease temperature
-    } 
+      } 
   }
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
+  
+  anneal.temp=anneal.temp0-(1*iter) #decrease temperature
   
   iter=iter+1 #increase number of iterations counter
   

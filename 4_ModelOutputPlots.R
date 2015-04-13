@@ -19,8 +19,7 @@ plot(out$SOM_N~out$time, type="l", col="red", main = "SOM N", xlab="Time (days)"
 plot(out$Available_N~out$time, type="l", col="green", main = "Available N", xlab="Time (days)", ylab="g N m-2",lty=2)
 
 
-plot(out$Ntrans)
-plot(out$cue)
+
 
 
 
@@ -32,28 +31,32 @@ data.compare=data.compare[complete.cases(data.compare),]
 head(data.compare)
 out.compare = out[match(data.compare$time, out$time),]
 
-par(mfrow=c(4,2), mar=c(4,4,2,2))
-plot(out$GPP~out$time, col="forestgreen", pch=18, main="GPP", ylab="Flux (gC m-2 day-1)", xlab="")
-points(data$GPP, col="blue", pch=16, cex=0.6)
+par(mfrow=c(2,2), mar=c(2,4,2,2))
+plot(out$GPP~out$time, col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="", type="l")
+points(data$GPP, col="blue", pch=18, cex=0.8)
 plot(data.compare$GPP, out.compare$GPP)
 abline(0,1, col="red")
 
-plot(out$LAI~out$time, col="orange", pch=18, main="LAI", ylab="LAI (m2 leaf m-2 ground)", xlab="" )
-points(data$LAI, col="blue", pch=16, cex=0.6)
+plot(out$LAI~out$time, col="azure4", pch=18, ylab="LAI (m2 leaf m-2 ground)", xlab="", type="l")
+points(data$LAI, col="blue", pch=18, cex=0.8)
 plot(data.compare$LAI, out.compare$LAI)
 abline(0,1, col="red")
 
-plot(-out$Re~out$time, col="red", pch=16, ylim=c(-5,0), main="Re", xlab="Time (days)", ylab="Flux (gC m-2 day-1)")
+plot(-out$Re~out$time, col="azure4", pch=16, ylim=c(-5,0), xlab="Time (days)", ylab="Re (gC m-2 day-1)", type="l")
 points(-data$Re, col="blue", pch=16, cex=0.6)
 abline(h=0)
 plot(data.compare$Re, out.compare$Re)
 abline(0,1, col="red")
 
-plot(out$NEE~out$time, col="olivedrab3", pch=18, ylim=c(-3,2), main="NEE", xlab="Time (days)", ylab="Flux (gC m-2 day-1)")
+plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-3,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
 points(data$NEE, col="blue", pch=16, cex=0.6)
 abline(h=0)
 plot(data.compare$NEE, out.compare$NEE, ylim=c(-4, 1))
 abline(0,1, col="red")
+
+
+
+
 
 
 par(mfrow=c(2,2), mar=c(4,4,2,2))
