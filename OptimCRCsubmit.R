@@ -1,8 +1,7 @@
 #load packages and workspace
-install.packages("deSolve")
 require(deSolve)
 
-load("Workspace040115.Rdata")
+load("Workspace_CRCsubmit.Rdata")
 
 ###STEP 1: EXPLORE PARAMETER SPACE
 
@@ -50,7 +49,6 @@ param.min=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
 
 
 #set t to initial value
-t = 0.5  # t is used to adjust the step size to keep acceptance rate at 50 % +/- 2.5% -- helps with mixing
 anneal.temp0=12000 #starting temperature
 anneal.temp=12000 #starting temperature
 iter=1 #simulated annealing iteration counter
@@ -61,13 +59,7 @@ for (i in 2:M) { #for each iteration
   
   #draw a parameter set from proposal distribution
   for(p in 1:n.param){ #for each parameter
-    repeat { #repeat until proposed parameter is within specified range
-      step.size = t*(param.max[p]-param.min[p]) #step size is a fraction of the inital parameter range
-      param.est[i,p] = param.est[i-1,p] +  rnorm(1, 0, step.size) #draw new parameter set
-      if(param.est[i,p]>param.min[p] && param.est[i,p]<param.max[p]){ #if the proposed parameter is in the specified range
-        break #break the repeat loop
-      }#end of if loop
-    } #end of repreat loop
+    param.est[i,p] = runif(1, param.min[p], param.max[p]) #param.est[i-1,p] +  rnorm(1, 0, step.size) #draw new parameter set
   } #end of parameter loop
   
   
@@ -96,9 +88,9 @@ for (i in 2:M) { #for each iteration
   
   J[i] = sum(j[i,])/D #calculate aggregate cost function
   
-  tnew = NULL
+  #tnew = NULL
   
-  diff=J[i]-J[i-1] #calculate probability that proposed parameter is accepted
+  diff=J[i]-J[i-1] #difference between current J and previous J
   
   
   if(diff>0){ #if difference is > 0 (or if the current J is greater than the previous J)
@@ -110,30 +102,16 @@ for (i in 2:M) { #for each iteration
       reject = reject+1 #reject parameter set
       param.est[i,] = param.est[i-1,] #set current parameter set to previous one
       J[i] = J[i-1] #set current J to previous J (the minimum J so far) - This makes it easier to find the minimum J at the end of the MCMC - it will always be the last value
-      anneal.temp=anneal.temp0-(1*iter) #decrease temperature
-      tnew = 0.9*t #decrease the size of the parameter space
-    } else { #if u<prob (accept)
-      tnew=1.1*t #increase t 
-    } 
+      } 
   }
-  
-  if (diff<=0) {#accept all of these because current J is smaller than previous J
-    tnew=1.1*t #increase t
-  } #end of if diff
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
   
-  #If the acceptance rate is not 20% +/- 2.5%, then adjust "t"
-  if(acceptance > 0.275) {
-    t = tnew
-  } 
-  if (acceptance < 0.225) {
-    t = tnew
-  }
+  anneal.temp=anneal.temp0-(1*iter) #decrease temperature
   
   iter=iter+1 #increase number of iterations counter
   
-  if(anneal.temp<100){ #if temperature drops to less than 100
+  if(anneal.temp<2){ #if temperature drops to less than 100
     anneal.temp0=(9/10)*anneal.temp0 #change initial temp to 9/10 of previous initial
     anneal.temp=anneal.temp0 #jump back up to that temp
     iter=1 #reset iteration counter
@@ -143,4 +121,4 @@ for (i in 2:M) { #for each iteration
 } #end of exploration
 
 
-save.image(file="CRCoutput040115.Rdata")
+save.image(file="CRCoutput.Rdata")
