@@ -64,8 +64,8 @@ save.image(file="Workspace_CRCsubmit.Rdata")
 ###STEP 1: EXPLORE PARAMETER SPACE
 
 #other necessary knowns
-n.param = 10 #number of parameters
-M = 100000 #number of iterations
+n.param = 11 #number of parameters
+M = 150000 #number of iterations
 D = length(data.compare1)-1 #number of data types being assimilated (number of columns in data.compare1, minus the "time" column)
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -76,37 +76,43 @@ n.time #check
 #storage matrices
 J = rep(100000000000, M) #storage vector for cost function output
 j=matrix(1, M, D) #to store error calculations for this iteration
-param.est = data.frame(matrix(1, M, n.param)) #storage for parameter estimate iterations; 
+param.est = data.frame(matrix(1, M, n.param)) #storage for parameter estimate iterations;
+param.est[1,]=as.numeric(params) #change first row to the expected value
 colnames(param.est) = c(names(params)) #, names(state))
 head(param.est) #check to make sure this is correct
 
 #starting values for states
 state <- c(Biomass_C = 400, 
-           Biomass_N = 4.75, 
-           Litter_C = 100, 
+           Biomass_N = 4.5, 
+           Litter_C = 160, 
            Litter_N = 1.6, 
            SOM_C = 2000, 
            SOM_N = 56,
            Available_N = 0.1)
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(1, 0.01, 0.1, 0.1, 1, 0.1, 0.9, 0.1, 0.1, 4)
-param.min=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+param.max=c(1, 0.01, 0.01, 0.01, 1, 10, 0.01, 0.01, 4, 0.7, 0.7)
+param.min=c(0.01, 0.0001, 0.0001, 0.00001, 0.1, 0.1, 0.00001, 0.00001, 1, 0.1, 0.1)
 
 
 #set initial values
-anneal.temp0=15000 #starting temperature
-anneal.temp=15000 #starting temperature
+anneal.temp0=20000 #starting temperature
+anneal.temp=20000 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 
 #start exploration
 for (i in 2:M) { #for each iteration
-  
+ 
+  repeat { #repeat until acceptable parameter set is chosen
   #draw a parameter set from proposal distribution
   for(p in 1:n.param){ #for each parameter
      param.est[i,p] = runif(1, param.min[p], param.max[p]) #param.est[i-1,p] +  rnorm(1, 0, step.size) #draw new parameter set
   } #end of parameter loop
+  if(param.est[i,10]+param.est[i,11] < 0.9) { #if sum of N proportions is less than 0.9
+    break #break repeat loop
+  } #end of if loop
+  } #end of repeat loop
   
   
   #run model and calculate error function 
@@ -167,10 +173,9 @@ for (i in 2:M) { #for each iteration
 } #end of exploration
 
 #beep(5)
-plot(param.est[-1,5], type="l") #make plots to check for mixing
+plot(param.est[,5], type="l") #make plots to check for mixing
 
 
-#The final iteration should be the smallest J
 steps=seq(1:length(J)) #create a vector that represents the number of steps or iterations run
 J=data.frame(steps, J) #create a dataframe that has "steps" as the first column and "J" as the second column
 head(J); tail(J) #check the table
@@ -235,6 +240,7 @@ for (d in 1:D) { #for each data type
   df[d] = n.time[d] - n.param
 } #end of data loop
 df #check values
+############NEED TO ADJUST df's ACCORDINGLY###########
 
 
 
@@ -250,7 +256,9 @@ repeat { #repeat until desired number of parameter sets are accepted
         step.size = t*(param.max[p]-param.min[p]) #step size is a fraction of the inital parameter range
         param.est[p] = param.best[p] +  rnorm(1, 0, step.size) #draw new parameter set
         if(param.est[p]>param.min[p] && param.est[p]<param.max[p]){ #if the proposed parameter is in the specified range
-          break #break the repeat loop
+          if(param.est[i,10]+param.est[i,11] < 0.9) { #if sum of N proportions is less than 0.9
+            break #break repeat loop
+          } #end of if loop
         }#end of if loop
       } #end of repreat loop
     } #end of parameter loop
