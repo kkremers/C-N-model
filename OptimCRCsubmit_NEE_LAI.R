@@ -33,8 +33,8 @@ state <- c(Biomass_C = 400,
            Available_N = 0.1)
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(1, 0.01, 0.1, 0.1, 1, 0.1, 0.9, 0.1, 0.1, 4)
-param.min=c(0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+param.max=c(1, 0.01, 0.01, 0.01, 1, 10, 0.01, 0.01, 4, 0.7, 0.7)
+param.min=c(0.01, 0.0001, 0.0001, 0.00001, 0.1, 0.1, 0.00001, 0.00001, 1, 0.1, 0.1)
 
 
 #set initial values
