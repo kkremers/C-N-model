@@ -59,7 +59,7 @@ head(sigma.obs1)
 
 
 #save workspace - need this to run optimizaiton using CRC Super Computer
-save.image(file="Workspace_CRCsubmit.Rdata")
+save.image(file="Workspace_CRCsubmit_NEE_LAI_Biomass_AvailN.Rdata")
 
 ###STEP 1: EXPLORE PARAMETER SPACE
 
@@ -110,7 +110,9 @@ for (i in 2:M) { #for each iteration
      param.est[i,p] = runif(1, param.min[p], param.max[p]) #param.est[i-1,p] +  rnorm(1, 0, step.size) #draw new parameter set
   } #end of parameter loop
   if(param.est[i,10]+param.est[i,11] < 0.9) { #if sum of N proportions is less than 0.9
+    if(any(!is.na(out))){ #if there are no NAs in the output
     break #break repeat loop
+  } #end of if loop
   } #end of if loop
   } #end of repeat loop
   
@@ -119,9 +121,10 @@ for (i in 2:M) { #for each iteration
   parms = as.numeric(param.est[i,]) #parameters for model run
   names(parms) = names(params) #fix names
   out = data.frame(solvemodel(parms, state)) #run model
+  
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
   out.compare1 = out[match(data.compare1$time, out$time),c(1,2,3,8,10,11)] #these columns need to match the ones that were pulled out before
-    
+  
   error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
   for (d in 1:D) { #for each data type
     for (m in 1:length(data.compare1$time)){ #for each timestep
@@ -189,7 +192,10 @@ j.best #view the minimum J
 
 
 param.step1 = param.est #storing the iterations under a different name in case you need them later
+write.csv(param.step1, "c:/Users/Rocha Lab/My Documents/C-N-model/param_step1.csv") #univariate sensitivity
 j.step1 = j
+write.csv(j.step1, "c:/Users/Rocha Lab/My Documents/C-N-model/j_step1.csv") #univariate sensitivity
+
 
 
 #######STEP 2: ESTIMATE PARAMETER UNCERTAINTY
@@ -241,8 +247,9 @@ for (d in 1:D) { #for each data type
 } #end of data loop
 df #check values
 ############NEED TO ADJUST df's ACCORDINGLY###########
-
-
+df[1] = 7
+df[2] = 4
+df[3] = 3
 
 #start loop
 
@@ -257,10 +264,12 @@ repeat { #repeat until desired number of parameter sets are accepted
         param.est[p] = param.best[p] +  rnorm(1, 0, step.size) #draw new parameter set
         if(param.est[p]>param.min[p] && param.est[p]<param.max[p]){ #if the proposed parameter is in the specified range
           if(param.est[i,10]+param.est[i,11] < 0.9) { #if sum of N proportions is less than 0.9
-            break #break repeat loop
+            if(any(!is.na(out))){ #if there are no NAs in the output
+              break #break repeat loop
+            } #end of if loop
           } #end of if loop
-        }#end of if loop
-      } #end of repreat loop
+        } #end of if loop
+        } #end of repeat loop
     } #end of parameter loop
 
 
@@ -332,5 +341,4 @@ repeat { #repeat until desired number of parameter sets are accepted
 #beep(5)
 
 head(param.keep)
-param.keep=param.keep[1:920,]
-plot(density(param.keep[,2]))
+
