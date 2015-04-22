@@ -52,7 +52,7 @@ for (i in 2:M) { #for each iteration
       param.est[i,p] = runif(1, param.min[p], param.max[p]) #param.est[i-1,p] +  rnorm(1, 0, step.size) #draw new parameter set
     } #end of parameter loop
     if(param.est[i,10]+param.est[i,11] < 0.9) { #if sum of N proportions is less than 0.9
-      if(any(!is.na(out))){ #if there are no NAs in the output
+      if(any(is.na(out))==FALSE){ #if there are no NAs in the output
         break #break repeat loop
       } #end of if loop
     } #end of if loop
