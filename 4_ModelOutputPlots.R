@@ -9,12 +9,12 @@ plot(data$PAR_vis~data$time, type="l", ylab = "Daily Plant Avail. PAR (mol m-2 d
 
 
 #plot pools
-par(mfrow=c(3,2), mar=c(4,4,1,2))
+par(mfrow=c(4,2), mar=c(4,4,1,2))
 plot(out$Biomass_C~out$time, type="l", col="springgreen3", main = "Biomass C", xlab="", ylab="g C m-2")
 plot(out$Biomass_N~out$time, type="l", col="springgreen3",  main = "Biomass N", xlab="", ylab="g N m-2", lty=2)
 plot(out$Litter_C~out$time, type="l", col="orange", main = "Litter C", xlab="", ylab="g C m-2")
 plot(out$Litter_N~out$time, type="l", col="orange", main = "Litter N", xlab="", ylab="g N m-2", lty=2)
-plot(out$SOM_C~out$time, type="l", col="red", main = "SOM C", xlab="Time (days)", ylab="g C m-2")
+plot(out$SOM_C~out$time, type="l", col="red", main = "SOM C", xlab="", ylab="g C m-2")
 plot(out$SOM_N~out$time, type="l", col="red", main = "SOM N", xlab="Time (days)", ylab="g N m-2",lty=2)
 plot(out$Available_N~out$time, type="l", col="green", main = "Available N", xlab="Time (days)", ylab="g N m-2",lty=2)
 
@@ -31,7 +31,7 @@ data.compare=data.compare[complete.cases(data.compare),]
 head(data.compare)
 out.compare = out[match(data.compare$time, out$time),]
 
-par(mfrow=c(2,2), mar=c(2,4,2,2))
+par(mfrow=c(4,2), mar=c(2,4,2,2))
 plot(out$GPP~out$time, col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="", type="l")
 points(data$GPP, col="blue", pch=18, cex=0.8)
 plot(data.compare$GPP, out.compare$GPP)
