@@ -268,6 +268,7 @@ repeat { #repeat until desired number of parameter sets are accepted
               break #break repeat loop
             } #end of if loop
           } #end of if loop
+        } #end of if loop
         } #end of repeat loop
     } #end of parameter loop
 
