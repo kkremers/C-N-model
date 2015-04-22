@@ -174,6 +174,7 @@ for (i in 2:M) { #for each iteration
   }
     
 } #end of exploration
+save.image(file="Workspace042215.Rdata")
 
 #beep(5)
 plot(param.est[,5], type="l") #make plots to check for mixing
