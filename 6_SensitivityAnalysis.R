@@ -72,7 +72,6 @@ params.cov = cor2cov(as.matrix(param.cor), sdevs) #calculates covariance matrix 
 
 #global sensitivity analysis
 
-parms = as.vector(unlist(param.best)) #create vector of parameters
 params.mean =  apply(param.keep, 2, mean)
 params.min =  apply(param.keep, 2, min)
 params.max =  apply(param.keep, 2, max)
@@ -81,7 +80,7 @@ parRanges = data.frame(min = params.min,  max = params.max)
 rownames(parRanges) = names(params)
 parRanges
 
-s.global <- sensRange(func=solvemodel, parms=parms, sensvar = sensvars, dist ="norm", 
+s.global <- sensRange(func=solvemodel, parms=param.best, , state=state, sensvar = sensvars, dist ="norm", 
                       parRange=parRanges, parMean = params.mean, parCovar=params.cov, num=50)
 
 s.global.summ = summary(s.global)
@@ -89,13 +88,6 @@ head(s.global.summ)
 #plots 
 par(mfrow=c(3,2)) 
 plot(s.global.summ, xlab = "Time (days)", mfrow = NULL,
-     quant = TRUE, col = c("lightblue", "darkblue"), legpos = "topright")
-
-
-
-#plots 
-par(mfrow=c(3,2)) 
-plot(s.global, xlab = "Time (days)", mfrow = NULL,
      quant = TRUE, col = c("lightblue", "darkblue"), legpos = "topright")
 
 

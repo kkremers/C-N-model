@@ -39,7 +39,7 @@ data.assim$Available_N=AvailN.assim$AvailN.assim[match(data.assim$time, AvailN.a
 head(data.assim) #preview
 
 #plot to view data
-par(mfrow=c(3,2))
+par(mfrow=c(3,2), mar=c(4,4,4,4))
 head(data.assim)
 plot(data.assim$Biomass_C~data.assim$time, pch=16, ylab="Biomass_C", xlab="Time (days)")
 plot(data.assim$Biomass_N~data.assim$time, pch=16, ylab="Biomass_N", xlab="Time (days)")
@@ -61,11 +61,12 @@ head(sigma.obs1)
 #save workspace - need this to run optimizaiton using CRC Super Computer
 save.image(file="Workspace_CRCsubmit_NEE_LAI_Biomass_AvailN.Rdata")
 
+
 ###STEP 1: EXPLORE PARAMETER SPACE
 
 #other necessary knowns
 n.param = 11 #number of parameters
-M = 150000 #number of iterations
+M = 50000 #number of iterations
 D = length(data.compare1)-1 #number of data types being assimilated (number of columns in data.compare1, minus the "time" column)
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -102,25 +103,25 @@ iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 
 #start exploration
-for (i in 2:M) { #for each iteration
- 
-  repeat { #repeat until acceptable parameter set is chosen
-  #draw a parameter set from proposal distribution
-  for(p in 1:n.param){ #for each parameter
-     param.est[i,p] = runif(1, param.min[p], param.max[p]) #param.est[i-1,p] +  rnorm(1, 0, step.size) #draw new parameter set
-  } #end of parameter loop
-  if(param.est[i,10]+param.est[i,11] < 0.9) { #if sum of N proportions is less than 0.9
-    if(any(is.na(out))==FALSE){ #if there are no NAs in the output
-    break #break repeat loop
-  } #end of if loop
-  } #end of if loop
+
+for (i in 4600:M) {
+  
+  repeat { #repeat until proposed parameter is within specified range
+    for(p in 1:n.param){ #for each parameter
+      draw = runif(1, param.min[p], param.max[p])
+      param.est[i,p] =  draw +  rnorm(1, 0, 0.1*draw) #draw new parameter set
+    } #end of parameter loop
+    if(param.est[i,10]+param.est[i,11] < 0.9) { #if sum of N proportions is less than 0.9
+      parms = as.numeric(param.est[i,]) #parameters for model run
+      names(parms) = names(params) #fix names
+      out = data.frame(solvemodel(parms, state)) #run model
+      if(any(out[,2:8]<0)==TRUE){ #if there are negative stocks
+      if(any(is.na(out))==FALSE){ #if there are no NAs in the output
+        break #break repeat loop
+        } #end of if loop
+      } #end of if loop
+    } #end of if loop
   } #end of repeat loop
-  
-  
-  #run model and calculate error function 
-  parms = as.numeric(param.est[i,]) #parameters for model run
-  names(parms) = names(params) #fix names
-  out = data.frame(solvemodel(parms, state)) #run model
   
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
   out.compare1 = out[match(data.compare1$time, out$time),c(1,2,3,8,10,11)] #these columns need to match the ones that were pulled out before
@@ -143,7 +144,6 @@ for (i in 2:M) { #for each iteration
   
   J[i] = sum(j[i,])/D #calculate aggregate cost function
   
-  #tnew = NULL
   
   diff=J[i]-J[i-1] #calculate difference between current J and previous J
  
@@ -174,11 +174,15 @@ for (i in 2:M) { #for each iteration
   }
     
 } #end of exploration
-save.image(file="Workspace042215.Rdata")
+
+save.image(file="Workspace042415_2.Rdata")
 
 #beep(5)
-plot(param.est[,5], type="l") #make plots to check for mixing
+plot(param.est[1:15500,1]) #make plots to check for mixing
 
+param.est = param.est[1:15500,]
+J = J[1:15500]
+j = j[1:15500,]
 
 steps=seq(1:length(J)) #create a vector that represents the number of steps or iterations run
 J=data.frame(steps, J) #create a dataframe that has "steps" as the first column and "J" as the second column
@@ -190,13 +194,6 @@ names(param.best) = names(params) #change the names to match params
 j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
-
-
-param.step1 = param.est #storing the iterations under a different name in case you need them later
-write.csv(param.step1, "c:/Users/Rocha Lab/My Documents/C-N-model/param_step1.csv") #univariate sensitivity
-j.step1 = j
-write.csv(j.step1, "c:/Users/Rocha Lab/My Documents/C-N-model/j_step1.csv") #univariate sensitivity
-
 
 
 #######STEP 2: ESTIMATE PARAMETER UNCERTAINTY
@@ -239,7 +236,7 @@ param.est = param.best #set initial values for parameters
 reject=0 #reset reject counter
 num.accepted = 1 #counter for number of accepted parameters - when this gets to 1000, loop will stop
 num.reps = 0 #counter for number of repititions - calculates acceptance rate
-t=0.5
+
 
 #also need to know degrees of freedom for chi square test
 df = rep(0, D)
@@ -259,25 +256,23 @@ repeat { #repeat until desired number of parameter sets are accepted
     num.reps=num.reps+1 #add to number of reps counter
       
     #draw a parameter set from proposal distribution
-    for(p in 1:n.param){ #for each parameter
-      repeat { #repeat until proposed parameter is within specified range
-        step.size = t*(param.max[p]-param.min[p]) #step size is a fraction of the inital parameter range
-        param.est[p] = param.best[p] +  rnorm(1, 0, step.size) #draw new parameter set
-        if(param.est[p]>param.min[p] && param.est[p]<param.max[p]){ #if the proposed parameter is in the specified range
-          if(param.est[i,10]+param.est[i,11] < 0.9) { #if sum of N proportions is less than 0.9
-            if(any(is.na(out))==FALSE){ #if there are no NAs in the output
-              break #break repeat loop
-            } #end of if loop
-          } #end of if loop
+    repeat { #repeat until proposed parameter is within specified range
+      for(p in 1:n.param){ #for each parameter
+        draw = runif(1, param.min[p], param.max[p])
+        param.est[p] =  draw +  rnorm(1, 0, 0.1*draw) #draw new parameter set
+      } #end of parameter loop
+      if(param.est[10]+param.est[11] < 0.9) { #if sum of N proportions is less than 0.9
+        parms = as.numeric(param.est) #parameters for model run
+        names(parms) = names(params) #fix names
+        out = data.frame(solvemodel(parms, state)) #run model
+        if(any(out[,2:8]<0)==TRUE){ #if there are negative stocks
+        if(any(is.na(out))==FALSE){ #if there are no NAs in the output
+          break #break repeat loop
         } #end of if loop
-        } #end of repeat loop
-    } #end of parameter loop
+      } #end of if loop
+      } #end of if loop
+    } #end of repeat loop
 
-
-  #run model and calculate error function 
-  parms = as.numeric(param.est) #parameters for model run
-  names(parms) = names(params) #fix names
-  out = data.frame(solvemodel(parms, state)) #run model
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
   out.compare1 = out[match(data.compare1$time, out$time),c(1,2,3,8,10,11)] #these columns need to match the ones that were pulled out before
   #remove the time column - no longer needed
