@@ -58,10 +58,6 @@ head(data.compare1)
 head(sigma.obs1)
 
 
-#save workspace - need this to run optimizaiton using CRC Super Computer
-save.image(file="Workspace_CRCsubmit_NEE_LAI_Biomass_AvailN.Rdata")
-
-
 ###STEP 1: EXPLORE PARAMETER SPACE
 
 #other necessary knowns
@@ -104,7 +100,7 @@ reject=0 #reset reject counter
 
 #start exploration
 
-for (i in 4600:M) {
+for (i in 2:M) {
   
   repeat { #repeat until proposed parameter is within specified range
     for(p in 1:n.param){ #for each parameter
@@ -135,14 +131,14 @@ for (i in 4600:M) {
       #if there was no data at that timestep, the error will remain "0" so that it will not impact the sum calculation in the next step
     } #end of time step loop
     
-    j[i,d] = sum(error.time[,d])/n.time[d] #calculate uncertainty weighted error term
+    j[i,d] = sum(error.time[,d]) #calculate cost function for each data stream
       if(is.na(j[i,d])) { #If it's NaN (only occurs if the model parameters were so far off that there were NaNs in the model output)
       j[i,d]=999999999999 #make the cost function a HUGE number
       }
     
   } #end of data type loop
   
-  J[i] = sum(j[i,])/D #calculate aggregate cost function
+  J[i] = prod(j[i,]) #calculate aggregate cost function
   
   
   diff=J[i]-J[i-1] #calculate difference between current J and previous J
@@ -175,10 +171,10 @@ for (i in 4600:M) {
     
 } #end of exploration
 
-save.image(file="Workspace042415_2.Rdata")
+save.image(file="Step1_NEE_LAI_BiomassCN_AvailN.Rdata")
 
 #beep(5)
-plot(param.est[1:15500,1]) #make plots to check for mixing
+plot(param.est[,1]) #make plots to check for mixing
 
 param.est = param.est[1:15500,]
 J = J[1:15500]
@@ -239,23 +235,19 @@ num.reps = 0 #counter for number of repititions - calculates acceptance rate
 
 
 #also need to know degrees of freedom for chi square test
+n.par = c(3,6,7,11,11) #number of parameters predicted by each data stream
 df = rep(0, D)
 for (d in 1:D) { #for each data type
-  df[d] = n.time[d] - n.param
+  df[d] = n.time[d] - n.par[d]
 } #end of data loop
 df #check values
-############NEED TO ADJUST df's ACCORDINGLY###########
-df[1] = 7
-df[2] = 4
-df[3] = 3
+
 
 #start loop
-
 repeat { #repeat until desired number of parameter sets are accepted
     
     num.reps=num.reps+1 #add to number of reps counter
       
-    #draw a parameter set from proposal distribution
     repeat { #repeat until proposed parameter is within specified range
       for(p in 1:n.param){ #for each parameter
         draw = runif(1, param.min[p], param.max[p])
@@ -265,11 +257,12 @@ repeat { #repeat until desired number of parameter sets are accepted
         parms = as.numeric(param.est) #parameters for model run
         names(parms) = names(params) #fix names
         out = data.frame(solvemodel(parms, state)) #run model
+        
         if(any(out[,2:8]<0)==TRUE){ #if there are negative stocks
-        if(any(is.na(out))==FALSE){ #if there are no NAs in the output
-          break #break repeat loop
+          if(any(is.na(out))==FALSE){ #if there are no NAs in the output  
+            break #break repeat loop
+          } #end of if loop
         } #end of if loop
-      } #end of if loop
       } #end of if loop
     } #end of repeat loop
 
@@ -293,18 +286,14 @@ repeat { #repeat until desired number of parameter sets are accepted
         error[m,d] = (error[m,d]*sqrt(var.jbest[d]))/sqrt(var.error[d]) #variance normalization
     } #end of time step loop  
     
-    j[d] = sum(error[!is.na(data.comp[,d]),d]^2)/n.time[d] #calculate uncertainty weighted error term after variance normalizaiton
+    j[d] = sum(error[!is.na(data.comp[,d]),d]^2) #calculate cost function for each data stream after variance normalizaiton
   } #end of data type loop
   
     #chi-square test
     accept = rep (0, D) #vector to keep track of if each j has been accepted or rejected; 1=accept, 0=reject
-    chi = rep(0, D) #to store chi values for each data type
   for (d in 1:D) { #for each data type  
-    chi[d] = (j[d] - 1)^2 #calcualte chi squared value for each data type
-    if (is.na(chi[d])) { #if a chi value is NA
-      chi[d] = 0 #set to 0
-    }
-    if(pchisq(chi[d], df[d]) <= 0.90) { #conduct chi square test
+    
+    if(j[d]-j.best[d] <= qchisq(0.9, n.par[d])) { #conduct chi square test
       accept[d] = 1} #if accepted, change value in accept vector to 1
   } #end of data type loop
     
@@ -319,8 +308,7 @@ repeat { #repeat until desired number of parameter sets are accepted
   }
   
   acceptance = 1 - (reject / num.reps) #calculate proportion of accepted iterations
-  
-  
+
   #print number of accepted parameters every 10 parameters
   if(num.accepted > 10){
   if((num.accepted/10 - floor(num.accepted/10)) == 0){
