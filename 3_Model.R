@@ -9,9 +9,8 @@ params <- c(kplant = 0.11,
             RespRate = 1, 
             UptakeRate = 0.0001,
             netNrate = 0.0008,
-            q10 = 2,
-            propN_fol = 0.3,
-            propN_roots = 0.5)
+            q10 = 2
+            )
 
 state <- c(Biomass_C = 400, 
            Biomass_N = 4.5, 
@@ -47,6 +46,8 @@ solvemodel <- function(params, state, times) {
       Pmax = 1.18
       E0 = 0.03
       cue = 0.5
+      propN_fol = 0.3
+      propN_roots = 0.5
       
       
       #FLUXES

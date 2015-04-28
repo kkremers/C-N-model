@@ -61,7 +61,7 @@ head(sigma.obs1)
 ###STEP 1: EXPLORE PARAMETER SPACE
 
 #other necessary knowns
-n.param = 11 #number of parameters
+n.param = 9 #number of parameters to estimate
 M = 50000 #number of iterations
 D = length(data.compare1)-1 #number of data types being assimilated (number of columns in data.compare1, minus the "time" column)
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
@@ -70,11 +70,16 @@ for(d in 1:D) { #for each data type
 } #end of for loop
 n.time #check 
 
+
+#set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
+param.max=c(1, 0.01, 0.01, 0.01, 1, 10, 0.01, 0.01, 4)
+param.min=c(0.01, 0.0001, 0.0001, 0.00001, 0.1, 0.1, 0.00001, 0.00001, 1)
+
 #storage matrices
 J = rep(100000000000, M) #storage vector for cost function output
 j=matrix(1, M, D) #to store error calculations for this iteration
 param.est = data.frame(matrix(1, M, n.param)) #storage for parameter estimate iterations;
-param.est[1,]=as.numeric(params) #change first row to the expected value
+param.est[1,]=(param.max-param.min)/2 #change first row to the expected value
 colnames(param.est) = c(names(params)) #, names(state))
 head(param.est) #check to make sure this is correct
 
@@ -87,11 +92,6 @@ state <- c(Biomass_C = 400,
            SOM_N = 56,
            Available_N = 0.1)
 
-#set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(1, 0.01, 0.01, 0.01, 1, 10, 0.01, 0.01, 4, 0.7, 0.7)
-param.min=c(0.01, 0.0001, 0.0001, 0.00001, 0.1, 0.1, 0.00001, 0.00001, 1, 0.1, 0.1)
-
-
 #set initial values
 anneal.temp0=20000 #starting temperature
 anneal.temp=20000 #starting temperature
@@ -99,26 +99,29 @@ iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 
 #start exploration
-
-for (i in 2:M) {
+for (i in 20000:M) {
   
   repeat { #repeat until proposed parameter is within specified range
     for(p in 1:n.param){ #for each parameter
       draw = runif(1, param.min[p], param.max[p])
-      param.est[i,p] =  draw +  rnorm(1, 0, 0.1*draw) #draw new parameter set
+      param.est[i,p] = draw + rnorm(1, 0, 0.1*draw) #draw new parameter set
     } #end of parameter loop
-    if(param.est[i,10]+param.est[i,11] < 0.9) { #if sum of N proportions is less than 0.9
-      parms = as.numeric(param.est[i,]) #parameters for model run
-      names(parms) = names(params) #fix names
-      out = data.frame(solvemodel(parms, state)) #run model
-      if(any(out[,2:8]<0)==TRUE){ #if there are negative stocks
-      if(any(is.na(out))==FALSE){ #if there are no NAs in the output
+    if(all(param.est[i,]>param.min && param.est[i,]<param.max)){
         break #break repeat loop
         } #end of if loop
-      } #end of if loop
-    } #end of if loop
   } #end of repeat loop
   
+  
+  parms = as.numeric(param.est[i,]) #parameters for model run
+  names(parms) = names(params) #fix names
+  out = data.frame(solvemodel(parms, state)) #run model
+  
+  if(any(is.na(out))==TRUE | any(out[,2:8]<0)){ #if there are NAs or negative stocks in the output
+      reject = reject+1 #reject parameter set
+      param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
+      J[i] = J[i-1] #set current J to previous J (the minimum J so far)
+  } else {
+
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
   out.compare1 = out[match(data.compare1$time, out$time),c(1,2,3,8,10,11)] #these columns need to match the ones that were pulled out before
   
@@ -142,7 +145,6 @@ for (i in 2:M) {
   
   
   diff=J[i]-J[i-1] #calculate difference between current J and previous J
- 
   
   if(diff>0){ #if difference is > 0 (or if the current J is greater than the previous J)
     
@@ -151,10 +153,12 @@ for (i in 2:M) {
     
     if(u>=prob){    
     reject = reject+1 #reject parameter set
-    param.est[i,] = param.est[i-1,] #set current parameter set to previous one
+    param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
     J[i] = J[i-1] #set current J to previous J (the minimum J so far)
-    } 
-  }
+    } #end of if loop
+  } #end of if loop
+  
+  } #end of else loop
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
   
@@ -174,11 +178,7 @@ for (i in 2:M) {
 save.image(file="Step1_NEE_LAI_BiomassCN_AvailN.Rdata")
 
 #beep(5)
-plot(param.est[,1]) #make plots to check for mixing
-
-param.est = param.est[1:15500,]
-J = J[1:15500]
-j = j[1:15500,]
+plot(param.est[,1]) #make plots to check for mixing and make sure parameter space is thuroughly explored
 
 steps=seq(1:length(J)) #create a vector that represents the number of steps or iterations run
 J=data.frame(steps, J) #create a dataframe that has "steps" as the first column and "J" as the second column
@@ -244,6 +244,7 @@ df #check values
 
 
 #start loop
+
 repeat { #repeat until desired number of parameter sets are accepted
     
     num.reps=num.reps+1 #add to number of reps counter
@@ -251,21 +252,25 @@ repeat { #repeat until desired number of parameter sets are accepted
     repeat { #repeat until proposed parameter is within specified range
       for(p in 1:n.param){ #for each parameter
         draw = runif(1, param.min[p], param.max[p])
-        param.est[p] =  draw +  rnorm(1, 0, 0.1*draw) #draw new parameter set
+        param.est[p] = draw + rnorm(1, 0, 0.1*draw) #draw new parameter set
       } #end of parameter loop
-      if(param.est[10]+param.est[11] < 0.9) { #if sum of N proportions is less than 0.9
-        parms = as.numeric(param.est) #parameters for model run
-        names(parms) = names(params) #fix names
-        out = data.frame(solvemodel(parms, state)) #run model
-        
-        if(any(out[,2:8]<0)==TRUE){ #if there are negative stocks
-          if(any(is.na(out))==FALSE){ #if there are no NAs in the output  
-            break #break repeat loop
-          } #end of if loop
-        } #end of if loop
+      if(all(param.est>param.min && param.est<param.max)){
+        break #break repeat loop
       } #end of if loop
     } #end of repeat loop
+    
+    
+    parms = as.numeric(param.est[i,]) #parameters for model run
+    names(parms) = names(params) #fix names
+    out = data.frame(solvemodel(parms, state)) #run model
 
+  if(any(is.na(out))==TRUE | any(out[,2:8]<0)){ #if there are NAs or negative stocks in the output
+    reject = reject+1 #reject parameter set
+    param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
+    J[i] = J[i-1] #set current J to previous J (the minimum J so far)
+  } else {  
+    
+    
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
   out.compare1 = out[match(data.compare1$time, out$time),c(1,2,3,8,10,11)] #these columns need to match the ones that were pulled out before
   #remove the time column - no longer needed
@@ -306,6 +311,8 @@ repeat { #repeat until desired number of parameter sets are accepted
   if(d.accept<D) { #if any j's rejected
     reject = reject+1 #reject parameter set
   }
+  
+  } #end of else loop
   
   acceptance = 1 - (reject / num.reps) #calculate proportion of accepted iterations
 

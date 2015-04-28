@@ -28,12 +28,7 @@ abline(v=param.best[8], col="green", lwd=3)
 hist(param.keep[,9], main=names(params[9]))
 abline(v=params[9], col="red", lwd=3)
 abline(v=param.best[9], col="green", lwd=3)
-hist(param.keep[,10], main=names(params[10]))
-abline(v=params[10], col="red", lwd=3)
-abline(v=param.best[10], col="green", lwd=3)
-hist(param.keep[,11], main=names(params[11]))
-abline(v=params[11], col="red", lwd=3)
-abline(v=param.best[11], col="green", lwd=3)
+
 
 ##########Plot effects of estimated parameters on model output###################
 
