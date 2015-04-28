@@ -99,7 +99,7 @@ iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 
 #start exploration
-for (i in 20000:M) {
+for (i in 2:M) {
   
   repeat { #repeat until proposed parameter is within specified range
     for(p in 1:n.param){ #for each parameter
