@@ -56,15 +56,6 @@ param.cor
 write.csv(param.cor, "c:/Users/Rocha Lab/Desktop/Kelsey/ParamCorr.csv") #bivariate sensitivity
 pairs(s.local)
 
-
-#calcualte variance covariance matrix
-
-install.packages("MBESS")
-require(MBESS)
-
-sdevs = apply(param.keep, 2, sd) #calculate the standard deviations of each variable
-params.cov = cor2cov(as.matrix(param.cor), sdevs) #calculates covariance matrix from correlation matrix
-
 #global sensitivity analysis
 
 params.mean =  apply(param.keep, 2, mean)
@@ -75,8 +66,9 @@ parRanges = data.frame(min = params.min,  max = params.max)
 rownames(parRanges) = names(params)
 parRanges
 
-s.global <- sensRange(func=solvemodel, parms=param.best, , state=state, sensvar = sensvars, dist ="norm", 
-                      parRange=parRanges, parMean = params.mean, parCovar=params.cov, num=50)
+param.input = matrix(param.keep)
+
+s.global <- sensRange(func=solvemodel, parms=param.best, state=state, sensvar = sensvars, parInput=param.input, num=100)
 
 s.global.summ = summary(s.global)
 head(s.global.summ)

@@ -47,7 +47,7 @@ plot(data.assim$Available_N~data.assim$time, pch=16, ylab="Available_N", xlab="T
 plot(data.assim$LAI~data.assim$time, pch=16, ylab="LAI", xlab="Time (days)")
 plot(data.assim$NEE~data.assim$time, pch=16, ylab="NEE", xlab="Time (days)")
 
-data.compare1 = data.assim[,c(1,2,3,8,9,10)] #pull out columns for data that you want to assimilate
+data.compare1 = data.assim[,c(1,10)] #pull out columns for data that you want to assimilate
 sigma.obs1 = data.frame(matrix(1, length(data.compare1$time), length(data.compare1))) #observation errors for each data type 
 sigma.obs1[,1] = data.assim$time
 sigma.obs1[,2] = 50
@@ -123,7 +123,7 @@ for (i in 20000:M) {
   } else {
 
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-  out.compare1 = out[match(data.compare1$time, out$time),c(1,2,3,8,10,11)] #these columns need to match the ones that were pulled out before
+  out.compare1 = out[match(data.compare1$time, out$time),c(1,11)] #these columns need to match the ones that were pulled out before
   
   error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
   for (d in 1:D) { #for each data type
@@ -175,10 +175,11 @@ for (i in 20000:M) {
     
 } #end of exploration
 
-save.image(file="Step1_NEE_LAI_BiomassCN_AvailN.Rdata")
+save.image(file="Step1_NEE.Rdata")
 
 #beep(5)
 plot(param.est[,1]) #make plots to check for mixing and make sure parameter space is thuroughly explored
+
 
 steps=seq(1:length(J)) #create a vector that represents the number of steps or iterations run
 J=data.frame(steps, J) #create a dataframe that has "steps" as the first column and "J" as the second column
@@ -198,7 +199,7 @@ j.best #view the minimum J
 
 out = data.frame(solvemodel(param.best, state)) #run model
 #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-out.compare1 = out[match(data.compare1$time, out$time),c(1,2,3,8,10,11)] #these columns need to match the ones that were pulled out before
+out.compare1 = out[match(data.compare1$time, out$time),c(1,11)] #these columns need to match the ones that were pulled out before
 head(out.compare1)
 head(data.compare1)
 
