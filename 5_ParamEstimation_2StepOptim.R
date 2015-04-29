@@ -7,17 +7,8 @@
 
 #Get data ready
 head(out) #this is the output from the model run
-data.assim = out[,c(1:8, 10,11)] #choose columns that you want
+data.assim = out[,c(1:3,8,9,11,12)] #choose columns that you want
 head(data.assim) #preview table
-
-#####remove some data points from LAI data
-time.keepLAI  = seq(1, length(time), 15) #keep LAI data for every 15 days
-LAI.assim = data.assim$LAI[match(time.keepLAI, data.assim$time)]  #create vector of LAI data for only those timesteps
-LAI.assim = data.frame(time=time.keepLAI, LAI.assim) #create a dataframe of the new LAI data and the corresponding timesteps
-head(LAI.assim) #check table
-data.assim$LAI=LAI.assim$LAI.assim[match(data.assim$time, LAI.assim$time)] #change the LAI data in the assimilation table to NAs
-head(data.assim) #preview
-data.assim$LAI #check
 
 #####remove some data points for Stock data
 time.keepSTOCK  = seq(125, length(time), 182) #keep data for once per year (~once per year)
@@ -36,22 +27,39 @@ AvailN.assim = data.assim$Available_N[match(time.keepSTOCK, data.assim$time)]  #
 AvailN.assim = data.frame(time=time.keepSTOCK, AvailN.assim) #create a dataframe of the new data and the corresponding timesteps
 head(AvailN.assim)
 data.assim$Available_N=AvailN.assim$AvailN.assim[match(data.assim$time, AvailN.assim$time)] #change the data in the assimilation table to NAs
+
+#####remove some data points for flux data
+time.keepFLUX = data$time[which(data$DOY<=250 & data$DOY>=150)] #keep data for summer only
+#GPP
+GPP.assim = data.assim$GPP[match(time.keepFLUX, data.assim$time)]  #create vector of data for only those timesteps
+GPP.assim = data.frame(time=time.keepFLUX, GPP.assim) #create a dataframe of the new data and the corresponding timesteps
+head(GPP.assim) #check table
+data.assim$GPP=GPP.assim$GPP.assim[match(data.assim$time, GPP.assim$time)] #change the data in the assimilation table to NAs
+#NEE
+NEE.assim = data.assim$NEE[match(time.keepFLUX, data.assim$time)]  #create vector of data for only those timesteps
+NEE.assim = data.frame(time=time.keepFLUX, NEE.assim) #create a dataframe of the new data and the corresponding timesteps
+head(NEE.assim) #check table
+data.assim$NEE=NEE.assim$NEE.assim[match(data.assim$time, NEE.assim$time)] #change the data in the assimilation table to NAs
+#Re
+Re.assim = data.assim$Re[match(time.keepFLUX, data.assim$time)]  #create vector of data for only those timesteps
+Re.assim = data.frame(time=time.keepFLUX, Re.assim) #create a dataframe of the new data and the corresponding timesteps
+head(Re.assim) #check table
+data.assim$Re=Re.assim$Re.assim[match(data.assim$time, Re.assim$time)] #change the data in the assimilation table to NAs
 head(data.assim) #preview
 
 #plot to view data
 par(mfrow=c(3,2), mar=c(4,4,4,4))
-head(data.assim)
 plot(data.assim$Biomass_C~data.assim$time, pch=16, ylab="Biomass_C", xlab="Time (days)")
 plot(data.assim$Biomass_N~data.assim$time, pch=16, ylab="Biomass_N", xlab="Time (days)")
 plot(data.assim$Available_N~data.assim$time, pch=16, ylab="Available_N", xlab="Time (days)")
-plot(data.assim$LAI~data.assim$time, pch=16, ylab="LAI", xlab="Time (days)")
+plot(data.assim$GPP~data.assim$time, pch=16, ylab="GPP", xlab="Time (days)")
 plot(data.assim$NEE~data.assim$time, pch=16, ylab="NEE", xlab="Time (days)")
+plot(data.assim$Re~data.assim$time, pch=16, ylab="Re", xlab="Time (days)")
 
-data.compare1 = data.assim[,c(1,2,3,8,9,10)] #pull out columns for data that you want to assimilate
+head(data.assim)
+data.compare1 = data.assim[,1:7] #pull out columns for data that you want to assimilate
 sigma.obs1 = data.frame(matrix(1, length(data.compare1$time), length(data.compare1))) #observation errors for each data type 
 sigma.obs1[,1] = data.assim$time
-sigma.obs1[,2] = 50
-sigma.obs1[,4] = 0.1
 colnames(sigma.obs1) = colnames(data.compare1)
 #sigma.obs1: columns need to be in SAME ORDER as data.compare1
 head(data.compare1)
@@ -121,7 +129,7 @@ for (i in 2:M) {
     } else { #if there are no NAs or negative stocks
   
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-  out.compare1 = out[match(data.compare1$time, out$time),c(1,2,3,8,10,11)] #these columns need to match the ones that were pulled out before
+  out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,11,12)] #these columns need to match the ones that were pulled out before
   
   error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
   for (d in 1:D) { #for each data type
@@ -196,7 +204,7 @@ j.best #view the minimum J
 
 out = data.frame(solvemodel(param.best, state)) #run model
 #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-out.compare1 = out[match(data.compare1$time, out$time),c(1,11)] #these columns need to match the ones that were pulled out before
+out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,11,12)] #these columns need to match the ones that were pulled out before
 head(out.compare1)
 head(data.compare1)
 

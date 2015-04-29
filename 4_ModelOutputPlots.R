@@ -18,8 +18,9 @@ plot(out$SOM_C~out$time, type="l", col="red", main = "SOM C", xlab="", ylab="g C
 plot(out$SOM_N~out$time, type="l", col="red", main = "SOM N", xlab="Time (days)", ylab="g N m-2",lty=2)
 plot(out$Available_N~out$time, type="l", col="green", main = "Available N", xlab="Time (days)", ylab="g N m-2",lty=2)
 
-
-
+#plot scalar
+par(mfrow=c(1,1), mar=c(4,4,0.5,2))
+plot(out$time, out$scal, type="l")
 
 
 
@@ -30,6 +31,7 @@ data.compare=data.compare[,1:5]
 data.compare=data.compare[complete.cases(data.compare),]
 head(data.compare)
 out.compare = out[match(data.compare$time, out$time),]
+head(out.compare)
 
 par(mfrow=c(4,2), mar=c(2,4,2,2))
 plot(out$GPP~out$time, col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="", type="l")
@@ -37,7 +39,7 @@ points(data$GPP, col="blue", pch=18, cex=0.8)
 plot(data.compare$GPP, out.compare$GPP)
 abline(0,1, col="red")
 
-plot(out$LAI~out$time, col="azure4", pch=18, ylab="LAI (m2 leaf m-2 ground)", xlab="", type="l")
+plot(out$LAI~out$time, col="azure4", pch=18, ylab="LAI (m2 leaf m-2 ground)", xlab="", type="l", ylim=c(0, 1))
 points(data$LAI, col="blue", pch=18, cex=0.8)
 plot(data.compare$LAI, out.compare$LAI)
 abline(0,1, col="red")
@@ -48,23 +50,67 @@ abline(h=0)
 plot(data.compare$Re, out.compare$Re)
 abline(0,1, col="red")
 
-plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-3,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
+plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-5,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
 points(data$NEE, col="blue", pch=16, cex=0.6)
 abline(h=0)
 plot(data.compare$NEE, out.compare$NEE, ylim=c(-4, 1))
 abline(0,1, col="red")
 
 
+resid.GPP = data.compare$GPP - out.compare$GPP
+resid.NEE = data.compare$NEE - out.compare$NEE
+resid.Re = data.compare$Re - out.compare$Re
+resid.LAI = data.compare$LAI - out.compare$LAI
+resid = data.frame(time=out.compare$time, DOY=out.compare$DOY, resid.GPP, resid.NEE, resid.Re, resid.LAI)
+head(resid)
+
+par(mfrow=c(4,1), mar=c(4,4,2,2))
+plot(resid$DOY, resid$resid.GPP, main="GPP Residuals", ylab="Residuals", xlab="DOY")
+abline(h=0, col="red")
+plot(resid$DOY, resid$resid.NEE, main="NEE Residuals", ylab="Residuals", xlab="DOY")
+abline(h=0, col="red")
+plot(resid$DOY, resid$resid.Re, main="Re Residuals", ylab="Residuals", xlab="DOY")
+abline(h=0, col="red")
+plot(resid$DOY, resid$resid.LAI, main="LAI Residuals", ylab="Residuals", xlab="DOY")
+abline(h=0, col="red")
+
+
+rmse.GPP=sqrt(mean((resid.GPP)^2))
+rmse.NEE=sqrt(mean((resid.NEE)^2))
+rmse.Re=sqrt(mean((resid.Re)^2))
+rmse.LAI=sqrt(mean((resid.LAI)^2))
+rmse.GPP;rmse.NEE;rmse.Re;rmse.LAI
+
+resid.GPP.mean = tapply(resid$resid.GPP, resid$DOY, mean)
+resid.NEE.mean = tapply(resid$resid.NEE, resid$DOY, mean)
+resid.Re.mean = tapply(resid$resid.Re, resid$DOY, mean)
+resid.LAI.mean = tapply(resid$resid.LAI, resid$DOY, mean)
+resid.DOY=unique(resid$DOY)
+resid.means=data.frame(DOY=resid.DOY, resid.GPP.mean, resid.NEE.mean, resid.Re.mean, resid.LAI.mean)
+
+par(mfrow=c(4,1), mar=c(4,4,2,2))
+plot(resid.means$DOY, resid.means$resid.GPP.mean, main="GPP Residuals", ylab="Residuals", xlab="DOY")
+abline(h=0, col="red")
+plot(resid.means$DOY, resid.means$resid.NEE.mean, main="NEE Residuals", ylab="Residuals", xlab="DOY")
+abline(h=0, col="red")
+plot(resid.means$DOY, resid.means$resid.Re.mean, main="Re Residuals", ylab="Residuals", xlab="DOY")
+abline(h=0, col="red")
+plot(resid.means$DOY, resid.means$resid.LAI.mean, main="LAI Residuals", ylab="Residuals", xlab="DOY")
+abline(h=0, col="red")
+
+
+rmse.GPP=sqrt(mean((resid.GPP.mean)^2))
+rmse.NEE=sqrt(mean((resid.NEE.mean)^2))
+rmse.Re=sqrt(mean((resid.Re.mean)^2))
+rmse.LAI=sqrt(mean((resid.LAI.mean)^2))
+rmse.GPP;rmse.NEE;rmse.Re;rmse.LAI
 
 
 
 
-par(mfrow=c(2,2), mar=c(4,4,2,2))
+par(mfrow=c(3,1), mar=c(4,4,2,2))
 plot(data$GPP~data$PAR_vis, pch=16, ylab="GPP", xlab="PAR_vis")
 points(out$GPP~data$PAR_vis, col="red")
-
-plot(data$LAI~data$Temp_ARF, pch=16, ylab="LAI", xlab="Temperature")
-points(out$LAI~data$Temp_ARF, col="red")
 
 plot(data$Re~data$Temp_ARF, pch=16, ylab="Re", xlab="Temperature")
 points(out$Re~data$Temp_ARF, col="red")
@@ -72,15 +118,3 @@ points(out$Re~data$Temp_ARF, col="red")
 plot(data$NEE~data$Temp_ARF, pch=16, ylab="NEE", xlab="Temperature")
 points(out$NEE~data$Temp_ARF, col="red")
 
-
-
-
-#plot CUE and LAI
-par(mfrow=c(2,1), mar=c(4,4,2,2))
-plot(out$Uptake~out$Available_N, xlab = "Available N (g N m-2)", ylab = "Uptake (g N m-2 day-1)")
-plot(out$Uptake~out$time, type="l",  xlab = "Time (days)", ylab = "Uptake (g N m-2 day-1)")
-
-par(mfrow=c(2,1), mar=c(4,4,2,2))
-plot(out$s.GDD~data$TempPos, xlab = "TempPos", ylab = "Scalar (s.GDD)")
-plot(out$LAI~data$TempPos, xlab = "TempPos", ylab = "LAI (m2 m-2)")
-plot(out$LAI~out$Biomass_N, xlab = "Biomass_N (gN m-2)", ylab = "LAI (m2 m-2)")
