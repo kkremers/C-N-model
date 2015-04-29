@@ -62,7 +62,7 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = 9 #number of parameters to estimate
-M = 50000 #number of iterations
+M = 100000 #number of iterations
 D = length(data.compare1)-1 #number of data types being assimilated (number of columns in data.compare1, minus the "time" column)
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -77,7 +77,7 @@ param.min=c(0.01, 0.0001, 0.0001, 0.00001, 0.1, 0.1, 0.00001, 0.00001, 1)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output
-j=matrix(1, M, D) #to store error calculations for this iteration
+j=matrix(1E100, M, D) #to store error calculations for this iteration
 all.draws = data.frame(matrix(1, M, n.param)) #storage for all parameter estimate iterations;
 colnames(all.draws) = c(names(params))
 param.est = data.frame(matrix(1, M, n.param)) #storage for accepted parameter estimate iterations;
@@ -103,9 +103,8 @@ iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 
 #start exploration
-for (i in 4779:M) {
+for (i in 2:M) {
   
-  repeat{
     for(p in 1:n.param){ #for each parameter
       param.est[i,p] = runif(1, param.min[p], param.max[p]) #draw new parameter set
       all.draws[i,p] = param.est[i,p]
@@ -115,11 +114,11 @@ for (i in 4779:M) {
     names(parms) = names(params) #fix names
     out = data.frame(solvemodel(parms, state)) #run model  
   
-    if(all(!is.na(out)) & all(out[,2:8]>=0)){ #if there are NAs or negative stocks in the output
-    break
-    } #end of if loop
-  } #end of repeat loop
-  
+    if(any(is.na(out)) | any(out[,2:8]<0)){ #if there are any NAs or negative stocks in the output
+      reject = reject+1 #reject parameter set
+      param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
+      J[i] = J[i-1] #set current J to previous J (the minimum J so far)
+    } else { #if there are no NAs or negative stocks
   
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
   out.compare1 = out[match(data.compare1$time, out$time),c(1,2,3,8,10,11)] #these columns need to match the ones that were pulled out before
@@ -153,6 +152,8 @@ for (i in 4779:M) {
     J[i] = J[i-1] #set current J to previous J (the minimum J so far)
     } #end of if loop
   } #end of if loop
+  
+  } #end of else loop
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
   
