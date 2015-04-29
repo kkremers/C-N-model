@@ -72,7 +72,7 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(1, 0.01, 0.01, 0.01, 1, 10, 0.01, 0.01, 4)
+param.max=c(1, 0.01, 0.01, 0.01, 1, 4, 0.01, 0.01, 4)
 param.min=c(0.01, 0.0001, 0.0001, 0.00001, 0.1, 0.1, 0.00001, 0.00001, 1)
 
 #storage matrices
@@ -174,8 +174,8 @@ save.image(file="Step1_NEE_LAI_BiomassCN_AvailableN.Rdata")
 
 #beep(5)
 #make plots to check for mixing and make sure parameter space is thuroughly explored
-plot(all.draws[1:4779,1]) 
-lines(param.est[1:4779,1], col="red") 
+plot(all.draws[1:1485,1]) 
+lines(param.est[1:1485,1], col="red") 
 
 
 steps=seq(1:length(J)) #create a vector that represents the number of steps or iterations run
