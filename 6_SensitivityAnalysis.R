@@ -61,14 +61,11 @@ pairs(s.local)
 params.mean =  apply(param.keep, 2, mean)
 params.min =  apply(param.keep, 2, min)
 params.max =  apply(param.keep, 2, max)
-params.cov #calculated above
 parRanges = data.frame(min = params.min,  max = params.max)
 rownames(parRanges) = names(params)
 parRanges
 
-param.input = matrix(param.keep)
-
-s.global <- sensRange(func=solvemodel, parms=param.best, state=state, sensvar = sensvars, parInput=param.input, num=100)
+s.global <- sensRange(func=solvemodel, parms=param.best, state=state, sensvar = sensvars, parInput=param.keep, num=50)
 
 s.global.summ = summary(s.global)
 head(s.global.summ)

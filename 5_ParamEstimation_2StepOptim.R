@@ -47,7 +47,7 @@ plot(data.assim$Available_N~data.assim$time, pch=16, ylab="Available_N", xlab="T
 plot(data.assim$LAI~data.assim$time, pch=16, ylab="LAI", xlab="Time (days)")
 plot(data.assim$NEE~data.assim$time, pch=16, ylab="NEE", xlab="Time (days)")
 
-data.compare1 = data.assim[,c(1,10)] #pull out columns for data that you want to assimilate
+data.compare1 = data.assim[,c(1,2,3,8,9,10)] #pull out columns for data that you want to assimilate
 sigma.obs1 = data.frame(matrix(1, length(data.compare1$time), length(data.compare1))) #observation errors for each data type 
 sigma.obs1[,1] = data.assim$time
 sigma.obs1[,2] = 50
@@ -62,7 +62,7 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = 9 #number of parameters to estimate
-M = 50000 #number of iterations
+M = 100000 #number of iterations
 D = length(data.compare1)-1 #number of data types being assimilated (number of columns in data.compare1, minus the "time" column)
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -78,10 +78,14 @@ param.min=c(0.01, 0.0001, 0.0001, 0.00001, 0.1, 0.1, 0.00001, 0.00001, 1)
 #storage matrices
 J = rep(100000000000, M) #storage vector for cost function output
 j=matrix(1, M, D) #to store error calculations for this iteration
-param.est = data.frame(matrix(1, M, n.param)) #storage for parameter estimate iterations;
+all.draws = data.frame(matrix(1, M, n.param)) #storage for all parameter estimate iterations;
+colnames(all.draws) = c(names(params))
+param.est = data.frame(matrix(1, M, n.param)) #storage for accepted parameter estimate iterations;
 param.est[1,]=(param.max-param.min)/2 #change first row to the expected value
-colnames(param.est) = c(names(params)) #, names(state))
+colnames(param.est) = c(names(params))
 head(param.est) #check to make sure this is correct
+head(all.draws)
+
 
 #starting values for states
 state <- c(Biomass_C = 400, 
@@ -101,29 +105,24 @@ reject=0 #reset reject counter
 #start exploration
 for (i in 2:M) {
   
-  repeat { #repeat until proposed parameter is within specified range
     for(p in 1:n.param){ #for each parameter
-      draw = runif(1, param.min[p], param.max[p])
-      param.est[i,p] = draw + rnorm(1, 0, 0.1*draw) #draw new parameter set
+      param.est[i,p] = runif(1, param.min[p], param.max[p]) #draw new parameter set
+      all.draws[i,p] = param.est[i,p]
     } #end of parameter loop
-    if(all(param.est[i,]>param.min && param.est[i,]<param.max)){
-        break #break repeat loop
-        } #end of if loop
-  } #end of repeat loop
-  
-  
+
   parms = as.numeric(param.est[i,]) #parameters for model run
   names(parms) = names(params) #fix names
-  out = data.frame(solvemodel(parms, state)) #run model
+  out = data.frame(solvemodel(parms, state)) #run model  
   
-  if(any(is.na(out))==TRUE | any(out[,2:8]<0)){ #if there are NAs or negative stocks in the output
-      reject = reject+1 #reject parameter set
-      param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
-      J[i] = J[i-1] #set current J to previous J (the minimum J so far)
+  if(any(is.na(out)) | any(out[,2:8]<0)){ #if there are NAs or negative stocks in the output
+    reject = reject+1
+    param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
+    J[i] = J[i-1] #set current J to previous J (the minimum J so far)
   } else {
-
+  
+  
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-  out.compare1 = out[match(data.compare1$time, out$time),c(1,11)] #these columns need to match the ones that were pulled out before
+  out.compare1 = out[match(data.compare1$time, out$time),c(1,2,3,8,10,11)] #these columns need to match the ones that were pulled out before
   
   error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
   for (d in 1:D) { #for each data type
@@ -135,9 +134,6 @@ for (i in 2:M) {
     } #end of time step loop
     
     j[i,d] = sum(error.time[,d]) #calculate cost function for each data stream
-      if(is.na(j[i,d])) { #If it's NaN (only occurs if the model parameters were so far off that there were NaNs in the model output)
-      j[i,d]=999999999999 #make the cost function a HUGE number
-      }
     
   } #end of data type loop
   
@@ -149,7 +145,7 @@ for (i in 2:M) {
   if(diff>0){ #if difference is > 0 (or if the current J is greater than the previous J)
     
     u=runif(1, 0, 1) #draw random number between 0 and 1
-    prob=exp((-1*diff)/anneal.temp) #simulated annealing
+    prob=exp((-1*diff)/anneal.temp) #simulated annealing - determines probability that a parameter set is accepted
     
     if(u>=prob){    
     reject = reject+1 #reject parameter set
@@ -175,11 +171,11 @@ for (i in 2:M) {
     
 } #end of exploration
 
-save.image(file="Step1_NEE.Rdata")
+save.image(file="Step1_NEE_LAI_BiomassCN_AvailableN.Rdata")
 
 #beep(5)
-plot(param.est[,1]) #make plots to check for mixing and make sure parameter space is thuroughly explored
-
+plot(param.est[,1], type="l") #make plots to check for mixing and make sure parameter space is thuroughly explored
+points(all.draws[,1]) #make plots to check for mixing and make sure parameter space is thuroughly explored
 
 steps=seq(1:length(J)) #create a vector that represents the number of steps or iterations run
 J=data.frame(steps, J) #create a dataframe that has "steps" as the first column and "J" as the second column
@@ -245,27 +241,21 @@ df #check values
 
 
 #start loop
-
+t=0.5
 repeat { #repeat until desired number of parameter sets are accepted
     
     num.reps=num.reps+1 #add to number of reps counter
       
-    repeat { #repeat until proposed parameter is within specified range
       for(p in 1:n.param){ #for each parameter
-        draw = runif(1, param.min[p], param.max[p])
-        param.est[p] = draw + rnorm(1, 0, 0.1*draw) #draw new parameter set
-      } #end of parameter loop
-      if(all(param.est>param.min && param.est<param.max)){
-        break #break repeat loop
-      } #end of if loop
-    } #end of repeat loop
-    
+        step.size = t*(param.max[p]-param.min[p])
+        param.est[p] = param.best[p]+rnorm(1, 0, step.size) #draw new parameter set
+      } #end of parameter loop          
     
     parms = as.numeric(param.est) #parameters for model run
     names(parms) = names(params) #fix names
     out = data.frame(solvemodel(parms, state)) #run model
 
-  if(any(is.na(out))==TRUE | any(out[,2:8]<0)){ #if there are NAs or negative stocks in the output
+  if(any(is.na(out)) | any(out[,2:8]<0)){ #if there are NAs or negative stocks in the output
     reject = reject+1 #reject parameter set
   } else {  
     
@@ -306,15 +296,23 @@ repeat { #repeat until desired number of parameter sets are accepted
   if(d.accept==D) { #if all j's are accepted
     num.accepted = num.accepted+1 #add to number of parameter sets accepted
     param.keep[num.accepted,]=param.est #store the parameter set in the storage dataframe
-  }
+  } #end of if loop
   if(d.accept<D) { #if any j's rejected
     reject = reject+1 #reject parameter set
-  }
+  } #end of if loop
   
   } #end of else loop
   
   acceptance = 1 - (reject / num.reps) #calculate proportion of accepted iterations
 
+  if(acceptance > 0.275){
+    t=1.01*t
+  }
+  
+  if(acceptance < 0.225){
+    t=0.99*t
+  }
+  
   #print number of accepted parameters every 10 parameters
   if(num.accepted > 10){
   if((num.accepted/10 - floor(num.accepted/10)) == 0){
