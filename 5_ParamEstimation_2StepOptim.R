@@ -260,14 +260,12 @@ repeat { #repeat until desired number of parameter sets are accepted
     } #end of repeat loop
     
     
-    parms = as.numeric(param.est[i,]) #parameters for model run
+    parms = as.numeric(param.est) #parameters for model run
     names(parms) = names(params) #fix names
     out = data.frame(solvemodel(parms, state)) #run model
 
   if(any(is.na(out))==TRUE | any(out[,2:8]<0)){ #if there are NAs or negative stocks in the output
     reject = reject+1 #reject parameter set
-    param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
-    J[i] = J[i-1] #set current J to previous J (the minimum J so far)
   } else {  
     
     
