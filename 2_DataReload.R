@@ -74,14 +74,18 @@ for (i in 1:length(data$GDD.slope)){
 }
 plot(scal.temp, type="l")
 
+
 scal.GDD=NULL
 for (i in 1:length(data$GDD)){
   scal.GDD[i] = (data$GDD[i] - min(data$GDD))/(max(data$GDD)-min(data$GDD)) #growing degree day scalar
+  #if(data$DOY[i]>data$DOY.sen[i]){
+    #scal.GDD[i]=0
+  #}
 }
 plot(scal.GDD, type="l")
 
 #what if we add the GDD scalar and the smoothed temp scalar together?
-scal.new = scal.temp.sm+scal.GDD
+scal.new = scal.temp+scal.GDD
 
 #rescale to 1
 scal.add=NULL
@@ -89,9 +93,9 @@ for (i in 1:length(scal.new)){
   scal.add[i] = (scal.new[i] - min(scal.new))/(max(scal.new)-min(scal.new)) #growing degree day scalar
 }
 
+par(mfrow=c(1,1), mar=c(4,4,0.5,2))
 plot(scal.add, type="l")
-lines(scal.temp.sm, col="red")
-lines(scal.GDD, col="green")
+plot(scal.temp, type="l")
 
 #make into functions so that it will be continuous in the model
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)

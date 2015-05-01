@@ -36,14 +36,13 @@ solvemodel <- function(params, state, times) {
       PAR=PAR.d1(t)
       DOY = DOY.d1(t)
       DOY.sen = DOYsen.d1(t)
-      #scal=scaltemp.d1(t) 
-      #scal=scaltempsm.d1(t)
-      #scal=scalGDD.d1(t)
+      scalTEMP=scaltemp.d1(t) 
       scal=scaladd.d1(t)
+      scalGDD=scalGDD.d1(t)
       
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
       k=0.63
-      Pmax = 1.18
+      Pmax =1.18
       E0 = 0.03
       cue = 0.5
       propN_fol = 0.3
@@ -52,11 +51,16 @@ solvemodel <- function(params, state, times) {
       
       #FLUXES
       TFN=propN_fol*Biomass_N
-      LAI = ((TFN-0.31)/1.29)*scal #Williams and Rastetter 1999
+      LAI = ((TFN-0.31)/1.29) #Williams and Rastetter 1999
       if(PAR==0){
         LAI=0
       }
-      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12 
+      NDVI = log((LAI*scalGDD)/0.003)/7.845
+      if(NDVI==-Inf){
+        NDVI=0
+      }
+      
+      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI *scal ) ) ) * 12 
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) * scal
       Ra =  ( 1 - cue ) * GPP
       Re = RespRate * (q10 ^ ( ( Temp - 10 )/ 10 ) )
@@ -97,10 +101,10 @@ solvemodel <- function(params, state, times) {
              dSOM_C, 
              dSOM_N,
              dAvailable_N),
-           c(DOY=DOY, GPP=GPP, LAI=LAI, NEE=NEE, Re=Re, 
-             Ra=Ra, Rh=Rh, Uptake = Uptake, Ntrans=Ntrans,
+           c(DOY=DOY, GPP=GPP, LAI=LAI, NDVI=NDVI, 
+             NEE=NEE, Re=Re, Ra=Ra, Rh=Rh, Uptake = Uptake, Ntrans=Ntrans,
              Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, 
-             Decomp_C = Decomp_C, Decomp_N = Decomp_N, scal=scal))
+             Decomp_C = Decomp_C, Decomp_N = Decomp_N, scalTEMP=scalTEMP))
       
     })  #end of with(as.list(...
   } #end of model
