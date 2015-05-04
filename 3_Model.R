@@ -36,7 +36,7 @@ solvemodel <- function(params, state, times) {
       PAR=PAR.d1(t)
       DOY = DOY.d1(t)
       DOY.sen = DOYsen.d1(t)
-      scalTEMP=scaltemp.d1(t) 
+      #scalTEMP=scaltemp.d1(t) 
       scal=scaladd.d1(t)
       scalGDD=scalGDD.d1(t)
       
@@ -51,15 +51,16 @@ solvemodel <- function(params, state, times) {
       
       #FLUXES
       TFN=propN_fol*Biomass_N
+      
       LAI = ((TFN-0.31)/1.29) #Williams and Rastetter 1999
-      if(PAR==0){
+      if(PAR==0 | LAI<=0){
         LAI=0
       }
-      NDVI = log((LAI*scalGDD)/0.003)/7.845
-      if(NDVI==-Inf){
-        NDVI=0
-      }
       
+      NDVI=0
+      if(LAI>0){
+      NDVI = log((LAI*scalGDD)/0.003)/7.845}
+            
       GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI *scal ) ) ) * 12 
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) * scal
       Ra =  ( 1 - cue ) * GPP
@@ -100,11 +101,10 @@ solvemodel <- function(params, state, times) {
              dLitter_N, 
              dSOM_C, 
              dSOM_N,
-             dAvailable_N),
-           c(DOY=DOY, GPP=GPP, LAI=LAI, NDVI=NDVI, 
-             NEE=NEE, Re=Re, Ra=Ra, Rh=Rh, Uptake = Uptake, Ntrans=Ntrans,
-             Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, 
-             Decomp_C = Decomp_C, Decomp_N = Decomp_N, scalTEMP=scalTEMP))
+             dAvailable_N), 
+             c(GPP=GPP, LAI=LAI, NDVI=NDVI, NEE=NEE, Re=Re, Ra=Ra, Rh=Rh, Uptake = Uptake, 
+             Ntrans=Ntrans, Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, 
+             Decomp_C = Decomp_C, Decomp_N = Decomp_N, scalGDD=scalGDD, scal=scal, DOY=DOY))
       
     })  #end of with(as.list(...
   } #end of model

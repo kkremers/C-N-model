@@ -78,9 +78,9 @@ plot(scal.temp, type="l")
 scal.GDD=NULL
 for (i in 1:length(data$GDD)){
   scal.GDD[i] = (data$GDD[i] - min(data$GDD))/(max(data$GDD)-min(data$GDD)) #growing degree day scalar
-  #if(data$DOY[i]>data$DOY.sen[i]){
-    #scal.GDD[i]=0
-  #}
+  if(data$DOY[i]>data$DOY.sen[i]){
+   scal.GDD[i]=0
+  }
 }
 plot(scal.GDD, type="l")
 

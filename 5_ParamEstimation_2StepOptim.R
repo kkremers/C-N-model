@@ -7,7 +7,7 @@
 
 #Get data ready
 head(out) #this is the output from the model run
-data.assim = out[,c(1:3,8,9,11,12)] #choose columns that you want
+data.assim = out[,c(1:3,8,9,11,12,13)] #choose columns that you want
 head(data.assim) #preview table
 
 #####remove some data points for Stock data
@@ -45,6 +45,11 @@ Re.assim = data.assim$Re[match(time.keepFLUX, data.assim$time)]  #create vector 
 Re.assim = data.frame(time=time.keepFLUX, Re.assim) #create a dataframe of the new data and the corresponding timesteps
 head(Re.assim) #check table
 data.assim$Re=Re.assim$Re.assim[match(data.assim$time, Re.assim$time)] #change the data in the assimilation table to NAs
+#NDVI
+NDVI.assim = data.assim$NDVI[match(time.keepFLUX, data.assim$time)]  #create vector of data for only those timesteps
+NDVI.assim = data.frame(time=time.keepFLUX, NDVI.assim) #create a dataframe of the new data and the corresponding timesteps
+head(NDVI.assim) #check table
+data.assim$NDVI=NDVI.assim$NDVI.assim[match(data.assim$time, NDVI.assim$time)] #change the data in the assimilation table to NAs
 head(data.assim) #preview
 
 #plot to view data
@@ -55,9 +60,10 @@ plot(data.assim$Available_N~data.assim$time, pch=16, ylab="Available_N", xlab="T
 plot(data.assim$GPP~data.assim$time, pch=16, ylab="GPP", xlab="Time (days)")
 plot(data.assim$NEE~data.assim$time, pch=16, ylab="NEE", xlab="Time (days)")
 plot(data.assim$Re~data.assim$time, pch=16, ylab="Re", xlab="Time (days)")
+plot(data.assim$NDVI~data.assim$time, pch=16, ylab="NDVI", xlab="Time (days)")
 
 head(data.assim)
-data.compare1 = data.assim[,1:7] #pull out columns for data that you want to assimilate
+data.compare1 = data.assim[,c(1:5,7,8)] #pull out columns for data that you want to assimilate
 sigma.obs1 = data.frame(matrix(1, length(data.compare1$time), length(data.compare1))) #observation errors for each data type 
 sigma.obs1[,1] = data.assim$time
 colnames(sigma.obs1) = colnames(data.compare1)
@@ -80,7 +86,7 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(1, 0.01, 0.01, 0.01, 1, 4, 0.01, 0.01, 4)
+param.max=c(0.9, 0.01, 0.01, 0.01, 1, 4, 0.01, 0.01, 4)
 param.min=c(0.01, 0.0001, 0.0001, 0.00001, 0.1, 0.1, 0.00001, 0.00001, 1)
 
 #storage matrices
@@ -110,13 +116,20 @@ anneal.temp=20000 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 
+
 #start exploration
-for (i in 2:M) {
+
+for (i in 1398:M) {
   
+  repeat{
     for(p in 1:n.param){ #for each parameter
-      param.est[i,p] = runif(1, param.min[p], param.max[p]) #draw new parameter set
+      param.est[i,p] = runif(1, param.min[p], param.max[p])
       all.draws[i,p] = param.est[i,p]
     } #end of parameter loop
+    if(param.est[i,p]>param.min[p] & param.est[i,p]<param.max[p]){
+      break
+    } #end of if loop
+  } #end of repeat
 
     parms = as.numeric(param.est[i,]) #parameters for model run
     names(parms) = names(params) #fix names
@@ -129,7 +142,7 @@ for (i in 2:M) {
     } else { #if there are no NAs or negative stocks
   
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-  out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,11,12)] #these columns need to match the ones that were pulled out before
+  out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,12,13)] #these columns need to match the ones that were pulled out before
   
   error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
   for (d in 1:D) { #for each data type
@@ -140,11 +153,11 @@ for (i in 2:M) {
       #if there was no data at that timestep, the error will remain "0" so that it will not impact the sum calculation in the next step
     } #end of time step loop
     
-    j[i,d] = sum(error.time[,d]) #calculate cost function for each data stream
+    j[i,d] = sum(error.time[,d])/n.time[d] #calculate cost function for each data stream
     
   } #end of data type loop
   
-  J[i] = prod(j[i,]) #calculate aggregate cost function
+  J[i] = sum(j[i,])/D #calculate aggregate cost function
   
   
   diff=J[i]-J[i-1] #calculate difference between current J and previous J
@@ -164,13 +177,13 @@ for (i in 2:M) {
   } #end of else loop
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
-  
+
   anneal.temp=anneal.temp0-(1*iter) #decrease temperature
   
   
   iter=iter+1 #increase number of iterations counter
   
-  if(anneal.temp<2){ #if temperature drops to less than 100
+  if(anneal.temp<500){ #if temperature drops to less than 100
     anneal.temp0=(9/10)*anneal.temp0 #change initial temp to 9/10 of previous initial
     anneal.temp=anneal.temp0 #jump back up to that temp
     iter=1 #reset iteration counter
@@ -178,13 +191,10 @@ for (i in 2:M) {
     
 } #end of exploration
 
-save.image(file="Step1_NEE_LAI_BiomassCN_AvailableN.Rdata")
-
 #beep(5)
 #make plots to check for mixing and make sure parameter space is thuroughly explored
-plot(all.draws[1:1485,1]) 
-lines(param.est[1:1485,1], col="red") 
-
+plot(all.draws[1:1398,1])
+lines(param.est[1:1398,1], col="red", lwd="2")
 
 steps=seq(1:length(J)) #create a vector that represents the number of steps or iterations run
 J=data.frame(steps, J) #create a dataframe that has "steps" as the first column and "J" as the second column
@@ -197,6 +207,8 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
+save.image(file="Step1_NEE_GPP_Re_BiomassCN_AvailableN.Rdata")
+
 
 #######STEP 2: ESTIMATE PARAMETER UNCERTAINTY
 
@@ -204,7 +216,7 @@ j.best #view the minimum J
 
 out = data.frame(solvemodel(param.best, state)) #run model
 #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,11,12)] #these columns need to match the ones that were pulled out before
+out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,12,13)] #these columns need to match the ones that were pulled out before
 head(out.compare1)
 head(data.compare1)
 
@@ -241,7 +253,7 @@ num.reps = 0 #counter for number of repititions - calculates acceptance rate
 
 
 #also need to know degrees of freedom for chi square test
-n.par = c(3,6,7,11,11) #number of parameters predicted by each data stream
+n.par = c(3,6,7,9,9,9) #number of parameters predicted by each data stream
 df = rep(0, D)
 for (d in 1:D) { #for each data type
   df[d] = n.time[d] - n.par[d]
@@ -271,7 +283,7 @@ repeat { #repeat until desired number of parameter sets are accepted
     }#end of repeat loop
     
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-  out.compare1 = out[match(data.compare1$time, out$time),c(1,2,3,8,10,11)] #these columns need to match the ones that were pulled out before
+  out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,12,13)] #these columns need to match the ones that were pulled out before
   #remove the time column - no longer needed
   data.comp = data.compare1[,-1]
   out.comp = out.compare1[,-1]
