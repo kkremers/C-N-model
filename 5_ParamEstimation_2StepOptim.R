@@ -95,7 +95,8 @@ j=matrix(1E100, M, D) #to store error calculations for this iteration
 all.draws = data.frame(matrix(1, M, n.param)) #storage for all parameter estimate iterations;
 colnames(all.draws) = c(names(params))
 param.est = data.frame(matrix(1, M, n.param)) #storage for accepted parameter estimate iterations;
-param.est[1,]=(param.max-param.min)/2 #change first row to the expected value
+param.est[1,]=(param.max-param.min)/2 #change first row to the value in the middle of the range
+all.draws[1,]=(param.max-param.min)/2 #change first row to the value in the middle of the range
 colnames(param.est) = c(names(params))
 head(param.est) #check to make sure this is correct
 head(all.draws)
@@ -119,7 +120,7 @@ reject=0 #reset reject counter
 
 #start exploration
 
-for (i in 1398:M) {
+for (i in 2:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
@@ -193,8 +194,8 @@ for (i in 1398:M) {
 
 #beep(5)
 #make plots to check for mixing and make sure parameter space is thuroughly explored
-plot(all.draws[1:1398,1])
-lines(param.est[1:1398,1], col="red", lwd="2")
+plot(all.draws[2:6934,1])
+lines(param.est[2:6934,1], col="red", lwd="2")
 
 steps=seq(1:length(J)) #create a vector that represents the number of steps or iterations run
 J=data.frame(steps, J) #create a dataframe that has "steps" as the first column and "J" as the second column
