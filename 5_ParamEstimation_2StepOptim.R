@@ -206,8 +206,8 @@ for (i in 2:M) {
 
 #beep(5)
 #make plots to check for mixing and make sure parameter space is thuroughly explored
-plot(all.draws[2:6934,1])
-lines(param.est[2:6934,1], col="red", lwd="2")
+plot(all.draws[,1])
+lines(param.est[,1], col="red", lwd="2")
 
 steps=seq(1:length(J)) #create a vector that represents the number of steps or iterations run
 J=data.frame(steps, J) #create a dataframe that has "steps" as the first column and "J" as the second column
@@ -220,7 +220,7 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_GPP_Re_BiomassCN_AvailableN.Rdata")
+save.image(file="Step1_NEE_GPP_Re_NDVI_BiomassCN_LitterCN_AvailableN.Rdata")
 
 
 #######STEP 2: ESTIMATE PARAMETER UNCERTAINTY
@@ -363,3 +363,4 @@ repeat { #repeat until desired number of parameter sets are accepted
 
 head(param.keep)
 
+save.image(file="Step2_NEE_GPP_Re_NDVI_BiomassCN_LitterCN_AvailableN.Rdata")

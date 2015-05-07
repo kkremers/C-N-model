@@ -42,7 +42,7 @@ sensvars = c("Biomass_C",
              "GPP",
              "NEE",
              "Re",
-             "LAI")
+             "NDVI")
 
 #local sensitivity analysis
 s.local <- sensFun(func=solvemodel, parms=param.best, state=state, sensvar = sensvars, varscale=1)
@@ -50,7 +50,7 @@ s.local <- sensFun(func=solvemodel, parms=param.best, state=state, sensvar = sen
 head(s.local); tail(s.local)
 s.local.summ = summary(s.local, var=T)
 s.loc.summ.ordered = s.local.summ[order(s.local.summ$var, abs(s.local.summ$Mean)),] 
-write.csv(s.loc.summ.ordered, "c:/Users/Rocha Lab/Desktop/Kelsey/LocalSensitivityAnalysis.csv") #univariate sensitivity
+write.csv(s.loc.summ.ordered, "c:/Users/Rochalab/Desktop/Kelsey/LocalSensitivityAnalysis.csv") #univariate sensitivity
 param.cor = data.frame(cor(s.local[,c(-1,-2)]))#table of parameter correlations
 param.cor
 write.csv(param.cor, "c:/Users/Rocha Lab/Desktop/Kelsey/ParamCorr.csv") #bivariate sensitivity
