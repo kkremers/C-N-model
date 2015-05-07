@@ -63,7 +63,7 @@ plot(data.assim$Re~data.assim$time, pch=16, ylab="Re", xlab="Time (days)")
 plot(data.assim$NDVI~data.assim$time, pch=16, ylab="NDVI", xlab="Time (days)")
 
 head(data.assim)
-data.compare1 = data.assim[,c(1:5,7,8)] #pull out columns for data that you want to assimilate
+data.compare1 = data.assim[,c(1:8)] #pull out columns for data that you want to assimilate
 sigma.obs1 = data.frame(matrix(1, length(data.compare1$time), length(data.compare1))) #observation errors for each data type 
 sigma.obs1[,1] = data.assim$time
 colnames(sigma.obs1) = colnames(data.compare1)
@@ -143,7 +143,7 @@ for (i in 2:M) {
     } else { #if there are no NAs or negative stocks
   
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-  out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,12,13)] #these columns need to match the ones that were pulled out before
+  out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,11:13)] #these columns need to match the ones that were pulled out before
   
   error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
   for (d in 1:D) { #for each data type
@@ -194,8 +194,8 @@ for (i in 2:M) {
 
 #beep(5)
 #make plots to check for mixing and make sure parameter space is thuroughly explored
-plot(all.draws[2:6934,1])
-lines(param.est[2:6934,1], col="red", lwd="2")
+plot(all.draws[,1])
+lines(param.est[,1], col="red", lwd="2")
 
 steps=seq(1:length(J)) #create a vector that represents the number of steps or iterations run
 J=data.frame(steps, J) #create a dataframe that has "steps" as the first column and "J" as the second column
@@ -208,7 +208,7 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_GPP_Re_BiomassCN_AvailableN.Rdata")
+save.image(file="Step1_NEE_GPP_Re_NDVI_BiomassCN_AvailableN.Rdata")
 
 
 #######STEP 2: ESTIMATE PARAMETER UNCERTAINTY
@@ -217,7 +217,7 @@ save.image(file="Step1_NEE_GPP_Re_BiomassCN_AvailableN.Rdata")
 
 out = data.frame(solvemodel(param.best, state)) #run model
 #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,12,13)] #these columns need to match the ones that were pulled out before
+out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,11:13)] #these columns need to match the ones that were pulled out before
 head(out.compare1)
 head(data.compare1)
 
@@ -254,7 +254,7 @@ num.reps = 0 #counter for number of repititions - calculates acceptance rate
 
 
 #also need to know degrees of freedom for chi square test
-n.par = c(3,6,7,9,9,9) #number of parameters predicted by each data stream
+n.par = c(9,9,6,9,9,9,9) #number of parameters predicted by each data stream
 df = rep(0, D)
 for (d in 1:D) { #for each data type
   df[d] = n.time[d] - n.par[d]
@@ -284,7 +284,7 @@ repeat { #repeat until desired number of parameter sets are accepted
     }#end of repeat loop
     
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-  out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,12,13)] #these columns need to match the ones that were pulled out before
+  out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,11:13)] #these columns need to match the ones that were pulled out before
   #remove the time column - no longer needed
   data.comp = data.compare1[,-1]
   out.comp = out.compare1[,-1]
