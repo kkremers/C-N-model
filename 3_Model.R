@@ -61,7 +61,7 @@ solvemodel <- function(params, state, times) {
       if(LAI>0){
       NDVI = log((LAI*scalGDD)/0.003)/7.845}
             
-      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI *scal ) ) ) * 12 
+      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI * scal ) ) ) * 12 
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) * scal
       Ra =  ( 1 - cue ) * GPP
       Re = RespRate * (q10 ^ ( ( Temp - 10 )/ 10 ) )

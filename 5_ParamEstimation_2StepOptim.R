@@ -156,7 +156,7 @@ for (i in 2:M) {
   
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
 
-  out.compare1 = out[match(data.compare1$time, out$time),c(1:5,8,9,11,12,13)] #these columns need to match the ones that were pulled out before
+  out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,11,12,13)] #these columns need to match the ones that were pulled out before
   
   error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
   for (d in 1:D) { #for each data type
@@ -230,7 +230,7 @@ save.image(file="Step1_NEE_GPP_Re_NDVI_BiomassCN_AvailableN.Rdata")
 
 out = data.frame(solvemodel(param.best, state)) #run model
 #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-out.compare1 = out[match(data.compare1$time, out$time),c(1:5,8,9,11,12,13)] #these columns need to match the ones that were pulled out before
+out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,11,12,13)] #these columns need to match the ones that were pulled out before
 head(out.compare1)
 head(data.compare1)
 
@@ -259,45 +259,45 @@ param.keep[1,]=param.best
 head(param.keep)#check to make sure this is correct
 
 
-#set initial values
-param.est = param.best #set initial values for parameters
-reject=0 #reset reject counter
-num.accepted = 0 #counter for number of accepted parameters - when this gets to 1000, loop will stop
-num.reps = 0 #counter for number of repititions - calculates acceptance rate
-
-
 #also need to know degrees of freedom for chi square test
-n.par = c(9,9,6,9,9,9,9) #number of parameters predicted by each data stream
+n.par = c(6,6,7,7,6,6,6,7,2) #number of parameters predicted by each data stream
 df = rep(0, D)
 for (d in 1:D) { #for each data type
   df[d] = n.time[d] - n.par[d]
 } #end of data loop
 df #check values
 
+#set initial values
+param.est = param.best #set initial values for parameters
+reject=0 #reset reject counter
+num.accepted = 0 #counter for number of accepted parameters - when this gets to 1000, loop will stop
+num.reps = 0 #counter for number of repititions - calculates acceptance rate
 
 #start loop
-t=0.5
 repeat { #repeat until desired number of parameter sets are accepted
     
     num.reps=num.reps+1 #add to number of reps counter
     
     repeat{
       for(p in 1:n.param){ #for each parameter
-        step.size = t*(param.max[p]-param.min[p])
+        step.size = 0.5*(param.max[p]-param.min[p])
         param.est[p] = param.best[p]+rnorm(1, 0, step.size) #draw new parameter set
-      } #end of parameter loop          
-    
+      } #end of parameter loop 
+      if(all(param.est>param.min) & all(param.est<param.max)){    
+        break
+      } #end of if loop
+    }#end of repeat loop
+      
       parms = as.numeric(param.est) #parameters for model run
       names(parms) = names(params) #fix names
       out = data.frame(solvemodel(parms, state)) #run model
 
-      if(all(!is.na(out)) & all(out[,2:8]>0)){ #if there are no NAs or negative stocks in the output
-        break 
-        } #end of if loop
-    }#end of repeat loop
+      if(any(is.na(out)) | any(out[,2:8]<0)){ #if there are NAs or negative stocks in the output
+        reject=reject+1
+        } else {
     
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-  out.compare1 = out[match(data.compare1$time, out$time),c(1:5,8,9,11,12,13)] #these columns need to match the ones that were pulled out before
+  out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,9,11,12,13)] #these columns need to match the ones that were pulled out before
 
   #remove the time column - no longer needed
   data.comp = data.compare1[,-1]
@@ -324,7 +324,7 @@ repeat { #repeat until desired number of parameter sets are accepted
     accept = rep (0, D) #vector to keep track of if each j has been accepted or rejected; 1=accept, 0=reject
   for (d in 1:D) { #for each data type  
     
-    if(j[d]-j.best[d] <= qchisq(0.9, n.par[d])) { #conduct chi square test
+    if(j[d]-j.best[d] <= qchisq(0.9, df[d])) { #conduct chi square test
       accept[d] = 1} #if accepted, change value in accept vector to 1
   } #end of data type loop
     
@@ -338,16 +338,10 @@ repeat { #repeat until desired number of parameter sets are accepted
     reject = reject+1 #reject parameter set
   } #end of if loop
   
+  } #end of else loop
+  
   acceptance = 1 - (reject / num.reps) #calculate proportion of accepted iterations
 
-  if(acceptance > 0.275){
-    t=1.01*t
-  }
-  
-  if(acceptance < 0.225){
-    t=0.99*t
-  }
-  
   #print number of accepted parameters every 10 parameters
   if(num.accepted > 10){
   if((num.accepted/10 - floor(num.accepted/10)) == 0){
