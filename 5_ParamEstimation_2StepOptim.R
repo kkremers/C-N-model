@@ -150,6 +150,7 @@ for (i in 2:M) {
     } else { #if there are no NAs or negative stocks
   
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
+
   out.compare1 = out[match(data.compare1$time, out$time),c(1:5,8,9,11,12,13)] #these columns need to match the ones that were pulled out before
   
   error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
@@ -215,7 +216,11 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
+<<<<<<< HEAD
 save.image(file="Step1_NEE_GPP_Re_NDVI_BiomassCN_LitterCN_AvailableN.Rdata")
+=======
+save.image(file="Step1_NEE_GPP_Re_NDVI_BiomassCN_AvailableN.Rdata")
+>>>>>>> fa76c197b80355b9d6fbecc92ac33ba8e682a34d
 
 
 #######STEP 2: ESTIMATE PARAMETER UNCERTAINTY
@@ -261,7 +266,11 @@ num.reps = 0 #counter for number of repititions - calculates acceptance rate
 
 
 #also need to know degrees of freedom for chi square test
+<<<<<<< HEAD
 n.par = c(6,6,7,7,6,6,6,7,2) #number of parameters predicted by each data stream
+=======
+n.par = c(9,9,6,9,9,9,9) #number of parameters predicted by each data stream
+>>>>>>> fa76c197b80355b9d6fbecc92ac33ba8e682a34d
 df = rep(0, D)
 for (d in 1:D) { #for each data type
   df[d] = n.time[d] - n.par[d]
@@ -295,6 +304,7 @@ repeat { #repeat until desired number of parameter sets are accepted
       
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
   out.compare1 = out[match(data.compare1$time, out$time),c(1:5,8,9,11,12,13)] #these columns need to match the ones that were pulled out before
+
   #remove the time column - no longer needed
   data.comp = data.compare1[,-1]
   out.comp = out.compare1[,-1]
