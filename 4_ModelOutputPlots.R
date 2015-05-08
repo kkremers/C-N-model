@@ -17,8 +17,8 @@ plot(out$Litter_N~out$time, type="l", col="orange", main = "Litter N", xlab="", 
 plot(out$SOM_C~out$time, type="l", col="red", main = "SOM C", xlab="", ylab="g C m-2")
 plot(out$SOM_N~out$time, type="l", col="red", main = "SOM N", xlab="Time (days)", ylab="g N m-2",lty=2)
 plot(out$Available_N~out$time, type="l", col="green", main = "Available N", xlab="Time (days)", ylab="g N m-2",lty=2)
-plot(out$LAI~out$time, type="l")
-plot(data$PAR_vis)
+plot(out$NDVI~out$time, type="l")
+
 
 #plot scalar
 par(mfrow=c(2,1), mar=c(4,4,0.5,2))
