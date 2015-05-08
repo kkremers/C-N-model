@@ -134,15 +134,10 @@ reject=0 #reset reject counter
 
 for (i in 2:M) {
   
-  repeat{
     for(p in 1:n.param){ #for each parameter
       param.est[i,p] = runif(1, param.min[p], param.max[p])
       all.draws[i,p] = param.est[i,p]
     } #end of parameter loop
-    if(param.est[i,p]>param.min[p] & param.est[i,p]<param.max[p]){
-      break
-    } #end of if loop
-  } #end of repeat
 
     parms = as.numeric(param.est[i,]) #parameters for model run
     names(parms) = names(params) #fix names
@@ -266,7 +261,7 @@ num.reps = 0 #counter for number of repititions - calculates acceptance rate
 
 
 #also need to know degrees of freedom for chi square test
-n.par = c(3,6,7,9,9,9) #number of parameters predicted by each data stream
+n.par = c(6,6,7,7,6,6,6,7,2) #number of parameters predicted by each data stream
 df = rep(0, D)
 for (d in 1:D) { #for each data type
   df[d] = n.time[d] - n.par[d]
@@ -275,26 +270,29 @@ df #check values
 
 
 #start loop
-t=0.5
 repeat { #repeat until desired number of parameter sets are accepted
     
     num.reps=num.reps+1 #add to number of reps counter
     
     repeat{
+      repeat{
       for(p in 1:n.param){ #for each parameter
-        step.size = t*(param.max[p]-param.min[p])
-        param.est[p] = param.best[p]+rnorm(1, 0, step.size) #draw new parameter set
-      } #end of parameter loop          
-    
+        param.est[p] = param.best[p]+rnorm(1, 0, 0.5*(param.max[p]-param.min[p])) #draw new parameter set
+      } #end of parameter loop     
+      if(all(param.est>param.min) & all(param.est<param.max)){
+        break
+      } #end of if loop
+      } #end of repeat loop
+      
       parms = as.numeric(param.est) #parameters for model run
       names(parms) = names(params) #fix names
       out = data.frame(solvemodel(parms, state)) #run model
-
+      
       if(all(!is.na(out)) & all(out[,2:8]>0)){ #if there are no NAs or negative stocks in the output
         break 
-        } #end of if loop
+      } #end of if loop
     }#end of repeat loop
-    
+      
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
   out.compare1 = out[match(data.compare1$time, out$time),c(1:5,8,9,11,12,13)] #these columns need to match the ones that were pulled out before
   #remove the time column - no longer needed
@@ -322,7 +320,7 @@ repeat { #repeat until desired number of parameter sets are accepted
     accept = rep (0, D) #vector to keep track of if each j has been accepted or rejected; 1=accept, 0=reject
   for (d in 1:D) { #for each data type  
     
-    if(j[d]-j.best[d] <= qchisq(0.9, n.par[d])) { #conduct chi square test
+    if(j[d]-j.best[d] <= qchisq(0.9, df[d])) { #conduct chi square test
       accept[d] = 1} #if accepted, change value in accept vector to 1
   } #end of data type loop
     
@@ -337,14 +335,6 @@ repeat { #repeat until desired number of parameter sets are accepted
   } #end of if loop
   
   acceptance = 1 - (reject / num.reps) #calculate proportion of accepted iterations
-
-  if(acceptance > 0.275){
-    t=1.01*t
-  }
-  
-  if(acceptance < 0.225){
-    t=0.99*t
-  }
   
   #print number of accepted parameters every 10 parameters
   if(num.accepted > 10){
