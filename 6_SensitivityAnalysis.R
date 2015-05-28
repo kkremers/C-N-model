@@ -1,6 +1,6 @@
 #############PLOTS OF DISTRIBUTIONS###############
 
-par(mfrow=c(4,3), mar=c(4,4,2,2))
+par(mfrow=c(3,3), mar=c(4,4,2,2))
 hist(param.keep[,1], main=names(params[1]))
 abline(v=params[1], col="red", lwd=3)
 abline(v=param.best[1], col="green", lwd=3)
@@ -42,7 +42,7 @@ sensvars = c("Biomass_C",
              "GPP",
              "NEE",
              "Re",
-             "LAI")
+             "NDVI")
 
 #local sensitivity analysis
 s.local <- sensFun(func=solvemodel, parms=param.best, state=state, sensvar = sensvars, varscale=1)
@@ -61,6 +61,11 @@ pairs(s.local)
 params.mean =  apply(param.keep, 2, mean)
 params.min =  apply(param.keep, 2, min)
 params.max =  apply(param.keep, 2, max)
+params.q05 =  apply(param.keep, 2, quantile, probs=0.05)
+params.q95 =  apply(param.keep, 2, quantile, probs=0.95)
+
+
+
 parRanges = data.frame(min = params.min,  max = params.max)
 rownames(parRanges) = names(params)
 parRanges
