@@ -75,7 +75,7 @@ plot(data.assim$Re~data.assim$time, pch=16, ylab="Re", xlab="Time (days)")
 plot(data.assim$NDVI~data.assim$time, pch=16, ylab="NDVI", xlab="Time (days)")
 
 head(data.assim)
-data.compare1 = data.assim[,c(1,9)] #pull out columns for data that you want to assimilate
+data.compare1 = data.assim[,c(1:3,9)] #pull out columns for data that you want to assimilate
 sigma.obs1 = data.frame(matrix(1, length(data.compare1$time), length(data.compare1))) #observation errors for each data type 
 sigma.obs1[,1] = data.assim$time
 colnames(sigma.obs1) = colnames(data.compare1)
@@ -156,7 +156,7 @@ for (i in 2:M) {
   
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
 
-  out.compare1 = out[match(data.compare1$time, out$time),c(1,12)] #these columns need to match the ones that were pulled out before
+  out.compare1 = out[match(data.compare1$time, out$time),c(1:3,12)] #these columns need to match the ones that were pulled out before
   
   error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
   for (d in 1:D) { #for each data type
@@ -221,4 +221,4 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE.Rdata")
+save.image(file="Step1_NEE_BiomassCN.Rdata")
