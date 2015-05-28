@@ -7,7 +7,7 @@
 
 #Get data ready
 head(out) #this is the output from the model run
-data.assim = out[,c(1:5,8,9,11,12,13)] #choose columns that you want
+data.assim = out[,c(1:9,11,12,13)] #choose columns that you want
 head(data.assim) #preview table
 
 #####remove some data points for Stock data
@@ -32,6 +32,16 @@ LitterN.assim = data.assim$Litter_N[match(time.keepSTOCK, data.assim$time)]  #cr
 LitterN.assim = data.frame(time=time.keepSTOCK, LitterN.assim) #create a dataframe of the new data and the corresponding timesteps
 head(LitterN.assim)
 data.assim$Litter_N=LitterN.assim$LitterN.assim[match(data.assim$time, LitterN.assim$time)] #change the data in the assimilation table to NAs
+#SOM_C
+SOMC.assim = data.assim$SOM_C[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
+SOMC.assim = data.frame(time=time.keepSTOCK, SOMC.assim) #create a dataframe of the new data and the corresponding timesteps
+head(SOMC.assim) #check table
+data.assim$SOM_C=SOMC.assim$SOMC.assim[match(data.assim$time, SOMC.assim$time)] #change the data in the assimilation table to NAs
+#SOM_N
+SOMN.assim = data.assim$SOM_N[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
+SOMN.assim = data.frame(time=time.keepSTOCK, SOMN.assim) #create a dataframe of the new data and the corresponding timesteps
+head(SOMN.assim)
+data.assim$SOM_N=SOMN.assim$SOMN.assim[match(data.assim$time, SOMN.assim$time)] #change the data in the assimilation table to NAs
 #Available_N
 AvailN.assim = data.assim$Available_N[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
 AvailN.assim = data.frame(time=time.keepSTOCK, AvailN.assim) #create a dataframe of the new data and the corresponding timesteps
@@ -68,6 +78,8 @@ plot(data.assim$Biomass_C~data.assim$time, pch=16, ylab="Biomass_C", xlab="Time 
 plot(data.assim$Biomass_N~data.assim$time, pch=16, ylab="Biomass_N", xlab="Time (days)")
 plot(data.assim$Litter_C~data.assim$time, pch=16, ylab="Litter_C", xlab="Time (days)")
 plot(data.assim$Litter_N~data.assim$time, pch=16, ylab="Litter_N", xlab="Time (days)")
+plot(data.assim$SOM_C~data.assim$time, pch=16, ylab="SOM_C", xlab="Time (days)")
+plot(data.assim$SOM_N~data.assim$time, pch=16, ylab="SOM_N", xlab="Time (days)")
 plot(data.assim$Available_N~data.assim$time, pch=16, ylab="Available_N", xlab="Time (days)")
 plot(data.assim$GPP~data.assim$time, pch=16, ylab="GPP", xlab="Time (days)")
 plot(data.assim$NEE~data.assim$time, pch=16, ylab="NEE", xlab="Time (days)")
@@ -75,7 +87,11 @@ plot(data.assim$Re~data.assim$time, pch=16, ylab="Re", xlab="Time (days)")
 plot(data.assim$NDVI~data.assim$time, pch=16, ylab="NDVI", xlab="Time (days)")
 
 head(data.assim)
+<<<<<<< HEAD
 data.compare1 = data.assim[,c(1:3,9)] #pull out columns for data that you want to assimilate
+=======
+data.compare1 = data.assim[,c(1:3,6,9)] #pull out columns for data that you want to assimilate
+>>>>>>> 1ca29ad6bb6a1f6473bad8db158b1accdd239d0c
 sigma.obs1 = data.frame(matrix(1, length(data.compare1$time), length(data.compare1))) #observation errors for each data type 
 sigma.obs1[,1] = data.assim$time
 colnames(sigma.obs1) = colnames(data.compare1)
@@ -156,7 +172,11 @@ for (i in 2:M) {
   
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
 
+<<<<<<< HEAD
   out.compare1 = out[match(data.compare1$time, out$time),c(1:3,12)] #these columns need to match the ones that were pulled out before
+=======
+  out.compare1 = out[match(data.compare1$time, out$time),c(1:3,8,12)] #these columns need to match the ones that were pulled out before
+>>>>>>> 1ca29ad6bb6a1f6473bad8db158b1accdd239d0c
   
   error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
   for (d in 1:D) { #for each data type
@@ -221,4 +241,8 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
+<<<<<<< HEAD
 save.image(file="Step1_NEE_BiomassCN.Rdata")
+=======
+save.image(file="Step1_NEE_BiomassCN_AvailN.Rdata")
+>>>>>>> 1ca29ad6bb6a1f6473bad8db158b1accdd239d0c
