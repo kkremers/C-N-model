@@ -7,7 +7,7 @@ require(deSolve)
 
 out = data.frame(solvemodel(param.best, state)) #run model
 #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-out.compare1 = out[match(data.compare1$time, out$time),c(1:3,12)] #these columns need to match the ones that were pulled out before
+out.compare1 = out[match(data.compare1$time, out$time),c(1:3,6:8,12)] #these columns need to match the ones that were pulled out before
 head(out.compare1)
 head(data.compare1)
 head(sigma.obs1)
@@ -37,9 +37,10 @@ head(param.keep)#check to make sure this is correct
 
 
 #also need to know degrees of freedom for chi square test
-n.par = c(6,6,7) #number of parameters predicted by each data stream
-#BiomassCN, AvailableN, NDVI, GPP = 6
-#LitterCN, NEE = 7
+n.par = c(6,6,6,4,6,7) #number of parameters predicted by each data stream
+#BiomassCN, AvailableN, NDVI, GPP, SOM_C = 6
+#NEE = 7
+#SOM_N = 4
 #Re = 2
 df = rep(0, D)
 for (d in 1:D) { #for each data type
@@ -77,7 +78,7 @@ repeat { #repeat until desired number of parameter sets are accepted
   } else {
     
     #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-    out.compare1 = out[match(data.compare1$time, out$time),c(1:3,12)] #these columns need to match the ones that were pulled out before
+    out.compare1 = out[match(data.compare1$time, out$time),c(1:3,6:8,12)] #these columns need to match the ones that were pulled out before
     
     #remove the time column - no longer needed
     data.comp = data.compare1[,-1]
@@ -140,5 +141,4 @@ repeat { #repeat until desired number of parameter sets are accepted
 head(param.keep)
 head(data.compare1)
 
-
-save.image(file="Step2_NEE_BiomassCN.Rdata")
+save.image(file="Step2_NEE_BiomassCN_SOMCN_AvailableN.Rdata")
