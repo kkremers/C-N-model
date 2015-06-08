@@ -10,7 +10,7 @@ out = data.frame(solvemodel(param.best, state)) #run model
 out.compare1 = out[match(data.compare1$time, out$time),c(1:3,12)] #these columns need to match the ones that were pulled out before
 head(out.compare1)
 head(data.compare1)
-
+head(sigma.obs1)
 
 #create storage matrices for error and variance
 var.jbest = rep(0, D)
@@ -141,4 +141,4 @@ head(param.keep)
 head(data.compare1)
 
 
-save.image(file="Step2_NEE_GPP_Re_BiomassCN_AvailableN.Rdata")
+save.image(file="Step2_NEE_BiomassCN.Rdata")
