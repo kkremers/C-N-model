@@ -137,3 +137,6 @@ repeat { #repeat until desired number of parameter sets are accepted
 } #end of repeat
 
 head(param.keep)
+tail(param.keep)
+
+save.image(file="Step2_NEE.Rdata")
