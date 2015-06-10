@@ -1,114 +1,110 @@
 #in this script, the output from all of the synthetic data experiments is compiled so that it can be compared
 
 #first, need to create a table to store the output
-summarytable = NULL 
-colnames(summarytable) = c("Experiment", "Parameter", "q05", "lowerbox", "mean", "upperbox", "q95")
+summarytable = data.frame(matrix(1,54,7)) 
+colnames(summarytable) = c("Experiment", "Parameter", "min", "q25", "mean", "q75", "max")
+head(summarytable)
 
 
 #Now, load each workspace and save the summary statistics to summary table
 load("Step2_NEE.Rdata") #load workspace
-means=apply(param.keep, 2, mean) #calculate parameter means
-sds=apply(param.keep, 2, sd) #calculate parameter standard deviations
-q05=apply(param.keep, 2, quantile, 0.05) #calculate lower quantile
-q95=apply(param.keep, 2, quantile, 0.95) #calculate upper quantile
-lowerbox=means-sds #calculate where lower edge of box should be
-upperbox=means+sds #calculate where upper edge of box should be
-exper = rep(1, n.params) #create vector of experiment name
+min=apply(param.keep, 2, min) #calculate min value accepted
+q25=apply(param.keep, 2, quantile, 0.25) #calculate lower quantile
+means=apply(param.keep, 2, mean)
+q75=apply(param.keep, 2, quantile, 0.75) #calculate upper quantile
+max=apply(param.keep, 2, max) #calculate max value accepted
+param.best_1 = param.best
+exper = rep(1, n.param) #create vector of experiment name
 parameters = names(param.best) #create vector of parameter names
-stats=cbind(exper, parameters, q05, lowerbox, means, upperbox, q95) #bind all of the information together in the proper order (same order as summarytable columns)
-rbind(summarytable, stats) #add these rows to the summary table
+summarytable[1:9,]=cbind(exper, parameters, min, q25, means, q75, max) #bind all of the information together in the proper order (same order as summarytable columns)
 param.keep_1 = param.keep #save the table of accepted parameters under a new name
 write.csv(param.keep_1, "Params_NEE.csv")
-param.best_1 = param.best
+
 
 load("Step2_NEE_NDVI.Rdata")
-means=apply(param.keep, 2, mean) #calculate parameter means
-sds=apply(param.keep, 2, sd) #calculate parameter standard deviations
-q05=apply(param.keep, 2, quantile, 0.05) #calculate lower quantile
-q95=apply(param.keep, 2, quantile, 0.95) #calculate upper quantile
-lowerbox=means-sds #calculate where lower edge of box should be
-upperbox=means+sds #calculate where upper edge of box should be
-exper = rep(2, n.params) #create vector of experiment name
+min=apply(param.keep, 2, min) #calculate min value accepted
+q25=apply(param.keep, 2, quantile, 0.25) #calculate lower quantile
+means=apply(param.keep, 2, mean)
+q75=apply(param.keep, 2, quantile, 0.75) #calculate upper quantile
+max=apply(param.keep, 2, max) #calculate max value accepted
+param.best_2 = param.best
+exper = rep(2, n.param) #create vector of experiment name
 parameters = names(param.best) #create vector of parameter names
-stats=cbind(exper, parameters, q05, lowerbox, means, upperbox, q95) #bind all of the information together in the proper order (same order as summarytable columns)
-rbind(summarytable, stats) #add these rows to the summary table
+summarytable[10:18,]=cbind(exper, parameters, min, q25, means, q75, max) #bind all of the information together in the proper order (same order as summarytable columns)
 param.keep_2 = param.keep #save the table of accepted parameters under a new name
 write.csv(param.keep_2, "Params_NEE_NDVI.csv")
-param.best_2 = param.best
+
 
 load("Step2_NEE_GPP_Re.Rdata")
-means=apply(param.keep, 2, mean) #calculate parameter means
-sds=apply(param.keep, 2, sd) #calculate parameter standard deviations
-q05=apply(param.keep, 2, quantile, 0.05) #calculate lower quantile
-q95=apply(param.keep, 2, quantile, 0.95) #calculate upper quantile
-lowerbox=means-sds #calculate where lower edge of box should be
-upperbox=means+sds #calculate where upper edge of box should be
-exper = rep(3, n.params) #create vector of experiment name
+min=apply(param.keep, 2, min) #calculate min value accepted
+q25=apply(param.keep, 2, quantile, 0.25) #calculate lower quantile
+means=apply(param.keep, 2, mean)
+q75=apply(param.keep, 2, quantile, 0.75) #calculate upper quantile
+max=apply(param.keep, 2, max) #calculate max value accepted
+param.best_3 = param.best
+exper = rep(3, n.param) #create vector of experiment name
 parameters = names(param.best) #create vector of parameter names
-stats=cbind(exper, parameters, q05, lowerbox, means, upperbox, q95) #bind all of the information together in the proper order (same order as summarytable columns)
-rbind(summarytable, stats) #add these rows to the summary table
+summarytable[19:27,]=cbind(exper, parameters, min, q25, means, q75, max) #bind all of the information together in the proper order (same order as summarytable columns)
 param.keep_3 = param.keep #save the table of accepted parameters under a new name
 write.csv(param.keep_3, "Params_NEE_GPP_Re.csv")
-param.best_3 = param.best
+
 
 load("Step2_NEE_BiomassCN.Rdata")
-means=apply(param.keep, 2, mean) #calculate parameter means
-sds=apply(param.keep, 2, sd) #calculate parameter standard deviations
-q05=apply(param.keep, 2, quantile, 0.05) #calculate lower quantile
-q95=apply(param.keep, 2, quantile, 0.95) #calculate upper quantile
-lowerbox=means-sds #calculate where lower edge of box should be
-upperbox=means+sds #calculate where upper edge of box should be
-exper = rep(4, n.params) #create vector of experiment name
+min=apply(param.keep, 2, min) #calculate min value accepted
+q25=apply(param.keep, 2, quantile, 0.25) #calculate lower quantile
+means=apply(param.keep, 2, mean)
+q75=apply(param.keep, 2, quantile, 0.75) #calculate upper quantile
+max=apply(param.keep, 2, max) #calculate max value accepted
+param.best_4 = param.best
+exper = rep(4, n.param) #create vector of experiment name
 parameters = names(param.best) #create vector of parameter names
-stats=cbind(exper, parameters, q05, lowerbox, means, upperbox, q95) #bind all of the information together in the proper order (same order as summarytable columns)
-rbind(summarytable, stats) #add these rows to the summary table
+summarytable[28:36,]=cbind(exper, parameters, min, q25, means, q75, max) #bind all of the information together in the proper order (same order as summarytable columns)
 param.keep_4 = param.keep #save the table of accepted parameters under a new name
 write.csv(param.keep_4, "Params_NEE_BiomassCN.csv")
-param.best_4 = param.best
+
 
 load("Step2_NEE_BiomassCN_AvailableN.Rdata")
-means=apply(param.keep, 2, mean) #calculate parameter means
-sds=apply(param.keep, 2, sd) #calculate parameter standard deviations
-q05=apply(param.keep, 2, quantile, 0.05) #calculate lower quantile
-q95=apply(param.keep, 2, quantile, 0.95) #calculate upper quantile
-lowerbox=means-sds #calculate where lower edge of box should be
-upperbox=means+sds #calculate where upper edge of box should be
-exper = rep(5, n.params) #create vector of experiment name
+min=apply(param.keep, 2, min) #calculate min value accepted
+q25=apply(param.keep, 2, quantile, 0.25) #calculate lower quantile
+means=apply(param.keep, 2, mean)
+q75=apply(param.keep, 2, quantile, 0.75) #calculate upper quantile
+max=apply(param.keep, 2, max) #calculate max value accepted
+param.best_5 = param.best
+exper = rep(5, n.param) #create vector of experiment name
 parameters = names(param.best) #create vector of parameter names
-stats=cbind(exper, parameters, q05, lowerbox, means, upperbox, q95) #bind all of the information together in the proper order (same order as summarytable columns)
-rbind(summarytable, stats) #add these rows to the summary table
+summarytable[37:45,]=cbind(exper, parameters, min, q25, means, q75, max) #bind all of the information together in the proper order (same order as summarytable columns)
 param.keep_5 = param.keep #save the table of accepted parameters under a new name
 write.csv(param.keep_5, "Params_NEE_BiomassCN_AvailableN.csv")
-param.best_5 = param.best
+
 
 load("Step2_NEE_BiomassCN_SOMCN_AvailableN.Rdata")
-means=apply(param.keep, 2, mean) #calculate parameter means
-sds=apply(param.keep, 2, sd) #calculate parameter standard deviations
-q05=apply(param.keep, 2, quantile, 0.05) #calculate lower quantile
-q95=apply(param.keep, 2, quantile, 0.95) #calculate upper quantile
-lowerbox=means-sds #calculate where lower edge of box should be
-upperbox=means+sds #calculate where upper edge of box should be
-exper = rep(6, n.params) #create vector of experiment name
+min=apply(param.keep, 2, min) #calculate min value accepted
+q25=apply(param.keep, 2, quantile, 0.25) #calculate lower quantile
+means=apply(param.keep, 2, mean)
+q75=apply(param.keep, 2, quantile, 0.75) #calculate upper quantile
+max=apply(param.keep, 2, max) #calculate max value accepted
+param.best_6 = param.best
+exper = rep(6, n.param) #create vector of experiment name
 parameters = names(param.best) #create vector of parameter names
-stats=cbind(exper, parameters, q05, lowerbox, means, upperbox, q95) #bind all of the information together in the proper order (same order as summarytable columns)
-rbind(summarytable, stats) #add these rows to the summary table
+summarytable[46:54,]=cbind(exper, parameters, min, q25, means, q75, max) #bind all of the information together in the proper order (same order as summarytable columns)
 param.keep_6 = param.keep #save the table of accepted parameters under a new name
 write.csv(param.keep_6, "Params_NEE_BiomassCN_SOMCN_AvailableN.csv")
-param.best_6 = param.best
+
 
 #preview table
 head(summarytable)
 tail(summarytable)
 
 #create table of param.best
-best.params = matrix(1, 9, 7)
-best.params[,1] = names(param.best_1)
-best.params[,2] = param.best_1
-best.params[,3] = param.best_2
-best.params[,4] = param.best_3
-best.params[,5] = param.best_4
-best.params[,6] = param.best_5
-best.params[,7] = param.best_6
+best.params = data.frame(matrix(1, 6, 9))
+colnames(best.params)=names(param.best)
+best.params[1,] = param.best_1
+best.params[2,] = param.best_2
+best.params[3,] = param.best_3
+best.params[4,] = param.best_4
+best.params[5,] = param.best_5
+best.params[6,] = param.best_6
+best.params
 
 #need to know value of expected parameters
 params <- c(kplant = 0.11,
@@ -124,14 +120,20 @@ params <- c(kplant = 0.11,
 
 ######create boxplots#####
 
-par(mfrow=c(3,3)) #set so that plots are 3x3
+par(mfrow=c(3,3), mar=c(4,4,2,2))
 
-for (n in 1:n.params) { #for each parameter
+for (n in 1:n.param) { #for each parameter
   
-  dat = summarytable[which(summarytable$Parameters==names(params[n])),3:7] #pull out data for that parameter
-  bxp(dat, col=c("aquamarine4", "lightcyan2", "palegreen3", "cadetblue", "darkslategray4", "darkseagreen2"), main=names(params[n])) #plot the data
-  abline(h=as.numeric(params[n]), col="gray", lty=2, lwd=2) #add line where expected parameter value is
-  points(param.best[,n], col="red", cex=1.5, pch=16)
+  dat = summarytable[which(summarytable$Parameter==names(params[n])),3:7] #pull out data for that parameter
+  box.dat = matrix(1, 5, 6)
+  box.dat[1,]=as.numeric(dat[,1])
+  box.dat[2,]=as.numeric(dat[,2])
+  box.dat[3,]=as.numeric(dat[,3])
+  box.dat[4,]=as.numeric(dat[,4])
+  box.dat[5,]=as.numeric(dat[,5])
+  boxplot(box.dat, col=c("palegreen", "darkslategray", "cadetblue", "aquamarine4", "lightcyan2", "palegreen4"), main=names(params[n])) #plot the data
+  abline(h=as.numeric(params[n]), col="black", lty=2) #add line where expected parameter value is
+  points(best.params[,n], col="red", cex=1.5, pch=16)
 } #end of for loop
 
 
@@ -146,14 +148,14 @@ state <- c(Biomass_C = 400,
 
 head(data.assim) #may need to re-run param optimization step 1 code to get this (will need to re-run model with params used to create assimilation data)
 #remove time column
-data.assim = data.asism[,-1]
+data.assim = data.assim[,-1]
 
-out1=data.frame(solvemodel(param.best_1, state), c(2:9,11,12,13)) #with columns to match data.assim
-out2=data.frame(solvemodel(param.best_2, state), c(2:9,11,12,13))
-out3=data.frame(solvemodel(param.best_3, state), c(2:9,11,12,13))
-out4=data.frame(solvemodel(param.best_4, state), c(2:9,11,12,13))
-out5=data.frame(solvemodel(param.best_5, state), c(2:9,11,12,13))
-out6=data.frame(solvemodel(param.best_6, state), c(2:9,11,12,13))
+out1=data.frame(solvemodel(param.best_1, state))[,c(2:9,11,12,13)] #with columns to match data.assim
+out2=data.frame(solvemodel(param.best_2, state))[,c(2:9,11,12,13)]
+out3=data.frame(solvemodel(param.best_3, state))[,c(2:9,11,12,13)]
+out4=data.frame(solvemodel(param.best_4, state))[,c(2:9,11,12,13)]
+out5=data.frame(solvemodel(param.best_5, state))[,c(2:9,11,12,13)]
+out6=data.frame(solvemodel(param.best_6, state))[,c(2:9,11,12,13)]
 
 head(out1)
 head(data.assim)
@@ -162,12 +164,14 @@ head(data.assim)
 
 #now, for each experiment (1-6), calculate bias mean error, MAE, and R2 for each stock/flux of interest
 
-#calculate bias mean error
-bias = out1-data.assim
-mean.bias1 = apply(bias, 2, mean)
+#calculate RMSE
+error = (data.assim-out1)
+errorsquared = error^2
+mean = apply(errorsquared, 2, mean, na.rm=TRUE)
+RMSE1 = sqrt(mean)
 #calculate MAE
-abs.error = abs(bias)
-MAE1 = apply(abs.error, 2, mean)
+abs.error = abs(out1-data.assim)
+MAE1 = apply(abs.error, 2, mean, na.rm=TRUE)
 #calculate r2
 reg_1 = lm(data.assim[,1]~out1[,1])
 r2_1 = summary(reg_1)$r.squared
@@ -195,26 +199,15 @@ r2_11 = summary(reg_11)$r.squared
 #put all of them into one vector
 rsquared1 = c(r2_1, r2_2, r2_3, r2_4, r2_5, r2_6, r2_7, r2_8, r2_9, r2_10, r2_11)
 
-length(data.assim) #length of all stats should match this value
-length(mean.bias1)
-length(MAE1)
-length(rsquared1)
-
-
-
-
-
-
-
 #now add them all to the comparison table
-modelcompare = matrix(1,11,19)
+modelcompare = data.frame(matrix(1,11,19))
 colnames(modelcompare) = c("Output", 
-                           "r2_1", "MAE_1", "Bias_1", 
-                           "r2_2", "MAE_2", "Bias_2",
-                           "r2_3", "MAE_3", "Bias_3",
-                           "r2_4", "MAE_4", "Bias_4",
-                           "r2_5", "MAE_5", "Bias_5",
-                           "r2_6", "MAE_6", "Bias_6")
+                           "r2_1", "MAE_1", "RMSE_1", 
+                           "r2_2", "MAE_2", "RMSE_2",
+                           "r2_3", "MAE_3", "RMSE_3",
+                           "r2_4", "MAE_4", "RMSE_4",
+                           "r2_5", "MAE_5", "RMSE_5",
+                           "r2_6", "MAE_6", "RMSE_6")
 
 modelcompare$Output = colnames(data.assim)
 modelcompare$r2_1 = rsquared1
@@ -223,19 +216,20 @@ modelcompare$r2_3 = rsquared3
 modelcompare$r2_4 = rsquared4
 modelcompare$r2_5 = rsquared5
 modelcompare$r2_6 = rsquared6
-modelcompare$MAE1 = MAE1
-modelcompare$MAE2 = MAE2
-modelcompare$MAE3 = MAE3
-modelcompare$MAE4 = MAE4
-modelcompare$MAE5 = MAE5
-modelcompare$MAE6 = MAE6
-modelcompare$Bias_1 = mean.bias1
-modelcompare$Bias_2 = mean.bias2
-modelcompare$Bias_3 = mean.bias3
-modelcompare$Bias_4 = mean.bias5
-modelcompare$Bias_5 = mean.bias5
-modelcompare$Bias_6 = mean.bias6
+modelcompare$MAE_1 = MAE1
+modelcompare$MAE_2 = MAE2
+modelcompare$MAE_3 = MAE3
+modelcompare$MAE_4 = MAE4
+modelcompare$MAE_5 = MAE5
+modelcompare$MAE_6 = MAE6
+modelcompare$RMSE_1 = RMSE1
+modelcompare$RMSE_2 = RMSE2
+modelcompare$RMSE_3 = RMSE3
+modelcompare$RMSE_4 = RMSE5
+modelcompare$RMSE_5 = RMSE5
+modelcompare$RMSE_6 = RMSE6
 
+head(modelcompare)
 
 #save table as CSV
 
