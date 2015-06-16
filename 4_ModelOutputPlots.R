@@ -6,18 +6,25 @@ plot(data$Temp_ARF~data$time, type="l", ylab = "Daily Max Temp (C)", col="red", 
 abline(h=0)
 plot(data$PAR_vis~data$time, type="l", ylab = "Daily Plant Avail. PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
 
-
+out = data.frame(solvemodel(params, state)) #creates table of model output
+out1 = out = data.frame(solvemodel(param.best, state)) #creates table of model output 
 
 #plot pools
 par(mfrow=c(4,2), mar=c(4,4,1,2))
-plot(out$Biomass_C~out$time, type="l", col="springgreen3", main = "Biomass C", xlab="", ylab="g C m-2")
-plot(out$Biomass_N~out$time, type="l", col="springgreen3",  main = "Biomass N", xlab="", ylab="g N m-2", lty=2)
-plot(out$Litter_C~out$time, type="l", col="orange", main = "Litter C", xlab="", ylab="g C m-2")
-plot(out$Litter_N~out$time, type="l", col="orange", main = "Litter N", xlab="", ylab="g N m-2", lty=2)
+plot(out$Biomass_C~out$time, type="l", col="red", main = "Biomass C", xlab="", ylab="g C m-2")
+points(out1$Biomass_C~out1$time, col="gray1", cex=0.25)
+plot(out$Biomass_N~out$time, type="l", col="red",  main = "Biomass N", xlab="", ylab="g N m-2", lty=2)
+points(out1$Biomass_N~out1$time, col="gray1", cex=0.25)
+plot(out$Litter_C~out$time, type="l", col="red", main = "Litter C", xlab="", ylab="g C m-2")
+points(out1$Litter_C~out1$time, col="gray1", cex=0.25)
+plot(out$Litter_N~out$time, type="l", col="red", main = "Litter N", xlab="", ylab="g N m-2", lty=2)
+points(out1$Litter_N~out1$time, col="gray1", cex=0.25)
 plot(out$SOM_C~out$time, type="l", col="red", main = "SOM C", xlab="", ylab="g C m-2")
+points(out1$SOM_C~out1$time, col="gray1", cex=0.25)
 plot(out$SOM_N~out$time, type="l", col="red", main = "SOM N", xlab="Time (days)", ylab="g N m-2",lty=2)
-plot(out$Available_N~out$time, type="l", col="green", main = "Available N", xlab="Time (days)", ylab="g N m-2",lty=2)
-plot(out$NDVI~out$time, type="l")
+points(out1$SOM_N~out1$time, col="gray1", cex=0.25)
+plot(out$Available_N~out$time, type="l", col="red", main = "Available N", xlab="Time (days)", ylab="g N m-2",lty=2)
+points(out1$Available_N~out1$time, col="gray1", cex=0.25)
 
 
 #plot scalar
@@ -115,4 +122,51 @@ points(out$Re~data$Temp_ARF, col="red")
 
 plot(data$NEE~data$Temp_ARF, pch=16, ylab="NEE", xlab="Temperature")
 points(out$NEE~data$Temp_ARF, col="red")
+
+
+
+
+
+#see how well data matches
+#to compare on 1:1 line with data, need to select only points for which data is available
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+plot(out$GPP~out$time, col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="Time (days)", type="l")
+points(out1$GPP, col="blue", pch=18, cex=0.8)
+plot(out$GPP, out1$GPP, ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(-out$Re~out$time, col="azure4", pch=16, ylim=c(-5,0), xlab="Time (days)", ylab="Re (gC m-2 day-1)", type="l")
+points(-out1$Re, col="blue", pch=16, cex=0.6)
+abline(h=0)
+plot(out$Re, out1$Re, ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-5,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
+points(out1$NEE, col="blue", pch=16, cex=0.6)
+abline(h=0)
+plot(out$NEE, out1$NEE, ylim=c(-4, 1), ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", type="l", ylim=c(0, 1))
+points(out1$NDVI, col="blue", pch=18, cex=0.8)
+plot(out$NDVI, out1$NDVI, ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+
+resid.GPP = out$GPP - out1$GPP
+resid.NEE = out$NEE - out1$NEE
+resid.Re = out$Re - out1$Re
+resid.NDVI = out$NDVI - out1$NDVI
+resid = data.frame(time=out$time, DOY=out$DOY, resid.GPP, resid.NEE, resid.Re, resid.NDVI)
+head(resid)
+
+par(mfrow=c(4,1), mar=c(4,4,2,2))
+plot(resid$DOY, resid$resid.GPP, main="GPP Residuals", ylab="Residuals", xlab="DOY")
+abline(h=0, col="red")
+plot(resid$DOY, resid$resid.Re, main="Re Residuals", ylab="Residuals", xlab="DOY")
+abline(h=0, col="red")
+plot(resid$DOY, resid$resid.NEE, main="NEE Residuals", ylab="Residuals", xlab="DOY")
+abline(h=0, col="red")
+plot(resid$DOY, resid$resid.NDVI, main="NDVI Residuals", ylab="Residuals", xlab="DOY")
+abline(h=0, col="red")
 

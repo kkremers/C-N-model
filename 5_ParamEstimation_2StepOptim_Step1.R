@@ -87,12 +87,18 @@ plot(data.assim$Re~data.assim$time, pch=16, ylab="Re", xlab="Time (days)")
 plot(data.assim$NDVI~data.assim$time, pch=16, ylab="NDVI", xlab="Time (days)")
 
 head(data.assim)
-data.compare1 = data.assim[,c(1,11)] #pull out columns for data that you want to assimilate
+data.compare1 = data.assim[,c(1:3,6:12)] #pull out columns for data that you want to assimilate
 sigma.obs1 = data.frame(matrix(NA, length(data.compare1$time), length(data.compare1))) #observation errors for each data type 
 sigma.obs1[,1] = data.assim$time
-sigma.obs1[!is.na(data.compare1[,2]),2] = 1
-sigma.obs1[!is.na(data.compare1[,3]),3] = 0.87
-sigma.obs1[,4] = 0.50*data.compare1[,4]
+sigma.obs1[!is.na(data.compare1[,2]),2] = 52
+sigma.obs1[!is.na(data.compare1[,3]),3] = 0.84
+sigma.obs1[!is.na(data.compare1[,4]),4] = 3649
+sigma.obs1[!is.na(data.compare1[,5]),5] = 121
+sigma.obs1[!is.na(data.compare1[,6]),6] = 0.13
+sigma.obs1[!is.na(data.compare1[,7]),7] = 1
+sigma.obs1[!is.na(data.compare1[,8]),8] = 0.04
+sigma.obs1[!is.na(data.compare1[,9]),9] = 1
+sigma.obs1[!is.na(data.compare1[,10]),10] = 1
 colnames(sigma.obs1) = colnames(data.compare1)
 #sigma.obs1: columns need to be in SAME ORDER as data.compare1
 head(data.compare1)
@@ -147,7 +153,7 @@ reject=0 #reset reject counter
 
 #start exploration
 
-for (i in 95269:M) {
+for (i in 2:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
@@ -171,7 +177,7 @@ for (i in 95269:M) {
   
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
 
-  out.compare1 = out[match(data.compare1$time, out$time),c(1,12)] #these columns need to match the ones that were pulled out before
+  out.compare1 = out[match(data.compare1$time, out$time),c(1:3,6:9,11,12,13)] #these columns need to match the ones that were pulled out before
   
   error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
   for (d in 1:D) { #for each data type
@@ -236,5 +242,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE.Rdata")
+save.image(file="Step1_ALL.Rdata")
 

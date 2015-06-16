@@ -45,12 +45,12 @@ sensvars = c("Biomass_C",
              "NDVI")
 
 #local sensitivity analysis
-s.local <- sensFun(func=solvemodel, parms=param.best, state=state, sensvar = sensvars, varscale=1)
+s.local <- sensFun(func=solvemodel, parms=params, state=state, sensvar = sensvars, varscale=1)
 
 head(s.local); tail(s.local)
 s.local.summ = summary(s.local, var=T)
 s.loc.summ.ordered = s.local.summ[order(s.local.summ$var, abs(s.local.summ$Mean)),] 
-write.csv(s.loc.summ.ordered, "c:/Users/Rocha Lab/Desktop/Kelsey/LocalSensitivityAnalysis.csv") #univariate sensitivity
+write.csv(s.loc.summ.ordered, "LocalSensitivityAnalysis.csv") #univariate sensitivity
 param.cor = data.frame(cor(s.local[,c(-1,-2)]))#table of parameter correlations
 param.cor
 write.csv(param.cor, "c:/Users/Rocha Lab/Desktop/Kelsey/ParamCorr.csv") #bivariate sensitivity
@@ -58,19 +58,7 @@ pairs(s.local)
 
 #global sensitivity analysis
 
-params.mean =  apply(param.keep, 2, mean)
-params.min =  apply(param.keep, 2, min)
-params.max =  apply(param.keep, 2, max)
-params.q05 =  apply(param.keep, 2, quantile, probs=0.05)
-params.q95 =  apply(param.keep, 2, quantile, probs=0.95)
-
-
-
-parRanges = data.frame(min = params.min,  max = params.max)
-rownames(parRanges) = names(params)
-parRanges
-
-s.global <- sensRange(func=solvemodel, parms=param.best, state=state, sensvar = sensvars, parInput=param.keep, num=50)
+s.global <- sensRange(func=solvemodel, parms=param.best, state=state, sensvar = sensvars, parInput=param.keep)
 
 s.global.summ = summary(s.global)
 head(s.global.summ)
