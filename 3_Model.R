@@ -2,7 +2,7 @@ require(deSolve)
 require(FME)
 
 params <- c(kplant = 0.11,
-            LitterRate = 0.0025,
+            LitterRate = 0.0024,
             DecompRateC = 0.005,
             DecompRateN = 0.0007,
             retrans = 0.8,  
