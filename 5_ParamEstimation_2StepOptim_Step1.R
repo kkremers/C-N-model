@@ -152,7 +152,7 @@ for (i in 2:M) {
     names(parms) = names(params) #fix names
     out = data.frame(solvemodel(parms, state)) #run model  
   
-    if(any(is.na(out)) | any(out[,2:8]<0)){ #if there are any NAs or negative stocks in the output
+    if(any(is.na(out)) | any(out[,2:6]<0)){ #if there are any NAs or negative stocks in the output
       reject = reject+1 #reject parameter set
       param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
       J[i] = J[i-1] #set current J to previous J (the minimum J so far)
@@ -160,7 +160,7 @@ for (i in 2:M) {
   
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
 
-  out.compare1 = out[match(data.compare1$time, out$time),c(1:3,6:9,11,12,13)] #these columns need to match the ones that were pulled out before
+  out.compare1 = out[match(data.compare1$time, out$time),c(1:7)] #these columns need to match the ones that were pulled out before
   
   error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
   for (d in 1:D) { #for each data type
