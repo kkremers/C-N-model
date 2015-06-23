@@ -1,21 +1,22 @@
 require(deSolve)
 require(FME)
 
-params <- c(kplant = 0.11,
-            LitterRate = 0.0018,
+params <- c(kplant = 2,
+            LitterRate = 0.0008,
             retrans = 0.85,  
             RespRate = 0.9, 
-            UptakeRate = 0.0001,
+            UptakeRate = 0.01,
             propN_fol = 0.3,
             propN_roots = 0.5,
-            q10 = 2
+            q10 = 2,
+            Ndep_rate = 0.0005
             )
 
 state <- c(Biomass_C = 400, 
            Biomass_N = 4.5, 
            SOM_C = 1600, 
            SOM_N = 35,
-           Available_N = 0.03)
+           Available_N = 0.1)
 
 time = seq(1, 1826, 1)
 
@@ -32,8 +33,6 @@ solvemodel <- function(params, state, times) {
       Temp=Temp.d1(t)
       PAR=PAR.d1(t)
       DOY = DOY.d1(t)
-      DOY.sen = DOYsen.d1(t)
-      #scalTEMP=scaltemp.d1(t) 
       scal=scaladd.d1(t)
       scalGDD=scalGDD.d1(t)
       
@@ -73,14 +72,9 @@ solvemodel <- function(params, state, times) {
         Ntrans = 4E-8 * SOM_C * 2.5
       }
             
-      N_dep = 0.00013
+      N_dep = Ndep_rate
       Litterfall_N  =  LitterRate * Biomass_N * ( 1 - retrans )
       Litterfall_C =  LitterRate * Biomass_C
-      
-      if(DOY < DOY.sen){
-        Litterfall_N = 0
-        Litterfall_C = 0
-      }
       
       
       #calculated variables to use for model fitting and analysis
@@ -90,7 +84,7 @@ solvemodel <- function(params, state, times) {
       dBiomass_C = GPP  - Ra  - Litterfall_C 
       dBiomass_N = Uptake  - Litterfall_N 
       dSOM_C = Litterfall_C  - Rh
-      dSOM_N = Litterfall_N + - Ntrans
+      dSOM_N = Litterfall_N - Ntrans
       dAvailable_N = Ntrans - Uptake + N_dep
       
       
@@ -101,7 +95,7 @@ solvemodel <- function(params, state, times) {
              dSOM_C, 
              dSOM_N,
              dAvailable_N), 
-             c(GPP=GPP, LAI=LAI, NDVI=NDVI, NEE=NEE, Re=Re, Ra=Ra, Rh=Rh, Uptake = Uptake, 
+             c(NEE=NEE, GPP=GPP, Re=Re, LAI=LAI, NDVI=NDVI, Ra=Ra, Rh=Rh, Uptake = Uptake, 
              Ntrans=Ntrans, Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, 
              scalGDD=scalGDD, scal=scal, DOY=DOY))
       

@@ -129,15 +129,16 @@ best.params[7,] = param.best_7
 best.params
 
 #need to know value of expected parameters
-params <- c(kplant = 0.11,
-            LitterRate = 0.0024,
-            DecompRateC = 0.005,
-            DecompRateN = 0.0007,
-            retrans = 0.8,  
-            RespRate = 1, 
-            UptakeRate = 0.0001,
-            netNrate = 0.0008,
-            q10 = 2)
+params <- c(kplant = 2,
+            LitterRate_S = 0.0008,
+            retrans = 0.85,  
+            RespRate = 0.9, 
+            UptakeRate = 0.01,
+            propN_fol = 0.3,
+            propN_roots = 0.5,
+            q10 = 2,
+            Ndep_rate = 0.0005
+)
 
 
 ####create boxplots#####
@@ -176,10 +177,8 @@ for (n in 1:n.param) { #for each parameter
 ####statistical calculations####
 state <- c(Biomass_C = 400, 
            Biomass_N = 4.5, 
-           Litter_C = 160, 
-           Litter_N = 1.6, 
-           SOM_C = 2000, 
-           SOM_N = 56,
+           SOM_C = 1600, 
+           SOM_N = 35,
            Available_N = 0.1)
 
 

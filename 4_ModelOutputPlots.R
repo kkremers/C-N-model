@@ -11,15 +11,15 @@ out1 = data.frame(solvemodel(param.best1, state)) #creates table of model output
 
 #plot pools
 par(mfrow=c(4,2), mar=c(4,4,1,2))
-plot(out$Biomass_C~out$time, type="l", col="red", main = "Biomass C", xlab="", ylab="g C m-2", ylim=c(350, 700))
+plot(out$Biomass_C~out$time, type="l", col="red", main = "Biomass C", xlab="", ylab="g C m-2", ylim=c(300, 500))
 #points(out1$Biomass_C~out1$time, col="gray1", cex=0.25)
-plot(out$Biomass_N~out$time, type="l", col="red",  main = "Biomass N", xlab="", ylab="g N m-2", lty=2, ylim=c(4, 5))
+plot(out$Biomass_N~out$time, type="l", col="red",  main = "Biomass N", xlab="", ylab="g N m-2", lty=2, ylim=c(4.4, 4.8))
 #points(out1$Biomass_N~out1$time, col="gray1", cex=0.25)
 plot(out$SOM_C~out$time, type="l", col="red", main = "SOM C", xlab="", ylab="g C m-2", ylim=c(1400, 2000))
 #points(out1$SOM_C~out1$time, col="gray1", cex=0.25)
 plot(out$SOM_N~out$time, type="l", col="red", main = "SOM N", xlab="Time (days)", ylab="g N m-2",lty=2, ylim=c(30, 40))
 #points(out1$SOM_N~out1$time, col="gray1", cex=0.25)
-plot(out$Available_N~out$time, type="l", col="red", main = "Available N", xlab="Time (days)", ylab="g N m-2",lty=2, ylim=c(0, 0.06))
+plot(out$Available_N~out$time, type="l", col="red", main = "Available N", xlab="Time (days)", ylab="g N m-2",lty=2, ylim=c(0, 0.15))
 #points(out1$Available_N~out1$time, col="gray1", cex=0.25)
 
 

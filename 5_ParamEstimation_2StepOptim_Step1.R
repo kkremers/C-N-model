@@ -7,11 +7,11 @@
 
 #Get data ready
 head(out) #this is the output from the model run
-data.assim = out[,c(1:9,11,12,13)] #choose columns that you want
+data.assim = out[,c(1:7)] #choose columns that you want
 head(data.assim) #preview table
 
 #####remove some data points for Stock data
-time.keepSTOCK  = seq(125, length(time), 182) #keep data for once per year (~once per year)
+time.keepSTOCK  = seq(100, length(time), 182) #keep data for once per year (~once per year)
 #Biomass_C
 BiomassC.assim = data.assim$Biomass_C[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
 BiomassC.assim = data.frame(time=time.keepSTOCK, BiomassC.assim) #create a dataframe of the new data and the corresponding timesteps
@@ -22,16 +22,6 @@ BiomassN.assim = data.assim$Biomass_N[match(time.keepSTOCK, data.assim$time)]  #
 BiomassN.assim = data.frame(time=time.keepSTOCK, BiomassN.assim) #create a dataframe of the new data and the corresponding timesteps
 head(BiomassN.assim)
 data.assim$Biomass_N=BiomassN.assim$BiomassN.assim[match(data.assim$time, BiomassN.assim$time)] #change the data in the assimilation table to NAs
-#Litter_C
-LitterC.assim = data.assim$Litter_C[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
-LitterC.assim = data.frame(time=time.keepSTOCK, LitterC.assim) #create a dataframe of the new data and the corresponding timesteps
-head(LitterC.assim) #check table
-data.assim$Litter_C=LitterC.assim$LitterC.assim[match(data.assim$time, LitterC.assim$time)] #change the data in the assimilation table to NAs
-#Litter_N
-LitterN.assim = data.assim$Litter_N[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
-LitterN.assim = data.frame(time=time.keepSTOCK, LitterN.assim) #create a dataframe of the new data and the corresponding timesteps
-head(LitterN.assim)
-data.assim$Litter_N=LitterN.assim$LitterN.assim[match(data.assim$time, LitterN.assim$time)] #change the data in the assimilation table to NAs
 #SOM_C
 SOMC.assim = data.assim$SOM_C[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
 SOMC.assim = data.frame(time=time.keepSTOCK, SOMC.assim) #create a dataframe of the new data and the corresponding timesteps
@@ -51,43 +41,39 @@ data.assim$Available_N=AvailN.assim$AvailN.assim[match(data.assim$time, AvailN.a
 #####remove some data points for flux data
 time.keepFLUX = data$time[which(data$DOY<=250 & data$DOY>=150)] #keep data for summer only
 #GPP
-GPP.assim = data.assim$GPP[match(time.keepFLUX, data.assim$time)]  #create vector of data for only those timesteps
-GPP.assim = data.frame(time=time.keepFLUX, GPP.assim) #create a dataframe of the new data and the corresponding timesteps
-head(GPP.assim) #check table
-data.assim$GPP=GPP.assim$GPP.assim[match(data.assim$time, GPP.assim$time)] #change the data in the assimilation table to NAs
+#GPP.assim = data.assim$GPP[match(time.keepFLUX, data.assim$time)]  #create vector of data for only those timesteps
+#GPP.assim = data.frame(time=time.keepFLUX, GPP.assim) #create a dataframe of the new data and the corresponding timesteps
+#head(GPP.assim) #check table
+#data.assim$GPP=GPP.assim$GPP.assim[match(data.assim$time, GPP.assim$time)] #change the data in the assimilation table to NAs
 #NEE
 NEE.assim = data.assim$NEE[match(time.keepFLUX, data.assim$time)]  #create vector of data for only those timesteps
 NEE.assim = data.frame(time=time.keepFLUX, NEE.assim) #create a dataframe of the new data and the corresponding timesteps
 head(NEE.assim) #check table
 data.assim$NEE=NEE.assim$NEE.assim[match(data.assim$time, NEE.assim$time)] #change the data in the assimilation table to NAs
 #Re
-Re.assim = data.assim$Re[match(time.keepFLUX, data.assim$time)]  #create vector of data for only those timesteps
-Re.assim = data.frame(time=time.keepFLUX, Re.assim) #create a dataframe of the new data and the corresponding timesteps
-head(Re.assim) #check table
-data.assim$Re=Re.assim$Re.assim[match(data.assim$time, Re.assim$time)] #change the data in the assimilation table to NAs
+#Re.assim = data.assim$Re[match(time.keepFLUX, data.assim$time)]  #create vector of data for only those timesteps
+#Re.assim = data.frame(time=time.keepFLUX, Re.assim) #create a dataframe of the new data and the corresponding timesteps
+#head(Re.assim) #check table
+#data.assim$Re=Re.assim$Re.assim[match(data.assim$time, Re.assim$time)] #change the data in the assimilation table to NAs
 #NDVI
-NDVI.assim = data.assim$NDVI[match(time.keepFLUX, data.assim$time)]  #create vector of data for only those timesteps
-NDVI.assim = data.frame(time=time.keepFLUX, NDVI.assim) #create a dataframe of the new data and the corresponding timesteps
-head(NDVI.assim) #check table
-data.assim$NDVI=NDVI.assim$NDVI.assim[match(data.assim$time, NDVI.assim$time)] #change the data in the assimilation table to NAs
+#NDVI.assim = data.assim$NDVI[match(time.keepFLUX, data.assim$time)]  #create vector of data for only those timesteps
+#NDVI.assim = data.frame(time=time.keepFLUX, NDVI.assim) #create a dataframe of the new data and the corresponding timesteps
+#head(NDVI.assim) #check table
+#data.assim$NDVI=NDVI.assim$NDVI.assim[match(data.assim$time, NDVI.assim$time)] #change the data in the assimilation table to NAs
 head(data.assim) #preview
 
 #plot to view data
 par(mfrow=c(3,2), mar=c(4,4,4,4))
-plot(data.assim$Biomass_C~data.assim$time, pch=16, ylab="Biomass_C", xlab="Time (days)")
-plot(data.assim$Biomass_N~data.assim$time, pch=16, ylab="Biomass_N", xlab="Time (days)")
-plot(data.assim$Litter_C~data.assim$time, pch=16, ylab="Litter_C", xlab="Time (days)")
-plot(data.assim$Litter_N~data.assim$time, pch=16, ylab="Litter_N", xlab="Time (days)")
-plot(data.assim$SOM_C~data.assim$time, pch=16, ylab="SOM_C", xlab="Time (days)")
-plot(data.assim$SOM_N~data.assim$time, pch=16, ylab="SOM_N", xlab="Time (days)")
-plot(data.assim$Available_N~data.assim$time, pch=16, ylab="Available_N", xlab="Time (days)")
-plot(data.assim$GPP~data.assim$time, pch=16, ylab="GPP", xlab="Time (days)")
+plot(data.assim$Biomass_C~data.assim$time, pch=16, ylab="Biomass_C", xlab="Time (days)", ylim=c(300, 500))
+plot(data.assim$Biomass_N~data.assim$time, pch=16, ylab="Biomass_N", xlab="Time (days)", ylim=c(4.4, 4.8))
+plot(data.assim$SOM_C~data.assim$time, pch=16, ylab="SOM_C", xlab="Time (days)", ylim=c(1400, 2000))
+plot(data.assim$SOM_N~data.assim$time, pch=16, ylab="SOM_N", xlab="Time (days)", ylim=c(30, 40))
+plot(data.assim$Available_N~data.assim$time, pch=16, ylab="Available_N", xlab="Time (days)", ylim=c(0, 0.15))
 plot(data.assim$NEE~data.assim$time, pch=16, ylab="NEE", xlab="Time (days)")
-plot(data.assim$Re~data.assim$time, pch=16, ylab="Re", xlab="Time (days)")
-plot(data.assim$NDVI~data.assim$time, pch=16, ylab="NDVI", xlab="Time (days)")
+
 
 head(data.assim)
-data.compare1 = data.assim[,c(1:3,6:12)] #pull out columns for data that you want to assimilate
+data.compare1 = data.assim[,] #pull out columns for data that you want to assimilate
 sigma.obs1 = data.frame(matrix(NA, length(data.compare1$time), length(data.compare1))) #observation errors for each data type 
 sigma.obs1[,1] = data.assim$time
 sigma.obs1[!is.na(data.compare1[,2]),2] = 52
@@ -96,9 +82,8 @@ sigma.obs1[!is.na(data.compare1[,4]),4] = 3649
 sigma.obs1[!is.na(data.compare1[,5]),5] = 121
 sigma.obs1[!is.na(data.compare1[,6]),6] = 0.13
 sigma.obs1[!is.na(data.compare1[,7]),7] = 1
-sigma.obs1[!is.na(data.compare1[,8]),8] = 0.04
-sigma.obs1[!is.na(data.compare1[,9]),9] = 1
-sigma.obs1[!is.na(data.compare1[,10]),10] = 1
+
+
 colnames(sigma.obs1) = colnames(data.compare1)
 #sigma.obs1: columns need to be in SAME ORDER as data.compare1
 head(data.compare1)
@@ -119,8 +104,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.9, 0.01, 0.01, 0.01, 1, 4, 0.01, 0.01, 4)
-param.min=c(0.01, 0.0001, 0.0001, 0.00001, 0.1, 0.1, 0.00001, 0.00001, 1)
+param.max=c(8.1,0.0024,0.85,0.98,0.012,0.9,0.9,3.3,0.00082)
+param.min=c(0.06,0.0001,0.6,0.26,0.002,0.1,0.1,1.4,0.0000014)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output

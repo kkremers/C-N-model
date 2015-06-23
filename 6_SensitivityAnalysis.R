@@ -34,15 +34,10 @@ abline(v=param.best[9], col="green", lwd=3)
 
 sensvars = c("Biomass_C", 
              "Biomass_N", 
-             "Litter_C", 
-             "Litter_N", 
              "SOM_C", 
              "SOM_N",
              "Available_N",
-             "GPP",
-             "NEE",
-             "Re",
-             "NDVI")
+             "NEE")
 
 #local sensitivity analysis
 s.local <- sensFun(func=solvemodel, parms=params, state=state, sensvar = sensvars, varscale=1)
