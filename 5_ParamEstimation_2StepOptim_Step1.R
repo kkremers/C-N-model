@@ -123,10 +123,8 @@ head(all.draws)
 #starting values for states
 state <- c(Biomass_C = 400, 
            Biomass_N = 4.5, 
-           Litter_C = 160, 
-           Litter_N = 1.6, 
-           SOM_C = 2000, 
-           SOM_N = 56,
+           SOM_C = 1600, 
+           SOM_N = 35,
            Available_N = 0.1)
 
 #set initial values
