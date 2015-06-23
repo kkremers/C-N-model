@@ -3,6 +3,8 @@ require(FME)
 
 params <- c(kplant = 0.11,
             LitterRate = 0.0024,
+            DecompRateC = 0.005,
+            DecompRateN = 0.0007,
             retrans = 0.8,  
             RespRate = 1, 
             UptakeRate = 0.0001,
@@ -12,6 +14,8 @@ params <- c(kplant = 0.11,
 
 state <- c(Biomass_C = 400, 
            Biomass_N = 4.5, 
+           Litter_C = 160, 
+           Litter_N = 1.6, 
            SOM_C = 2000, 
            SOM_N = 56,
            Available_N = 0.1)
@@ -66,6 +70,8 @@ solvemodel <- function(params, state, times) {
       Ra =  ( 1 - cue ) * GPP
       Re = RespRate * (q10 ^ ( ( Temp - 10 )/ 10 ) )
       Rh = Re - Ra
+      Decomp_C = DecompRateC * Litter_C * ( q10 ^ ( (Temp-10) / 10 ) )
+      Decomp_N = DecompRateN * Litter_N * ( q10 ^ ( (Temp-10) / 10 ) )
       Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 50 ) )
             
       N_dep = 0.00008
@@ -84,8 +90,10 @@ solvemodel <- function(params, state, times) {
       #differential equations
       dBiomass_C = GPP  - Ra  - Litterfall_C 
       dBiomass_N = Uptake  - Litterfall_N 
-      dSOM_C = Litterfall_C  - Rh
-      dSOM_N = Litterfall_N + N_dep - Ntrans
+      dLitter_C = Litterfall_C  - Decomp_C 
+      dLitter_N = Litterfall_N  - Decomp_N 
+      dSOM_C = Decomp_C  - Rh
+      dSOM_N = Decomp_N  + N_dep - Ntrans
       dAvailable_N = Ntrans - Uptake
       
       
@@ -93,12 +101,14 @@ solvemodel <- function(params, state, times) {
       
       list(c(dBiomass_C, 
              dBiomass_N, 
+             dLitter_C, 
+             dLitter_N, 
              dSOM_C, 
              dSOM_N,
              dAvailable_N), 
              c(GPP=GPP, LAI=LAI, NDVI=NDVI, NEE=NEE, Re=Re, Ra=Ra, Rh=Rh, Uptake = Uptake, 
              Ntrans=Ntrans, Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, 
-             scalGDD=scalGDD, scal=scal, DOY=DOY))
+             Decomp_C = Decomp_C, Decomp_N = Decomp_N, scalGDD=scalGDD, scal=scal, DOY=DOY))
       
     })  #end of with(as.list(...
   } #end of model
