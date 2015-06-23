@@ -2,19 +2,20 @@ require(deSolve)
 require(FME)
 
 params <- c(kplant = 0.11,
-            LitterRate = 0.0024,
-            retrans = 0.8,  
-            RespRate = 1, 
+            LitterRate = 0.0018,
+            retrans = 0.85,  
+            RespRate = 0.9, 
             UptakeRate = 0.0001,
-            netNrate = 0.0008,
+            propN_fol = 0.3,
+            propN_roots = 0.5,
             q10 = 2
             )
 
 state <- c(Biomass_C = 400, 
            Biomass_N = 4.5, 
-           SOM_C = 2000, 
-           SOM_N = 56,
-           Available_N = 0.1)
+           SOM_C = 1600, 
+           SOM_N = 35,
+           Available_N = 0.03)
 
 time = seq(1, 1826, 1)
 
@@ -41,8 +42,7 @@ solvemodel <- function(params, state, times) {
       Pmax =1.18
       E0 = 0.03
       cue = 0.5
-      propN_fol = 0.3
-      propN_roots = 0.5
+      
       
       
       #FLUXES
@@ -66,9 +66,14 @@ solvemodel <- function(params, state, times) {
       Ra =  ( 1 - cue ) * GPP
       Re = RespRate * (q10 ^ ( ( Temp - 10 )/ 10 ) )
       Rh = Re - Ra
-      Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 50 ) )
+      #Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 50 ) )
+      if(PAR==0){
+        Ntrans = 3.3E-9 * SOM_C * 2.5
+      } else {
+        Ntrans = 4E-8 * SOM_C * 2.5
+      }
             
-      N_dep = 0.00008
+      N_dep = 0.00013
       Litterfall_N  =  LitterRate * Biomass_N * ( 1 - retrans )
       Litterfall_C =  LitterRate * Biomass_C
       
@@ -85,8 +90,8 @@ solvemodel <- function(params, state, times) {
       dBiomass_C = GPP  - Ra  - Litterfall_C 
       dBiomass_N = Uptake  - Litterfall_N 
       dSOM_C = Litterfall_C  - Rh
-      dSOM_N = Litterfall_N + N_dep - Ntrans
-      dAvailable_N = Ntrans - Uptake
+      dSOM_N = Litterfall_N + - Ntrans
+      dAvailable_N = Ntrans - Uptake + N_dep
       
       
       #what to output
