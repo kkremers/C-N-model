@@ -7,7 +7,7 @@ require(deSolve)
 
 out = data.frame(solvemodel(param.best, state)) #run model
 #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-out.compare1 = out[match(data.compare1$time, out$time),c(1,9,11:13)] #these columns need to match the ones that were pulled out before
+out.compare1 = out[match(data.compare1$time, out$time),c(1:3)] #these columns need to match the ones that were pulled out before
 head(out.compare1)
 head(data.compare1)
 head(sigma.obs1)
@@ -37,15 +37,10 @@ head(param.keep)#check to make sure this is correct
 
 
 #also need to know degrees of freedom for chi square test
-n.par = c(6,6,7,2) #number of parameters predicted by each data stream
-#BiomassCN, AvailableN, GPP, SOM_C = 6
-#NEE = 7
-#SOM_N = 4
-#Re = 2
-#NDVI = 3
+n.par = 9 #number of parameters predicted by each data stream
 df = rep(0, D)
 for (d in 1:D) { #for each data type
-  df[d] = n.time[d] - n.par[d]
+  df[d] = n.time[d] - n.par
 } #end of data loop
 df #check values
 
@@ -74,12 +69,12 @@ repeat { #repeat until desired number of parameter sets are accepted
   names(parms) = names(params) #fix names
   out = data.frame(solvemodel(parms, state)) #run model
   
-  if(any(is.na(out)) | any(out[,2:8]<0)){ #if there are NAs or negative stocks in the output
+  if(any(is.na(out)) | any(out[,2:6]<0)){ #if there are NAs or negative stocks in the output
     reject=reject+1
   } else {
     
     #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-    out.compare1 = out[match(data.compare1$time, out$time),c(1,9,11:13)] #these columns need to match the ones that were pulled out before
+    out.compare1 = out[match(data.compare1$time, out$time),c(1:3)] #these columns need to match the ones that were pulled out before
     
     #remove the time column - no longer needed
     data.comp = data.compare1[,-1]
@@ -142,4 +137,4 @@ repeat { #repeat until desired number of parameter sets are accepted
 head(param.keep)
 head(data.compare1)
 
-save.image(file="Step2_NEE_GPP_Re_NDVI.Rdata")
+save.image(file="Step2_BiomassCN.Rdata")

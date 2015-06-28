@@ -8,7 +8,7 @@ require(deSolve)
 out = data.frame(solvemodel(param.best, state)) #run model
 head(out)
 #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-out.compare1 = out[match(data.compare1$time, out$time),c(1,12)] #these columns need to match the ones that were pulled out before
+out.compare1 = out[match(data.compare1$time, out$time),c(1,7)] #these columns need to match the ones that were pulled out before
 head(out.compare1)
 head(data.compare1)
 
@@ -38,10 +38,7 @@ head(param.keep)#check to make sure this is correct
 
 
 #also need to know degrees of freedom for chi square test
-n.par = c(7) #number of parameters predicted by each data stream
-#BiomassCN, AvailableN, NDVI, GPP = 6
-#LitterCN, NEE = 7
-#Re = 2
+n.par = c(9) #number of parameters predicted by each data stream
 df = rep(0, D)
 for (d in 1:D) { #for each data type
   df[d] = n.time[d] - n.par[d]
@@ -73,12 +70,12 @@ repeat { #repeat until desired number of parameter sets are accepted
   names(parms) = names(params) #fix names
   out = data.frame(solvemodel(parms, state)) #run model
   
-  if(any(is.na(out)) | any(out[,2:8]<0)){ #if there are NAs or negative stocks in the output
+  if(any(is.na(out)) | any(out[,2:6]<0)){ #if there are NAs or negative stocks in the output
     reject=reject+1
   } else {
     
     #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-    out.compare1 = out[match(data.compare1$time, out$time),c(1,12)] #these columns need to match the ones that were pulled out before
+    out.compare1 = out[match(data.compare1$time, out$time),c(1,7)] #these columns need to match the ones that were pulled out before
     
     #remove the time column - no longer needed
     data.comp = data.compare1[,-1]
