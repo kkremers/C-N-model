@@ -1,7 +1,7 @@
 #in this script, the output from all of the synthetic data experiments is compiled so that it can be compared
 
 #first, need to create a table to store the output
-summarytable = data.frame(matrix(1,63,8)) 
+summarytable = data.frame(matrix(1,36,8)) 
 colnames(summarytable) = c("Experiment", "Parameter", "q05", "q25", "mean", "q75", "q95", "diff")
 head(summarytable)
 
@@ -22,7 +22,7 @@ param.keep_1 = param.keep #save the table of accepted parameters under a new nam
 write.csv(param.keep_1, "Params_NEE.csv")
 
 
-load("Step2_NEE_NDVI.Rdata")
+load("Step2_NEE_BiomassCN.Rdata")
 q05=apply(param.keep, 2, quantile, 0.05) #calculate 5% quantile
 q25=apply(param.keep, 2, quantile, 0.25) #calculate 25% quantile
 means=apply(param.keep, 2, mean)
@@ -34,10 +34,10 @@ exper = rep(2, n.param) #create vector of experiment name
 parameters = names(param.best) #create vector of parameter names
 summarytable[10:18,]=cbind(exper, parameters, q05, q25, means, q75, q95, diff) #bind all of the information together in the proper order (same order as summarytable columns)
 param.keep_2 = param.keep #save the table of accepted parameters under a new name
-write.csv(param.keep_2, "Params_NEE_NDVI.csv")
+write.csv(param.keep_2, "Params_NEE_BiomassCN.csv")
 
 
-load("Step2_NEE_GPP_Re.Rdata")
+load("Step2_NEE_BiomassCN_AvailableN.Rdata")
 q05=apply(param.keep, 2, quantile, 0.05) #calculate 5% quantile
 q25=apply(param.keep, 2, quantile, 0.25) #calculate 25% quantile
 means=apply(param.keep, 2, mean)
@@ -49,11 +49,10 @@ exper = rep(3, n.param) #create vector of experiment name
 parameters = names(param.best) #create vector of parameter names
 summarytable[19:27,]=cbind(exper, parameters, q05, q25, means, q75, q95, diff) #bind all of the information together in the proper order (same order as summarytable columns)
 param.keep_3 = param.keep #save the table of accepted parameters under a new name
-write.csv(param.keep_3, "Params_NEE_GPP_Re.csv")
+write.csv(param.keep_3, "Params_NEE_BiomassCN_AvailableN.csv")
 
 
-
-load("Step2_NEE_GPP_Re_NDVI.Rdata")
+load("Step2_NEE_BiomassCN_AvailableN_SOMCN.Rdata")
 q05=apply(param.keep, 2, quantile, 0.05) #calculate 5% quantile
 q25=apply(param.keep, 2, quantile, 0.25) #calculate 25% quantile
 means=apply(param.keep, 2, mean)
@@ -65,51 +64,7 @@ exper = rep(4, n.param) #create vector of experiment name
 parameters = names(param.best) #create vector of parameter names
 summarytable[28:36,]=cbind(exper, parameters, q05, q25, means, q75, q95, diff) #bind all of the information together in the proper order (same order as summarytable columns)
 param.keep_4 = param.keep #save the table of accepted parameters under a new name
-write.csv(param.keep_4, "Params_NEE_GPP_Re_NDVI.csv")
-
-load("Step2_NEE_BiomassCN.Rdata")
-q05=apply(param.keep, 2, quantile, 0.05) #calculate 5% quantile
-q25=apply(param.keep, 2, quantile, 0.25) #calculate 25% quantile
-means=apply(param.keep, 2, mean)
-q75=apply(param.keep, 2, quantile, 0.75) #calculate 75% quantile
-q95=apply(param.keep, 2, quantile, 0.95) #calculate 95%
-diff=param.best-params
-param.best_5 = param.best
-exper = rep(5, n.param) #create vector of experiment name
-parameters = names(param.best) #create vector of parameter names
-summarytable[37:45,]=cbind(exper, parameters, q05, q25, means, q75, q95, diff) #bind all of the information together in the proper order (same order as summarytable columns)
-param.keep_5 = param.keep #save the table of accepted parameters under a new name
-write.csv(param.keep_5, "Params_NEE_BiomassCN.csv")
-
-
-load("Step2_NEE_BiomassCN_AvailableN.Rdata")
-q05=apply(param.keep, 2, quantile, 0.05) #calculate 5% quantile
-q25=apply(param.keep, 2, quantile, 0.25) #calculate 25% quantile
-means=apply(param.keep, 2, mean)
-q75=apply(param.keep, 2, quantile, 0.75) #calculate 75% quantile
-q95=apply(param.keep, 2, quantile, 0.95) #calculate 95%
-diff=param.best-params
-param.best_6 = param.best
-exper = rep(6, n.param) #create vector of experiment name
-parameters = names(param.best) #create vector of parameter names
-summarytable[46:54,]=cbind(exper, parameters, q05, q25, means, q75, q95, diff) #bind all of the information together in the proper order (same order as summarytable columns)
-param.keep_6 = param.keep #save the table of accepted parameters under a new name
-write.csv(param.keep_6, "Params_NEE_BiomassCN_AvailableN.csv")
-
-
-load("Step2_NEE_BiomassCN_SOMCN_AvailableN.Rdata")
-q05=apply(param.keep, 2, quantile, 0.05) #calculate 5% quantile
-q25=apply(param.keep, 2, quantile, 0.25) #calculate 25% quantile
-means=apply(param.keep, 2, mean)
-q75=apply(param.keep, 2, quantile, 0.75) #calculate 75% quantile
-q95=apply(param.keep, 2, quantile, 0.95) #calculate 95%
-diff=param.best-params
-param.best_7 = param.best
-exper = rep(7, n.param) #create vector of experiment name
-parameters = names(param.best) #create vector of parameter names
-summarytable[55:63,]=cbind(exper, parameters, q05, q25, means, q75, q95, diff) #bind all of the information together in the proper order (same order as summarytable columns)
-param.keep_7 = param.keep #save the table of accepted parameters under a new name
-write.csv(param.keep_7, "Params_NEE_BiomassCN_SOMCN_AvailableN.csv")
+write.csv(param.keep_4, "Params_NEE_BiomassCN_AvailableN_SOMCN.csv")
 
 
 #preview table
@@ -117,20 +72,17 @@ head(summarytable)
 tail(summarytable)
 
 #create table of param.best
-best.params = data.frame(matrix(1, 7, 9))
+best.params = data.frame(matrix(1, 4, 9))
 colnames(best.params)=names(param.best)
 best.params[1,] = param.best_1
 best.params[2,] = param.best_2
 best.params[3,] = param.best_3
 best.params[4,] = param.best_4
-best.params[5,] = param.best_5
-best.params[6,] = param.best_6
-best.params[7,] = param.best_7
 best.params
 
 #need to know value of expected parameters
 params <- c(kplant = 2,
-            LitterRate_S = 0.0008,
+            LitterRate = 0.0008,
             retrans = 0.85,  
             RespRate = 0.9, 
             UptakeRate = 0.01,
@@ -148,7 +100,7 @@ par(mfrow=c(3,3), mar=c(4,4,2,2))
 for (n in 1:n.param) { #for each parameter
   
   dat = summarytable[which(summarytable$Parameter==names(params[n])),3:7] #pull out data for that parameter
-  box.dat = matrix(1, 5, 7)
+  box.dat = matrix(1, 5, 4)
   box.dat[1,]=as.numeric(dat[,1])
   box.dat[2,]=as.numeric(dat[,2])
   box.dat[3,]=as.numeric(dat[,3])
@@ -183,14 +135,12 @@ state <- c(Biomass_C = 400,
 
 
 
-out=data.frame(solvemodel(params, state))[,c(2:9,11,12,13)] #with columns to match data.assim
-out1=data.frame(solvemodel(param.best_1, state))[,c(2:9,11,12,13)] 
-out2=data.frame(solvemodel(param.best_2, state))[,c(2:9,11,12,13)]
-out3=data.frame(solvemodel(param.best_3, state))[,c(2:9,11,12,13)]
-out4=data.frame(solvemodel(param.best_4, state))[,c(2:9,11,12,13)]
-out5=data.frame(solvemodel(param.best_5, state))[,c(2:9,11,12,13)]
-out6=data.frame(solvemodel(param.best_6, state))[,c(2:9,11,12,13)]
-out7=data.frame(solvemodel(param.best_7, state))[,c(2:9,11,12,13)]
+out=data.frame(solvemodel(params, state))[,c(2:7)] #with columns to match data.assim
+out1=data.frame(solvemodel(param.best_1, state))[,c(2:7)] 
+out2=data.frame(solvemodel(param.best_2, state))[,c(2:7)]
+out3=data.frame(solvemodel(param.best_3, state))[,c(2:7)]
+out4=data.frame(solvemodel(param.best_4, state))[,c(2:7)]
+
 
 head(out1)
 head(out)
@@ -221,19 +171,10 @@ reg_5 = lm(out[,5]~out1[,5])
 r2_5 = summary(reg_5)$r.squared
 reg_6 = lm(out[,6]~out1[,6])
 r2_6 = summary(reg_6)$r.squared
-reg_7 = lm(out[,7]~out1[,7])
-r2_7 = summary(reg_7)$r.squared
-reg_8 = lm(out[,8]~out1[,8])
-r2_8 = summary(reg_8)$r.squared
-reg_9 = lm(out[,9]~out1[,9])
-r2_9 = summary(reg_9)$r.squared
-reg_10 = lm(out[,10]~out1[,10])
-r2_10 = summary(reg_10)$r.squared
-reg_11 = lm(out[,11]~out1[,11])
-r2_11 = summary(reg_11)$r.squared
+
 
 #put all of them into one vector
-rsquared1 = c(r2_1, r2_2, r2_3, r2_4, r2_5, r2_6, r2_7, r2_8, r2_9, r2_10, r2_11)
+rsquared1 = c(r2_1, r2_2, r2_3, r2_4, r2_5, r2_6)
 
 ########EXPERIMENT 2#######
 #calculate RMSE
@@ -257,19 +198,9 @@ reg_5 = lm(out[,5]~out2[,5])
 r2_5 = summary(reg_5)$r.squared
 reg_6 = lm(out[,6]~out2[,6])
 r2_6 = summary(reg_6)$r.squared
-reg_7 = lm(out[,7]~out2[,7])
-r2_7 = summary(reg_7)$r.squared
-reg_8 = lm(out[,8]~out2[,8])
-r2_8 = summary(reg_8)$r.squared
-reg_9 = lm(out[,9]~out2[,9])
-r2_9 = summary(reg_9)$r.squared
-reg_10 = lm(out[,10]~out2[,10])
-r2_10 = summary(reg_10)$r.squared
-reg_11 = lm(out[,11]~out2[,11])
-r2_11 = summary(reg_11)$r.squared
 
 #put all of them into one vector
-rsquared2 = c(r2_1, r2_2, r2_3, r2_4, r2_5, r2_6, r2_7, r2_8, r2_9, r2_10, r2_11)
+rsquared2 = c(r2_1, r2_2, r2_3, r2_4, r2_5, r2_6)
 
 ########EXPERIMENT 3############
 #calculate RMSE
@@ -293,19 +224,10 @@ reg_5 = lm(out[,5]~out3[,5])
 r2_5 = summary(reg_5)$r.squared
 reg_6 = lm(out[,6]~out3[,6])
 r2_6 = summary(reg_6)$r.squared
-reg_7 = lm(out[,7]~out3[,7])
-r2_7 = summary(reg_7)$r.squared
-reg_8 = lm(out[,8]~out3[,8])
-r2_8 = summary(reg_8)$r.squared
-reg_9 = lm(out[,9]~out3[,9])
-r2_9 = summary(reg_9)$r.squared
-reg_10 = lm(out[,10]~out3[,10])
-r2_10 = summary(reg_10)$r.squared
-reg_11 = lm(out[,11]~out3[,11])
-r2_11 = summary(reg_11)$r.squared
+
 
 #put all of them into one vector
-rsquared3 = c(r2_1, r2_2, r2_3, r2_4, r2_5, r2_6, r2_7, r2_8, r2_9, r2_10, r2_11)
+rsquared3 = c(r2_1, r2_2, r2_3, r2_4, r2_5, r2_6)
 
 #########EXPERIMENT 4############
 #calculate RMSE
@@ -329,164 +251,35 @@ reg_5 = lm(out[,5]~out4[,5])
 r2_5 = summary(reg_5)$r.squared
 reg_6 = lm(out[,6]~out4[,6])
 r2_6 = summary(reg_6)$r.squared
-reg_7 = lm(out[,7]~out4[,7])
-r2_7 = summary(reg_7)$r.squared
-reg_8 = lm(out[,8]~out4[,8])
-r2_8 = summary(reg_8)$r.squared
-reg_9 = lm(out[,9]~out4[,9])
-r2_9 = summary(reg_9)$r.squared
-reg_10 = lm(out[,10]~out4[,10])
-r2_10 = summary(reg_10)$r.squared
-reg_11 = lm(out[,11]~out4[,11])
-r2_11 = summary(reg_11)$r.squared
+
 
 #put all of them into one vector
-rsquared4 = c(r2_1, r2_2, r2_3, r2_4, r2_5, r2_6, r2_7, r2_8, r2_9, r2_10, r2_11)
-
-#########EXPERIMENT 5###########
-#calculate RMSE
-error = (out-out5)
-errorsquared = error^2
-mean = apply(errorsquared, 2, mean, na.rm=TRUE)
-RMSE5 = sqrt(mean)
-#calculate MAE
-abs.error = abs(out5-out)
-MAE5 = apply(abs.error, 2, mean, na.rm=TRUE)
-#calculate r2
-reg_1 = lm(out[,1]~out5[,1])
-r2_1 = summary(reg_1)$r.squared
-reg_2 = lm(out[,2]~out5[,2])
-r2_2 = summary(reg_2)$r.squared
-reg_3 = lm(out[,3]~out5[,3])
-r2_3 = summary(reg_3)$r.squared
-reg_4 = lm(out[,4]~out5[,4])
-r2_4 = summary(reg_4)$r.squared
-reg_5 = lm(out[,5]~out5[,5])
-r2_5 = summary(reg_5)$r.squared
-reg_6 = lm(out[,6]~out5[,6])
-r2_6 = summary(reg_6)$r.squared
-reg_7 = lm(out[,7]~out5[,7])
-r2_7 = summary(reg_7)$r.squared
-reg_8 = lm(out[,8]~out5[,8])
-r2_8 = summary(reg_8)$r.squared
-reg_9 = lm(out[,9]~out5[,9])
-r2_9 = summary(reg_9)$r.squared
-reg_10 = lm(out[,10]~out5[,10])
-r2_10 = summary(reg_10)$r.squared
-reg_11 = lm(out[,11]~out5[,11])
-r2_11 = summary(reg_11)$r.squared
-
-#put all of them into one vector
-rsquared5 = c(r2_1, r2_2, r2_3, r2_4, r2_5, r2_6, r2_7, r2_8, r2_9, r2_10, r2_11)
-
-########EXPERIMENT 6##########
-#calculate RMSE
-error = (out-out6)
-errorsquared = error^2
-mean = apply(errorsquared, 2, mean, na.rm=TRUE)
-RMSE6 = sqrt(mean)
-#calculate MAE
-abs.error = abs(out6-out)
-MAE6 = apply(abs.error, 2, mean, na.rm=TRUE)
-#calculate r2
-reg_1 = lm(out[,1]~out6[,1])
-r2_1 = summary(reg_1)$r.squared
-reg_2 = lm(out[,2]~out6[,2])
-r2_2 = summary(reg_2)$r.squared
-reg_3 = lm(out[,3]~out6[,3])
-r2_3 = summary(reg_3)$r.squared
-reg_4 = lm(out[,4]~out6[,4])
-r2_4 = summary(reg_4)$r.squared
-reg_5 = lm(out[,5]~out6[,5])
-r2_5 = summary(reg_5)$r.squared
-reg_6 = lm(out[,6]~out6[,6])
-r2_6 = summary(reg_6)$r.squared
-reg_7 = lm(out[,7]~out6[,7])
-r2_7 = summary(reg_7)$r.squared
-reg_8 = lm(out[,8]~out6[,8])
-r2_8 = summary(reg_8)$r.squared
-reg_9 = lm(out[,9]~out6[,9])
-r2_9 = summary(reg_9)$r.squared
-reg_10 = lm(out[,10]~out6[,10])
-r2_10 = summary(reg_10)$r.squared
-reg_11 = lm(out[,11]~out6[,11])
-r2_11 = summary(reg_11)$r.squared
-
-#put all of them into one vector
-rsquared6 = c(r2_1, r2_2, r2_3, r2_4, r2_5, r2_6, r2_7, r2_8, r2_9, r2_10, r2_11)
-
-##########EXPERIMENT 7##########
-#calculate RMSE
-error = (out-out7)
-errorsquared = error^2
-mean = apply(errorsquared, 2, mean, na.rm=TRUE)
-RMSE7 = sqrt(mean)
-#calculate MAE
-abs.error = abs(out7-out)
-MAE7 = apply(abs.error, 2, mean, na.rm=TRUE)
-#calculate r2
-reg_1 = lm(out[,1]~out7[,1])
-r2_1 = summary(reg_1)$r.squared
-reg_2 = lm(out[,2]~out7[,2])
-r2_2 = summary(reg_2)$r.squared
-reg_3 = lm(out[,3]~out7[,3])
-r2_3 = summary(reg_3)$r.squared
-reg_4 = lm(out[,4]~out7[,4])
-r2_4 = summary(reg_4)$r.squared
-reg_5 = lm(out[,5]~out7[,5])
-r2_5 = summary(reg_5)$r.squared
-reg_6 = lm(out[,6]~out7[,6])
-r2_6 = summary(reg_6)$r.squared
-reg_7 = lm(out[,7]~out7[,7])
-r2_7 = summary(reg_7)$r.squared
-reg_8 = lm(out[,8]~out7[,8])
-r2_8 = summary(reg_8)$r.squared
-reg_9 = lm(out[,9]~out7[,9])
-r2_9 = summary(reg_9)$r.squared
-reg_10 = lm(out[,10]~out7[,10])
-r2_10 = summary(reg_10)$r.squared
-reg_11 = lm(out[,11]~out7[,11])
-r2_11 = summary(reg_11)$r.squared
-
-#put all of them into one vector
-rsquared7 = c(r2_1, r2_2, r2_3, r2_4, r2_5, r2_6, r2_7, r2_8, r2_9, r2_10, r2_11)
+rsquared4 = c(r2_1, r2_2, r2_3, r2_4, r2_5, r2_6)
 
 ###############
 
 
 #now add them all to the comparison table
-modelcompare = data.frame(matrix(1,11,22))
+modelcompare = data.frame(matrix(1,6,13))
 colnames(modelcompare) = c("Output", 
                            "r2_1", "MAE_1", "RMSE_1", 
                            "r2_2", "MAE_2", "RMSE_2",
                            "r2_3", "MAE_3", "RMSE_3",
-                           "r2_4", "MAE_4", "RMSE_4",
-                           "r2_5", "MAE_5", "RMSE_5",
-                           "r2_6", "MAE_6", "RMSE_6",
-                           "r2_7", "MAE_7", "RMSE_7")
+                           "r2_4", "MAE_4", "RMSE_4")
 
 modelcompare$Output = colnames(out)
 modelcompare$r2_1 = rsquared1
 modelcompare$r2_2 = rsquared2
 modelcompare$r2_3 = rsquared3
 modelcompare$r2_4 = rsquared4
-modelcompare$r2_5 = rsquared5
-modelcompare$r2_6 = rsquared6
-modelcompare$r2_7 = rsquared7
 modelcompare$MAE_1 = MAE1
 modelcompare$MAE_2 = MAE2
 modelcompare$MAE_3 = MAE3
 modelcompare$MAE_4 = MAE4
-modelcompare$MAE_5 = MAE5
-modelcompare$MAE_6 = MAE6
-modelcompare$MAE_7 = MAE7
 modelcompare$RMSE_1 = RMSE1
 modelcompare$RMSE_2 = RMSE2
 modelcompare$RMSE_3 = RMSE3
-modelcompare$RMSE_4 = RMSE5
-modelcompare$RMSE_5 = RMSE5
-modelcompare$RMSE_6 = RMSE6
-modelcompare$RMSE_7 = RMSE7
+modelcompare$RMSE_4 = RMSE4
 
 head(modelcompare)
 
@@ -495,168 +288,26 @@ head(modelcompare)
 write.csv(modelcompare, "ModelCompare.csv")
 
 
-
-
-
 #######plots of linear regressions#######
 par(mfrow=c(4,2), mar=c(4,4,2,2))
 
-plot(out[,8], out1[,8], xlab= "Actual", ylab="Modelled", main = "GPP")
+plot(out[,6], out1[,6], xlab= "Actual", ylab="Modelled", main = "NEE")
 abline(0,1,col="red")
-reg1=lm(out1[,8]~out[,8])
+reg1=lm(out1[,6]~out[,6])
 plot(density(resid(reg1)), main="Density of Residuals")
 
-plot(out[,10], out1[,10], xlab= "Actual", ylab="Modelled", main = "NEE")
+plot(out[,6], out1[,6], xlab= "Actual", ylab="Modelled", main = "NEE")
 abline(0,1,col="red")
-reg1=lm(out1[,10]~out[,10])
-plot(density(resid(reg1)), main="Density of Residuals")
+reg2=lm(out2[,6]~out[,6])
+plot(density(resid(reg2)), main="Density of Residuals")
 
-plot(out[,11], out1[,11], xlab= "Actual", ylab="Modelled", main = "Re")
+plot(out[,6], out1[,6], xlab= "Actual", ylab="Modelled", main = "NEE")
 abline(0,1,col="red")
-reg1=lm(out1[,11]~out[,11])
-plot(density(resid(reg1)), main="Density of Residuals")
+reg3=lm(out3[,6]~out[,6])
+plot(density(resid(reg3)), main="Density of Residuals")
 
-plot(out[,9], out1[,9], xlab= "Actual", ylab="Modelled", main = "NDVI")
+plot(out[,6], out1[,6], xlab= "Actual", ylab="Modelled", main = "NEE")
 abline(0,1,col="red")
-reg1=lm(out1[,9]~out[,9])
-plot(density(resid(reg1)), main="Density of Residuals")
+reg4=lm(out4[,6]~out[,6])
+plot(density(resid(reg4)), main="Density of Residuals")
 
-
-
-
-
-plot(out[,8], out2[,8], xlab= "Actual", ylab="Modelled", main = "GPP")
-abline(0,1,col="red")
-reg1=lm(out2[,8]~out[,8])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,10], out2[,10], xlab= "Actual", ylab="Modelled", main = "NEE")
-abline(0,1,col="red")
-reg1=lm(out2[,10]~out[,10])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,11], out2[,11], xlab= "Actual", ylab="Modelled", main = "Re")
-abline(0,1,col="red")
-reg1=lm(out2[,11]~out[,11])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,9], out2[,9], xlab= "Actual", ylab="Modelled", main = "NDVI")
-abline(0,1,col="red")
-reg1=lm(out2[,9]~out[,9])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-
-
-
-
-plot(out[,8], out3[,8], xlab= "Actual", ylab="Modelled", main = "GPP")
-abline(0,1,col="red")
-reg1=lm(out3[,8]~out[,8])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,10], out3[,10], xlab= "Actual", ylab="Modelled", main = "NEE")
-abline(0,1,col="red")
-reg1=lm(out3[,10]~out[,10])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,11], out3[,11], xlab= "Actual", ylab="Modelled", main = "Re")
-abline(0,1,col="red")
-reg1=lm(out3[,11]~out[,11])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,9], out3[,9], xlab= "Actual", ylab="Modelled", main = "NDVI")
-abline(0,1,col="red")
-reg1=lm(out3[,9]~out[,9])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-
-
-
-
-plot(out[,8], out4[,8], xlab= "Actual", ylab="Modelled", main = "GPP")
-abline(0,1,col="red")
-reg1=lm(out4[,8]~out[,8])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,10], out4[,10], xlab= "Actual", ylab="Modelled", main = "NEE")
-abline(0,1,col="red")
-reg1=lm(out4[,10]~out[,10])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,11], out4[,11], xlab= "Actual", ylab="Modelled", main = "Re")
-abline(0,1,col="red")
-reg1=lm(out4[,11]~out[,11])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,9], out4[,9], xlab= "Actual", ylab="Modelled", main = "NDVI")
-abline(0,1,col="red")
-reg1=lm(out4[,9]~out[,9])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-
-
-
-
-plot(out[,8], out5[,8], xlab= "Actual", ylab="Modelled", main = "GPP")
-abline(0,1,col="red")
-reg1=lm(out5[,8]~out[,8])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,10], out5[,10], xlab= "Actual", ylab="Modelled", main = "NEE")
-abline(0,1,col="red")
-reg1=lm(out5[,10]~out[,10])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,11], out5[,11], xlab= "Actual", ylab="Modelled", main = "Re")
-abline(0,1,col="red")
-reg1=lm(out5[,11]~out[,11])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,9], out5[,9], xlab= "Actual", ylab="Modelled", main = "NDVI")
-abline(0,1,col="red")
-reg1=lm(out5[,9]~out[,9])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-
-
-
-
-plot(out[,8], out6[,8], xlab= "Actual", ylab="Modelled", main = "GPP")
-abline(0,1,col="red")
-reg1=lm(out6[,8]~out[,8])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,10], out6[,10], xlab= "Actual", ylab="Modelled", main = "NEE")
-abline(0,1,col="red")
-reg1=lm(out6[,10]~out[,10])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,11], out6[,11], xlab= "Actual", ylab="Modelled", main = "Re")
-abline(0,1,col="red")
-reg1=lm(out6[,11]~out[,11])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,9], out6[,9], xlab= "Actual", ylab="Modelled", main = "NDVI")
-abline(0,1,col="red")
-reg1=lm(out6[,9]~out[,9])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,8], out7[,8], xlab= "Actual", ylab="Modelled", main = "GPP")
-abline(0,1,col="red")
-reg1=lm(out7[,8]~out[,8])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,10], out7[,10], xlab= "Actual", ylab="Modelled", main = "NEE")
-abline(0,1,col="red")
-reg1=lm(out7[,10]~out[,10])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,11], out7[,11], xlab= "Actual", ylab="Modelled", main = "Re")
-abline(0,1,col="red")
-reg1=lm(out7[,11]~out[,11])
-plot(density(resid(reg1)), main="Density of Residuals")
-
-plot(out[,9], out7[,9], xlab= "Actual", ylab="Modelled", main = "NDVI")
-abline(0,1,col="red")
-reg1=lm(out7[,9]~out[,9])
-plot(density(resid(reg1)), main="Density of Residuals")
