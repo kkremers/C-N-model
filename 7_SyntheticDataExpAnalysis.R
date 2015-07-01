@@ -580,4 +580,5 @@ perc.NDVI = as.data.frame(cbind(Month=as.vector(perc.kplant$Month), perc.NDVI))
 
 
 
+
 save.image(file="Variance_07012015.Rdata")
