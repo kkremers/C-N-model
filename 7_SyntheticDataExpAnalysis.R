@@ -311,3 +311,173 @@ abline(0,1,col="red")
 reg4=lm(out4[,6]~out[,6])
 plot(density(resid(reg4)), main="Density of Residuals")
 
+
+
+######VARIANCE DECOMPOSITION ANALYSIS#########
+
+load("Step2_NEE_BiomassCN_AvailableN_SOMCN.Rdata") #load best experiment (experiment 4)
+head(param.keep) #view table of accepted parameters
+means=apply(param.keep, 2, mean) #calculate parameter means
+
+#to perform the variance decomposition analysis, you need to:
+# 1) alter each parameter individually holding all other parameters constant at their means
+# 2) run the model for each parameter set to obtain an ensemble of model runs
+# 3) for each model run, calculate the monthly average of the output
+# 4) Calculate the variance in monthly averages for each parameter - this gives you the contribution of that parameter to the model variance
+
+head(out[,1:11])
+#need to make tables to store monthly averages for each model output (each parameter has one table)
+
+MVar_kplant = data.frame(matrix(1,1,11))
+colnames(MVar_kplant)=c("Month", colnames(out[,2:11]))
+MVar_LitterRate = data.frame(matrix(1,1,11))
+colnames(MVar_LitterRate)=c("Month", colnames(out[,2:11]))
+MVar_retrans = data.frame(matrix(1,1,11))
+colnames(MVar_retrans)=c("Month", colnames(out[,2:11]))
+MVar_RespRate = data.frame(matrix(1,1,11))
+colnames(MVar_RespRate)=c("Month", colnames(out[,2:11]))
+MVar_UptakeRate = data.frame(matrix(1,1,11))
+colnames(MVar_UptakeRate)=c("Month", colnames(out[,2:11]))
+MVar_propN_fol = data.frame(matrix(1,1,11))
+colnames(MVar_propN_fol)=c("Month", colnames(out[,2:11]))
+MVar_propN_roots = data.frame(matrix(1,1,11))
+colnames(MVar_propN_roots)=c("Month", colnames(out[,2:11]))
+MVar_q10 = data.frame(matrix(1,1,11))
+colnames(MVar_q10)=c("Month", colnames(out[,2:11]))
+MVar_Ndep_rate = data.frame(matrix(1,1,11))
+colnames(MVar_Ndep_rate)=c("Month", colnames(out[,2:11]))
+
+
+#need to create a vector of months to append to model output
+months = rep(c("1_Jan", "2_Feb", "3_Mar", "4_Apr", "5_May", "6_Jun", "7_Jul", "8_Aug", "9_Sept", "10_Oct", "11_Nov", "12_Dec"),
+             c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31))
+months.leap = rep(c("1_Jan", "2_Feb", "3_Mar", "4_Apr", "5_May", "6_Jun", "7_Jul", "8_Aug", "9_Sept", "10_Oct", "11_Nov", "12_Dec"),
+                  c(31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31))
+
+months = c(months, months, months, months.leap, months)
+
+#kplant
+for(i in 1:1000){
+    params.i = means #set parmeters to mean values
+    params.i[1] = unlist(c(param.keep[i,1]))  #change the parameter value of interest
+    out.i = data.frame(solvemodel(params.i, state)) #run model
+    out.i = cbind(out.i, Month = months) #add month vector
+    monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
+    names(monthly.avg) = names(MVar_kplant)
+    MVar_kplant = rbind(MVar_kplant, monthly.avg)
+}  
+
+#LitterRate
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[2] = unlist(c(param.keep[i,2]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  out.i = cbind(out.i, Month = months) #add month vector
+  monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
+  names(monthly.avg) = names(MVar_LitterRate)
+  MVar_LitterRate = rbind(MVar_LitterRate, monthly.avg)
+}  
+
+#retrans
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[3] = unlist(c(param.keep[i,3]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  out.i = cbind(out.i, Month = months) #add month vector
+  monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
+  names(monthly.avg) = names(MVar_retrans)
+  MVar_retrans = rbind(MVar_retrans, monthly.avg)
+}  
+
+#RespRate
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[4] = unlist(c(param.keep[i,4]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  out.i = cbind(out.i, Month = months) #add month vector
+  monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
+  names(monthly.avg) = names(MVar_RespRate)
+  MVar_RespRate = rbind(MVar_RespRate, monthly.avg)
+}  
+
+#UptakeRate
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[5] = unlist(c(param.keep[i,5]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  out.i = cbind(out.i, Month = months) #add month vector
+  monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
+  names(monthly.avg) = names(MVar_UptakeRate)
+  MVar_UptakeRate = rbind(MVar_UptakeRate, monthly.avg)
+}  
+
+#propN_fol
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[6] = unlist(c(param.keep[i,6]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  out.i = cbind(out.i, Month = months) #add month vector
+  monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
+  names(monthly.avg) = names(MVar_propN_fol)
+  MVar_propN_fol = rbind(MVar_propN_fol, monthly.avg)
+}  
+
+#propN_roots
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[7] = unlist(c(param.keep[i,7]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  out.i = cbind(out.i, Month = months) #add month vector
+  monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
+  names(monthly.avg) = names(MVar_propN_roots)
+  MVar_propN_roots = rbind(MVar_propN_roots, monthly.avg)
+}  
+
+#q10
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[8] = unlist(c(param.keep[i,8]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  out.i = cbind(out.i, Month = months) #add month vector
+  monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
+  names(monthly.avg) = names(MVar_q10)
+  MVar_q10 = rbind(MVar_q10, monthly.avg)
+}  
+
+#Ndep_rate
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[9] = unlist(c(param.keep[i,9]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  out.i = cbind(out.i, Month = months) #add month vector
+  monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
+  names(monthly.avg) = names(MVar_Ndep_rate)
+  MVar_Ndep_rate = rbind(MVar_Ndep_rate, monthly.avg)
+}  
+
+MVar_kplant = MVar_kplant[-1,]
+MVar_LitterRate = MVar_LitterRate[-1,]
+MVar_retrans = MVar_retrans[-1,]
+MVar_RespRate = MVar_RespRate[-1,]
+MVar_UptakeRate = MVar_UptakeRate[-1,]
+MVar_propN_fol = MVar_propN_fol[-1,]
+MVar_propN_roots = MVar_propN_roots[-1,]
+MVar_q10 = MVar_q10[-1,]
+MVar_Ndep_rate = MVar_Ndep_rate[-1,]
+
+var.kplant = aggregate(MVar_kplant[,2:11], list(MVar_kplant$Month), var)
+var.LitterRate = aggregate(MVar_LitterRate[,2:11], list(MVar_LitterRate$Month), var)
+var.retrans = aggregate(MVar_retrans[,2:11], list(MVar_retrans$Month), var)
+var.RespRate = aggregate(MVar_RespRate[,2:11], list(MVar_RespRate$Month), var)
+var.UptakeRate = aggregate(MVar_UptakeRate[,2:11], list(MVar_UptakeRate$Month), var)
+var.propN_fol = aggregate(MVar_propN_fol[,2:11], list(MVar_propN_fol$Month), var)
+var.propN_roots = aggregate(MVar_propN_roots[,2:11], list(MVar_propN_roots$Month), var)
+var.q10 = aggregate(MVar_q10[,2:11], list(MVar_q10$Month), var)
+var.Ndep_rate = aggregate(MVar_Ndep_rate[,2:11], list(MVar_Ndep_rate$Month), var)
+
+save.image(file="Variance_07012015.Rdata")
+
+
+
+
+
