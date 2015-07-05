@@ -289,6 +289,15 @@ write.csv(modelcompare, "ModelCompare.csv")
 
 
 #######plots of linear regressions#######
+
+out=data.frame(solvemodel(params, state))[,c(2:11)] #with columns to match data.assim
+out1=data.frame(solvemodel(param.best_1, state))[,c(2:11)] 
+out2=data.frame(solvemodel(param.best_2, state))[,c(2:11)]
+out3=data.frame(solvemodel(param.best_3, state))[,c(2:11)]
+out4=data.frame(solvemodel(param.best_4, state))[,c(2:11)]
+
+
+#NEE
 par(mfrow=c(4,2), mar=c(4,4,2,2))
 
 plot(out[,6], out1[,6], xlab= "Actual", ylab="Modelled", main = "NEE")
@@ -296,26 +305,98 @@ abline(0,1,col="red")
 reg1=lm(out1[,6]~out[,6])
 plot(density(resid(reg1)), main="Density of Residuals")
 
-plot(out[,6], out1[,6], xlab= "Actual", ylab="Modelled", main = "NEE")
+plot(out[,6], out2[,6], xlab= "Actual", ylab="Modelled", main = "NEE")
 abline(0,1,col="red")
 reg2=lm(out2[,6]~out[,6])
 plot(density(resid(reg2)), main="Density of Residuals")
 
-plot(out[,6], out1[,6], xlab= "Actual", ylab="Modelled", main = "NEE")
+plot(out[,6], out3[,6], xlab= "Actual", ylab="Modelled", main = "NEE")
 abline(0,1,col="red")
 reg3=lm(out3[,6]~out[,6])
 plot(density(resid(reg3)), main="Density of Residuals")
 
-plot(out[,6], out1[,6], xlab= "Actual", ylab="Modelled", main = "NEE")
+plot(out[,6], out4[,6], xlab= "Actual", ylab="Modelled", main = "NEE")
 abline(0,1,col="red")
 reg4=lm(out4[,6]~out[,6])
 plot(density(resid(reg4)), main="Density of Residuals")
 
 
 
+
+#GPP
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+
+plot(out[,7], out1[,7], xlab= "Actual", ylab="Modelled", main = "GPP")
+abline(0,1,col="red")
+reg1=lm(out1[,7]~out[,7])
+plot(density(resid(reg1)), main="Density of Residuals")
+
+plot(out[,7], out2[,7], xlab= "Actual", ylab="Modelled", main = "GPP")
+abline(0,1,col="red")
+reg2=lm(out2[,7]~out[,7])
+plot(density(resid(reg2)), main="Density of Residuals")
+
+plot(out[,7], out3[,7], xlab= "Actual", ylab="Modelled", main = "GPP")
+abline(0,1,col="red")
+reg3=lm(out3[,7]~out[,7])
+plot(density(resid(reg3)), main="Density of Residuals")
+
+plot(out[,7], out4[,7], xlab= "Actual", ylab="Modelled", main = "GPP")
+abline(0,1,col="red")
+reg4=lm(out4[,7]~out[,7])
+plot(density(resid(reg4)), main="Density of Residuals")
+
+#Re
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+
+plot(out[,8], out1[,8], xlab= "Actual", ylab="Modelled", main = "Re")
+abline(0,1,col="red")
+reg1=lm(out1[,8]~out[,8])
+plot(density(resid(reg1)), main="Density of Residuals")
+
+plot(out[,8], out2[,8], xlab= "Actual", ylab="Modelled", main = "Re")
+abline(0,1,col="red")
+reg2=lm(out2[,8]~out[,8])
+plot(density(resid(reg2)), main="Density of Residuals")
+
+plot(out[,8], out3[,8], xlab= "Actual", ylab="Modelled", main = "Re")
+abline(0,1,col="red")
+reg3=lm(out3[,8]~out[,8])
+plot(density(resid(reg3)), main="Density of Residuals")
+
+plot(out[,8], out4[,8], xlab= "Actual", ylab="Modelled", main = "Re")
+abline(0,1,col="red")
+reg4=lm(out4[,8]~out[,8])
+plot(density(resid(reg4)), main="Density of Residuals")
+
+
+#NDVI
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+
+plot(out[,10], out1[,10], xlab= "Actual", ylab="Modelled", main = "NDVI")
+abline(0,1,col="red")
+reg1=lm(out1[,10]~out[,10])
+plot(density(resid(reg1)), main="Density of Residuals")
+
+plot(out[,10], out2[,10], xlab= "Actual", ylab="Modelled", main = "NDVI")
+abline(0,1,col="red")
+reg2=lm(out2[,10]~out[,10])
+plot(density(resid(reg2)), main="Density of Residuals")
+
+plot(out[,10], out3[,10], xlab= "Actual", ylab="Modelled", main = "NDVI")
+abline(0,1,col="red")
+reg3=lm(out3[,10]~out[,10])
+plot(density(resid(reg3)), main="Density of Residuals")
+
+plot(out[,10], out4[,10], xlab= "Actual", ylab="Modelled", main = "NDVI")
+abline(0,1,col="red")
+reg4=lm(out4[,10]~out[,10])
+plot(density(resid(reg4)), main="Density of Residuals")
+
+
 ######VARIANCE DECOMPOSITION ANALYSIS#########
 
-load("Step2_NEE_BiomassCN_AvailableN_SOMCN.Rdata") #load best experiment (experiment 4)
+load("Step2_NEE_BiomassCN.Rdata") #load best experiment (experiment 4)
 head(param.keep) #view table of accepted parameters
 means=apply(param.keep, 2, mean) #calculate parameter means
 
@@ -349,9 +430,9 @@ colnames(MVar_Ndep_rate)=c("Month", colnames(out[,2:11]))
 
 
 #need to create a vector of months to append to model output
-months = rep(c("1_Jan", "2_Feb", "3_Mar", "4_Apr", "5_May", "6_Jun", "7_Jul", "8_Aug", "9_Sept", "10_Oct", "11_Nov", "12_Dec"),
+months = rep(c(seq(1:12)),
              c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31))
-months.leap = rep(c("1_Jan", "2_Feb", "3_Mar", "4_Apr", "5_May", "6_Jun", "7_Jul", "8_Aug", "9_Sept", "10_Oct", "11_Nov", "12_Dec"),
+months.leap = rep(c(seq(1:12)),
                   c(31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31))
 
 months = c(months, months, months, months.leap, months)
@@ -487,98 +568,112 @@ var.total = aggregate(all[3:12], list(all$Group.1), sum)
 
 #now calculate percent variance
 perc.kplant = (var.kplant[,2:11]/var.total[,2:11])*100
-perc.kplant = cbind(Month=var.total$Group.1, perc.kplant)
+perc.kplant = cbind(Parameter = rep("kplant", 12), Month=var.total$Group.1, perc.kplant)
 
 perc.LitterRate = (var.LitterRate[,2:11]/var.total[,2:11])*100
-perc.LitterRate = cbind(Month=var.total$Group.1, perc.LitterRate)
+perc.LitterRate = cbind(Parameter = rep("LitterRate", 12), Month=var.total$Group.1, perc.LitterRate)
 
 perc.retrans = (var.retrans[,2:11]/var.total[,2:11])*100
-perc.retrans = cbind(Month=var.total$Group.1, perc.retrans)
+perc.retrans = cbind(Parameter = rep("retrans", 12), Month=var.total$Group.1, perc.retrans)
 
 perc.RespRate = (var.RespRate[,2:11]/var.total[,2:11])*100
-perc.RespRate = cbind(Month=var.total$Group.1, perc.RespRate)
+perc.RespRate = cbind(Parameter = rep("RespRate", 12), Month=var.total$Group.1, perc.RespRate)
 
 perc.UptakeRate = (var.UptakeRate[,2:11]/var.total[,2:11])*100
-perc.UptakeRate = cbind(Month=var.total$Group.1, perc.UptakeRate)
+perc.UptakeRate = cbind(Parameter = rep("UptakeRate", 12), Month=var.total$Group.1, perc.UptakeRate)
 
 perc.propN_fol = (var.propN_fol[,2:11]/var.total[,2:11])*100
-perc.propN_fol = cbind(Month=var.total$Group.1, perc.propN_fol)
+perc.propN_fol = cbind(Parameter = rep("propN_fol", 12), Month=var.total$Group.1, perc.propN_fol)
 
 perc.propN_roots = (var.propN_roots[,2:11]/var.total[,2:11])*100
-perc.propN_roots = cbind(Month=var.total$Group.1, perc.propN_roots)
+perc.propN_roots = cbind(Parameter = rep("propN_roots", 12), Month=var.total$Group.1, perc.propN_roots)
 
 perc.q10 = (var.q10[,2:11]/var.total[,2:11])*100
-perc.q10 = cbind(Month=var.total$Group.1, perc.q10)
+perc.q10 = cbind(Parameter = rep("q10", 12), Month=var.total$Group.1, perc.q10)
 
 perc.Ndep_rate = (var.Ndep_rate[,2:11]/var.total[,2:11])*100
-perc.Ndep_rate = cbind(Month=var.total$Group.1, perc.Ndep_rate)
+perc.Ndep_rate = cbind(Parameter = rep("Ndep_rate", 12), Month=var.total$Group.1, perc.Ndep_rate)
+
+#create a table binding all together
+
+perc.all = rbind(perc.kplant, perc.LitterRate, perc.retrans, perc.RespRate,
+                 perc.UptakeRate, perc.propN_fol, perc.propN_roots, perc.q10, perc.Ndep_rate)
+
+perc.all = perc.all[,-11]
+head(perc.all)
+tail(perc.all)
+
+####barplots####
+
+par(mfrow=c(3,3), mar=c(4,4,2,2))
+
+for (n in 3:11) { #for each parameter
+  sub = perc.all[,c(1,2,n)]
+  sub1 = table(sub$Parameter, sub$Month)
+  sub1[1,] = sub[1:12,3]
+  sub1[2,] = sub[13:24,3]
+  sub1[3,] = sub[25:36,3]
+  sub1[4,] = sub[37:48,3]
+  sub1[5,] = sub[49:60,3]
+  sub1[6,] = sub[61:72,3]
+  sub1[7,] = sub[73:84,3]
+  sub1[8,] = sub[85:96,3]
+  sub1[9,] = sub[97:108,3]
+  barplot(sub1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "darkseagreen", 
+                      "deepskyblue", "dodgerblue3", "forestgreen", "darkslategray1"),            
+                      main=names(perc.all[n]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100)) #plot the data
+} #end of for loop
 
 
-
-perc.biomassC = cbind(kplant=perc.kplant[,2], LitterRate=perc.LitterRate[,2], retrans=perc.retrans[,2], 
-                     RespRate=perc.RespRate[,2], UptakeRate=perc.UptakeRate[,2], propN_fol=perc.propN_fol[,2], 
-                     propN_roots=perc.propN_roots[,2], q10=perc.q10[,2], Ndep_rate=perc.Ndep_rate[,2])
-perc.biomassC = as.data.frame(cbind(Month=as.vector(perc.kplant$Month), perc.biomassC))
+par(mfrow=c(1,1), mar=c(4,4,2,2))
 
 
-perc.biomassN = cbind(kplant=perc.kplant[,3], LitterRate=perc.LitterRate[,3], retrans=perc.retrans[,3], 
-                      RespRate=perc.RespRate[,3], UptakeRate=perc.UptakeRate[,3], propN_fol=perc.propN_fol[,3], 
-                      propN_roots=perc.propN_roots[,3], q10=perc.q10[,3], Ndep_rate=perc.Ndep_rate[,3])
-perc.biomassN = as.data.frame(cbind(Month=as.vector(perc.kplant$Month), perc.biomassN))
+#NEE
+sub = perc.all[,c(1,2,8)]
+sub1 = table(sub$Parameter, sub$Month)
+sub1[1,] = sub[1:12,3]
+sub1[2,] = sub[13:24,3]
+sub1[3,] = sub[25:36,3]
+sub1[4,] = sub[37:48,3]
+sub1[5,] = sub[49:60,3]
+sub1[6,] = sub[61:72,3]
+sub1[7,] = sub[73:84,3]
+sub1[8,] = sub[85:96,3]
+sub1[9,] = sub[97:108,3]
+barplot(sub1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "darkseagreen", 
+                    "deepskyblue", "dodgerblue3", "forestgreen", "darkslategray1"),            
+        main=names(perc.all[8]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100)) #plot the data
 
+#GPP
+sub = perc.all[,c(1,2,9)]
+sub1 = table(sub$Parameter, sub$Month)
+sub1[1,] = sub[1:12,3]
+sub1[2,] = sub[13:24,3]
+sub1[3,] = sub[25:36,3]
+sub1[4,] = sub[37:48,3]
+sub1[5,] = sub[49:60,3]
+sub1[6,] = sub[61:72,3]
+sub1[7,] = sub[73:84,3]
+sub1[8,] = sub[85:96,3]
+sub1[9,] = sub[97:108,3]
+barplot(sub1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "darkseagreen", 
+                    "deepskyblue", "dodgerblue3", "forestgreen", "darkslategray1"),            
+        main=names(perc.all[9]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100)) #plot the data
 
-perc.SOMC = cbind(kplant=perc.kplant[,4], LitterRate=perc.LitterRate[,4], retrans=perc.retrans[,4], 
-                      RespRate=perc.RespRate[,4], UptakeRate=perc.UptakeRate[,4], propN_fol=perc.propN_fol[,4], 
-                      propN_roots=perc.propN_roots[,4], q10=perc.q10[,4], Ndep_rate=perc.Ndep_rate[,4])
-perc.SOMC = as.data.frame(cbind(Month=as.vector(perc.kplant$Month), perc.SOMC))
-
-perc.SOMN = cbind(kplant=perc.kplant[,5], LitterRate=perc.LitterRate[,5], retrans=perc.retrans[,5], 
-                  RespRate=perc.RespRate[,5], UptakeRate=perc.UptakeRate[,5], propN_fol=perc.propN_fol[,5], 
-                  propN_roots=perc.propN_roots[,5], q10=perc.q10[,5], Ndep_rate=perc.Ndep_rate[,5])
-perc.SOMN = as.data.frame(cbind(Month=as.vector(perc.kplant$Month), perc.SOMN))
-
-perc.AvailN = cbind(kplant=perc.kplant[,6], LitterRate=perc.LitterRate[,6], retrans=perc.retrans[,6], 
-                  RespRate=perc.RespRate[,6], UptakeRate=perc.UptakeRate[,6], propN_fol=perc.propN_fol[,6], 
-                  propN_roots=perc.propN_roots[,6], q10=perc.q10[,6], Ndep_rate=perc.Ndep_rate[,6])
-perc.AvailN = as.data.frame(cbind(Month=as.vector(perc.kplant$Month), perc.AvailN))
-
-perc.NEE = cbind(kplant=perc.kplant[,7], LitterRate=perc.LitterRate[,7], retrans=perc.retrans[,7], 
-                  RespRate=perc.RespRate[,7], UptakeRate=perc.UptakeRate[,7], propN_fol=perc.propN_fol[,7], 
-                  propN_roots=perc.propN_roots[,7], q10=perc.q10[,7], Ndep_rate=perc.Ndep_rate[,7])
-perc.NEE = as.data.frame(cbind(Month=as.vector(perc.kplant$Month), perc.NEE))
-
-perc.GPP = cbind(kplant=perc.kplant[,8], LitterRate=perc.LitterRate[,8], retrans=perc.retrans[,8], 
-                 RespRate=perc.RespRate[,8], UptakeRate=perc.UptakeRate[,8], propN_fol=perc.propN_fol[,8], 
-                 propN_roots=perc.propN_roots[,8], q10=perc.q10[,8], Ndep_rate=perc.Ndep_rate[,8])
-perc.GPP = as.data.frame(cbind(Month=as.vector(perc.kplant$Month), perc.GPP))
-
-perc.Re = cbind(kplant=perc.kplant[,9], LitterRate=perc.LitterRate[,9], retrans=perc.retrans[,9], 
-                 RespRate=perc.RespRate[,9], UptakeRate=perc.UptakeRate[,9], propN_fol=perc.propN_fol[,9], 
-                 propN_roots=perc.propN_roots[,9], q10=perc.q10[,9], Ndep_rate=perc.Ndep_rate[,9])
-perc.Re = as.data.frame(cbind(Month=as.vector(perc.kplant$Month), perc.Re))
-
-perc.LAI = cbind(kplant=perc.kplant[,10], LitterRate=perc.LitterRate[,10], retrans=perc.retrans[,10], 
-                RespRate=perc.RespRate[,10], UptakeRate=perc.UptakeRate[,10], propN_fol=perc.propN_fol[,10], 
-                propN_roots=perc.propN_roots[,10], q10=perc.q10[,10], Ndep_rate=perc.Ndep_rate[,10])
-perc.LAI = as.data.frame(cbind(Month=as.vector(perc.kplant$Month), perc.LAI))
-
-perc.NDVI = cbind(kplant=perc.kplant[,11], LitterRate=perc.LitterRate[,11], retrans=perc.retrans[,11], 
-                 RespRate=perc.RespRate[,11], UptakeRate=perc.UptakeRate[,11], propN_fol=perc.propN_fol[,11], 
-                 propN_roots=perc.propN_roots[,11], q10=perc.q10[,11], Ndep_rate=perc.Ndep_rate[,11])
-perc.NDVI = as.data.frame(cbind(Month=as.vector(perc.kplant$Month), perc.NDVI))
-
-
-#barplot for each parameter showing variance over the year
-
-
-
-
-
-
-#barplot for each month showing difference between parameters
-
-
-
-
+#Re
+sub = perc.all[,c(1,2,10)]
+sub1 = table(sub$Parameter, sub$Month)
+sub1[1,] = sub[1:12,3]
+sub1[2,] = sub[13:24,3]
+sub1[3,] = sub[25:36,3]
+sub1[4,] = sub[37:48,3]
+sub1[5,] = sub[49:60,3]
+sub1[6,] = sub[61:72,3]
+sub1[7,] = sub[73:84,3]
+sub1[8,] = sub[85:96,3]
+sub1[9,] = sub[97:108,3]
+barplot(sub1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "darkseagreen", 
+                    "deepskyblue", "dodgerblue3", "forestgreen", "darkslategray1"),            
+        main=names(perc.all[10]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100)) #plot the data
 
 save.image(file="Variance_07012015.Rdata")
