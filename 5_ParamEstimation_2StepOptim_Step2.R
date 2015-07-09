@@ -7,7 +7,7 @@ require(deSolve)
 
 out = data.frame(solvemodel(param.best, state)) #run model
 #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-out.compare1 = out[match(data.compare1$time, out$time),c(1:7)] #these columns need to match the ones that were pulled out before
+out.compare1 = out[match(data.compare1$time, out$time),c(1:3,7)] #these columns need to match the ones that were pulled out before
 head(out.compare1)
 head(data.compare1)
 head(sigma.obs1)
@@ -74,7 +74,7 @@ repeat { #repeat until desired number of parameter sets are accepted
   } else {
     
     #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-    out.compare1 = out[match(data.compare1$time, out$time),c(1:7)] #these columns need to match the ones that were pulled out before
+    out.compare1 = out[match(data.compare1$time, out$time),c(1:3,7)] #these columns need to match the ones that were pulled out before
     
     #remove the time column - no longer needed
     data.comp = data.compare1[,-1]
@@ -137,4 +137,4 @@ repeat { #repeat until desired number of parameter sets are accepted
 head(param.keep)
 head(data.compare1)
 
-save.image(file="Step2_NEE_BiomassCN_AvailableN_SOMCN.Rdata")
+save.image(file="Step2_NEE_BiomassCN_kplant13.Rdata")
