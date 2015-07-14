@@ -104,8 +104,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(3,0.0024,0.85,0.98,0.012,0.9,0.9,3.3,0.00082)
-param.min=c(1,0.0001,0.6,0.26,0.002,0.1,0.1,1.4,0.0000014)
+param.max=c(5,0.0024,0.85,0.98,0.012,0.9,0.9,3.3,0.00082)
+param.min=c(0,0.0001,0.6,0.26,0.002,0.1,0.1,1.4,0.0000014)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output
@@ -225,5 +225,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_BiomassCN_kplant13.Rdata")
+save.image(file="Step1_NEE_BiomassCN_kplant05.Rdata")
 

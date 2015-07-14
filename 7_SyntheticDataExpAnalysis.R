@@ -642,7 +642,7 @@ sub1[8,] = sub[85:96,3]
 sub1[9,] = sub[97:108,3]
 barplot(sub1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "darkseagreen", 
                     "deepskyblue", "dodgerblue3", "forestgreen", "darkslategray1"),            
-        main=names(perc.all[8]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100)) #plot the data
+        main=names(perc.all[8]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100), legend=TRUE) #plot the data
 
 #GPP
 sub = perc.all[,c(1,2,9)]
@@ -676,4 +676,4 @@ barplot(sub1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "darks
                     "deepskyblue", "dodgerblue3", "forestgreen", "darkslategray1"),            
         main=names(perc.all[10]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100)) #plot the data
 
-save.image(file="Variance_07012015.Rdata")
+save.image(file="Variance_07142015.Rdata")
