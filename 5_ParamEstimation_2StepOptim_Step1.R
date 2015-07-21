@@ -90,12 +90,26 @@ head(data.compare1)
 head(sigma.obs1)
 
 
+###LOAD REAL DATA###
+data.assim = read.csv("Assimilation_data.csv")
+data.sigma = read.csv("Assimilation_sigma.csv")
+head(data.assim)
+head(data.sigma)
+head(out)
+out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
+head(out1)
+time.assim = out1[match(data.assim$year_DOY, out1$year_DOY), 1]
+data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,5]))
+sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,5]))
+head(data.compare1)
+head(sigma.obs1)
+
 ###STEP 1: EXPLORE PARAMETER SPACE
 
 #other necessary knowns
-n.param = 9 #number of parameters to estimate
+n.param = length(params) #number of parameters to estimate
 M = 100000 #number of iterations
-D = length(data.compare1)-1 #number of data types being assimilated (number of columns in data.compare1, minus the "time" column)
+D = 1 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
   n.time[d]=sum(!is.na(data.compare1[,d+1])) #calculate the number of time points that DO NOT have NA's
@@ -104,8 +118,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(5,0.0024,0.85,0.98,0.012,0.9,0.9,3.3,0.00082)
-param.min=c(0,0.0001,0.6,0.26,0.002,0.1,0.1,1.4,0.0000014)
+param.max=c(5,0.0024,0.85,0.98,0.012,0.9,0.9,3.3, 700, 20, 25000, 1000, 5)
+param.min=c(0,0.0001,0.6,0.26,0.002,0.1,0.1,1.4, 600, 8, 15000, 600, 0.05)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output
@@ -120,12 +134,6 @@ head(param.est) #check to make sure this is correct
 head(all.draws)
 
 
-#starting values for states
-state <- c(Biomass_C = 400, 
-           Biomass_N = 4.5, 
-           SOM_C = 1600, 
-           SOM_N = 35,
-           Available_N = 0.1)
 
 #set initial values
 anneal.temp0=20000 #starting temperature
@@ -160,7 +168,7 @@ for (i in 2:M) {
   
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
 
-  out.compare1 = out[match(data.compare1$time, out$time),c(1:3,7)] #these columns need to match the ones that were pulled out before
+  out.compare1 = out[match(data.compare1$time, out$time),c(1,7)] #these columns need to match the ones that were pulled out before
   
   error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
   for (d in 1:D) { #for each data type
@@ -225,5 +233,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_BiomassCN_kplant05.Rdata")
+save.image(file="Step1_NEE.Rdata")
 

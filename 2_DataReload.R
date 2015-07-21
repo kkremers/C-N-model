@@ -97,6 +97,7 @@ par(mfrow=c(1,1), mar=c(4,4,0.5,2))
 plot(scal.add, type="l")
 plot(scal.temp, type="l")
 
+
 #make into functions so that it will be continuous in the model
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
 PAR.d1 <- approxfun(x=data$time, y=data$PAR_vis, method="linear", rule=2)
@@ -106,3 +107,4 @@ scalGDD.d1 <- approxfun(x=data$time, y=scal.GDD, method="linear", rule=2)
 scaladd.d1 <- approxfun(x=data$time, y=scal.add, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 DOYsen.d1 <- approxfun(x=data$time, y=data$DOY.sen, method="linear", rule=2)
+Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
