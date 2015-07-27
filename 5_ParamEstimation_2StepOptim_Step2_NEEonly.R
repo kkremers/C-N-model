@@ -38,7 +38,7 @@ head(param.keep)#check to make sure this is correct
 
 
 #also need to know degrees of freedom for chi square test
-n.par = 8 #number of parameters predicted by each data stream
+n.par = 13 #number of parameters predicted by each data stream
 df = rep(0, D)
 for (d in 1:D) { #for each data type
   df[d] = n.time[d] - n.par[d]
@@ -136,4 +136,4 @@ repeat { #repeat until desired number of parameter sets are accepted
 head(param.keep)
 tail(param.keep)
 
-save.image(file="Step2_NEE.Rdata")
+save.image(file="Step2_NEE_UNBdata_05.Rdata")
