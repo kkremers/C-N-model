@@ -43,4 +43,9 @@ plot(data.compare1[,2], out.compare1[,2], xlab= "Actual", ylab="Modelled", main 
 abline(0,1,col="red")
 plot(density(resid(reg)), main="Density of Residuals")
 
+par(mfrow=c(1,1), mar=c(4,4,2,2))
+plot(out.compare1$NEE~out.compare1$time, pch=16)
+points(data.compare1$NEE~data.compare1$time, pch=16, col="red")
+
+
 #Now, load 2011 data and compare to predicted
