@@ -127,13 +127,6 @@ for (n in 1:n.param) { #for each parameter
 
 
 ####statistical calculations####
-state <- c(Biomass_C = 400, 
-           Biomass_N = 4.5, 
-           SOM_C = 1600, 
-           SOM_N = 35,
-           Available_N = 0.1)
-
-
 
 out=data.frame(solvemodel(params, state))[,c(2:7)] #with columns to match data.assim
 out1=data.frame(solvemodel(param.best_1, state))[,c(2:7)] 

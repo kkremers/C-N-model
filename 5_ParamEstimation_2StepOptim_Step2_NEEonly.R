@@ -38,7 +38,7 @@ head(param.keep)#check to make sure this is correct
 
 
 #also need to know degrees of freedom for chi square test
-n.par = 13 #number of parameters predicted by each data stream
+n.par = 8 #number of parameters predicted by each data stream
 df = rep(0, D)
 for (d in 1:D) { #for each data type
   df[d] = n.time[d] - n.par[d]
@@ -50,6 +50,7 @@ param.est = param.best #set initial values for parameters
 reject=0 #reset reject counter
 num.accepted = 0 #counter for number of accepted parameters - when this gets to 1000, loop will stop
 num.reps = 0 #counter for number of repititions - calculates acceptance rate
+t=0.5
 
 #start loop
 repeat { #repeat until desired number of parameter sets are accepted
@@ -58,7 +59,7 @@ repeat { #repeat until desired number of parameter sets are accepted
   
   repeat{
     for(p in 1:n.param){ #for each parameter
-      step.size = 0.5*(param.max[p]-param.min[p])
+      step.size = t*(param.max[p]-param.min[p])
       param.est[p] = param.best[p]+rnorm(1, 0, step.size) #draw new parameter set
     } #end of parameter loop 
     if(all(param.est>param.min) & all(param.est<param.max)){    
@@ -87,15 +88,15 @@ repeat { #repeat until desired number of parameter sets are accepted
     var.error=rep(0,D)  
     error=((data.comp - out.comp)/sigma)^2 #calculates the error at that timestep for that data stream
     
-    for (d in 1:D) { #for each data type
+   for (d in 1:D) { #for each data type
       
-      var.error[d] = var(error[!is.na(data.comp)]) #calculate variance of the errors (excludes NAs)
+     var.error[d] = var(error[!is.na(data.comp)]) #calculate variance of the errors (excludes NAs)
       
       for (m in 1:length(data.comp)){ #for each timestep
         error[m] = (error[m]*sqrt(var.jbest[d]))/sqrt(var.error[d]) #variance normalization
       } #end of time step loop  
       
-      j[d] = sum(error[!is.na(data.comp)]^2) #calculate cost function for each data stream after variance normalizaiton
+      j[d] = sum(error[!is.na(data.comp)])/n.time[d] #calculate cost function for each data stream after variance normalizaiton
     } #end of data type loop
     
     #chi-square test
@@ -136,4 +137,4 @@ repeat { #repeat until desired number of parameter sets are accepted
 head(param.keep)
 tail(param.keep)
 
-save.image(file="Step2_NEE_UNBdata_05.Rdata")
+save.image(file="Step2_NEE_UNBdata_MELstarting_05.Rdata")
