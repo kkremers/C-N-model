@@ -108,7 +108,7 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = length(params) #number of parameters to estimate
-M = 100000 #number of iterations
+M = 1000 #number of iterations
 D = 1 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -118,8 +118,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(8,0.0024,0.85,0.98,0.012,0.9,0.9,3.3)
-param.min=c(0.6,0.0001,0.6,0.26,0.002,0.1,0.1,1.4)
+param.max=c(0.34,0.0024,0.85,0.98,0.012,0.9,0.9,3.3, 0.1, 30, 30)
+param.min=c(0.07,0.0001,0.6,0.26,0.002,0.1,0.1,1.4, 0.001, 0, 0)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output

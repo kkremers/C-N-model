@@ -2,18 +2,21 @@ require(deSolve)
 require(FME)
 
 params <- c(kplant = 2,
-            LitterRate = 0.0008,
-            retrans = 0.85,  
+            LitterRate = 0.002,
+            retrans = 0.25,  
             RespRate = 0.9, 
             UptakeRate = 0.01,
             propN_fol = 0.3,
             propN_roots = 0.5,
             q10 = 2,
+            netNrate = 0.04,
+            temp2_resp = 10,
+            temp2_netn = 10,
             Biomass_C = 650, 
             Biomass_N = 12, 
             SOM_C = 19000, 
             SOM_N = 800,
-            Available_N = 0.1
+            Available_N = 1
             )
 
 #state <- c(Biomass_C = 400, 
@@ -59,24 +62,24 @@ solvemodel <- function(params, times) {
       
       NDVI=0
       if(LAI>0){
-      NDVI = log((LAI*scalGDD)/0.003)/7.845}
+        NDVI = log((LAI*scalGDD)/0.003)/7.845}
       
       if(NDVI==-Inf){
         NDVI=0
       }
-            
+      
       GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI * scal ) ) ) * 12 
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) * scal
       Ra =  ( 1 - cue ) * GPP
-      Re = RespRate * (q10 ^ ( ( Temp - 10 )/ 10 ) )
+      Re = RespRate * (q10 ^ ( ( Temp - temp2_resp)/ 10 ) )
       Rh = Re - Ra
-      #Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 50 ) )
-      if(PAR==0){
-        Ntrans = 3.3E-9 * SOM_C * 2.5
-      } else {
-        Ntrans = 4E-8 * SOM_C * 2.5
-      }
-            
+      Ntrans = netNrate * ( q10 ^ ( (Temp-temp2_netn) / 10 ) )
+      #if(PAR==0){
+      #  Ntrans = 3.3E-9 * SOM_C * 2.5
+      #} else {
+      #  Ntrans = 4E-8 * SOM_C * 2.5
+      #}
+      
       N_dep = Ndep_rate
       Litterfall_N  =  LitterRate * Biomass_N * ( 1 - retrans )
       Litterfall_C =  LitterRate * Biomass_C
@@ -100,7 +103,7 @@ solvemodel <- function(params, times) {
              dSOM_C, 
              dSOM_N,
              dAvailable_N), 
-             c(NEE=NEE, GPP=GPP, Re=Re, LAI=LAI, NDVI=NDVI, Ra=Ra, Rh=Rh, Uptake = Uptake, 
+           c(NEE=NEE, GPP=GPP, Re=Re, LAI=LAI, NDVI=NDVI, Ra=Ra, Rh=Rh, Uptake = Uptake, 
              Ntrans=Ntrans, Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, 
              scalGDD=scalGDD, scal=scal, DOY=DOY, year=year))
       
@@ -108,7 +111,8 @@ solvemodel <- function(params, times) {
   } #end of model
   
   
-  return(ode(y=params[9:13],times=time,func=model,parms = params[1:8], method="rk4")) #integrate using runge-kutta 4 method
+  
+  return(ode(y=params[12:16],times=time,func=model,parms = params[1:11], method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 
