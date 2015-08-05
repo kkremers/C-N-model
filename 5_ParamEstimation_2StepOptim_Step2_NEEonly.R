@@ -31,14 +31,14 @@ var.jbest #preview
 
 #storage matrices for Monte Carlo reps
 j = rep(0, D)
-param.keep = data.frame(matrix(1, 1000, n.param)) #storage for parameter estimate iterations; 
+param.keep = data.frame(matrix(1, 100, n.param)) #storage for parameter estimate iterations; 
 colnames(param.keep) = c(names(param.best))
 param.keep[1,]=param.best
 head(param.keep)#check to make sure this is correct
 
 
 #also need to know degrees of freedom for chi square test
-n.par = 8 #number of parameters predicted by each data stream
+n.par = length(params) #number of parameters predicted by each data stream
 df = rep(0, D)
 for (d in 1:D) { #for each data type
   df[d] = n.time[d] - n.par[d]
@@ -128,7 +128,7 @@ repeat { #repeat until desired number of parameter sets are accepted
     }  
   }
   
-  if (num.accepted==1000) { #if you have accepted the number of parameter sets you want (i.e., 1000)
+  if (num.accepted==100) { #if you have accepted the number of parameter sets you want (i.e., 1000)
     break  #break repeat loop
   } 
   
@@ -137,4 +137,4 @@ repeat { #repeat until desired number of parameter sets are accepted
 head(param.keep)
 tail(param.keep)
 
-save.image(file="Step2_NEE_UNBdata_MELstarting_05.Rdata")
+save.image(file="Step2_NEE_UNBdata_MELstarting.Rdata")
