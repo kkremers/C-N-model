@@ -118,8 +118,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(8,0.0024,0.85,0.98,0.012,0.9,0.9,3.3, 0.1, 30, 30, 800, 20, 25000, 1000, 2)
-param.min=c(0.6,0.0001,0.6,0.26,0.002,0.1,0.1,1.4, 0.001, 0, 0, 550, 10, 15000, 600, 0.5)
+param.max=c(0.34,0.0024,0.85,0.98,0.012,0.9,0.9,3.3, 0.1, 30, 30, 800, 20, 25000, 1000, 2)
+param.min=c(0.07,0.0001,0.6,0.26,0.002,0.1,0.1,1.4, 0.001, 0, 0, 550, 10, 15000, 600, 0.5)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output

@@ -94,7 +94,7 @@ repeat { #repeat until desired number of parameter sets are accepted
         error[m,d] = (error[m,d]*sqrt(var.jbest[d]))/sqrt(var.error[d]) #variance normalization
       } #end of time step loop  
       
-      j[d] = sum(error[!is.na(data.comp[,d]),d]^2) #calculate cost function for each data stream after variance normalizaiton
+      j[d] = sum(error[!is.na(data.comp[,d]),d])/n.time[d] #calculate cost function for each data stream after variance normalizaiton
     } #end of data type loop
     
     #chi-square test
