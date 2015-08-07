@@ -1,17 +1,17 @@
 require(deSolve)
 require(FME)
 
-params <- c(kplant = 2,
-            LitterRate = 0.002,
-            retrans = 0.25,  
-            RespRate = 0.9, 
-            UptakeRate = 0.01,
-            propN_fol = 0.3,
-            propN_roots = 0.5,
-            q10 = 2,
-            netNrate = 0.04,
-            temp2_resp = 10,
-            temp2_netn = 10
+params <- c(kplant = 0.2, #0.07-0.34
+            LitterRate = 0.0016, #0.0001-0.0024
+            retrans = 0.2, #0.11-0.85 
+            RespRate = 0.9, #0.26-0.98
+            UptakeRate = 0.002, #0.002-0.012
+            propN_fol = 0.3, #0.1-0.9
+            propN_roots = 0.5, #0.1-0.9
+            q10 = 2, #1.4-3.3
+            netNrate = 0.03, #0.001-0.1
+            temp2_resp = 10, #0-30
+            temp2_netn = 10 #0-30
             )
 
 state <- c(Biomass_C = 684.5, 
