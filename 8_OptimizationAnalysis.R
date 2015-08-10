@@ -2,7 +2,7 @@
 
 
 #Load workspace and save the summary statistics to summary table
-load("Step2_NEE_UNBdata_05.Rdata") #load workspace
+load("Step2_NEE_UNBdata.Rdata") #load workspace
 q05=apply(param.keep, 2, quantile, 0.05) #calculate 5% quantile
 q25=apply(param.keep, 2, quantile, 0.25) #calculate 25% quantile
 means=apply(param.keep, 2, mean)
@@ -11,7 +11,7 @@ q95=apply(param.keep, 2, quantile, 0.95) #calculate 95%
 summarytable=data.frame(q05 = q05, q25 = q25, mean = means, 
                         q75 = q75, q95 = q95, diff = diff) #bind all of the information together in the proper order (same order as summarytable columns)
 param.keep_NEE_UNBdata_05 = param.keep #save the table of accepted parameters under a new name
-write.csv(param.keep_NEE_UNBdata_05, "Params_NEE_UNBdata_05.csv")
+write.csv(param.keep_NEE_UNBdata, "Params_NEE_UNBdata_05.csv")
 
 
 ####statistical calculations####

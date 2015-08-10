@@ -48,7 +48,7 @@ abline(h=0)
 plot(data.compare$Re, out.compare$Re, ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
-plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-5,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
+plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-10,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
 points(data$NEE, col="blue", pch=16, cex=0.6)
 abline(h=0)
 plot(data.compare$NEE, out.compare$NEE, ylim=c(-4, 1), ylab="Model", xlab="Data")

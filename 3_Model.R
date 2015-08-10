@@ -2,9 +2,9 @@ require(deSolve)
 require(FME)
 
 params <- c(kplant = 0.2, #0.07-0.34
-            LitterRate = 0.0016, #0.0001-0.0024
+            LitterRate = 0.0018, #0.0001-0.0024
             retrans = 0.2, #0.11-0.85 
-            RespRate = 0.9, #0.26-0.98
+            RespRate = 0.96, #0.26-0.98
             UptakeRate = 0.002, #0.002-0.012
             propN_fol = 0.3, #0.1-0.9
             propN_roots = 0.5, #0.1-0.9
@@ -63,7 +63,7 @@ solvemodel <- function(params, state, times) {
         NDVI=0
       }
             
-      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI * scal ) ) ) * 12 
+      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI * scal) ) ) * 12 
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) * scal
       Ra =  ( 1 - cue ) * GPP
       Re = RespRate * (q10 ^ ( ( Temp - temp2_resp)/ 10 ) )

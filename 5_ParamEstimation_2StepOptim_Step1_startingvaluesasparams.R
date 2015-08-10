@@ -158,7 +158,7 @@ for (i in 2:M) {
 
     parms = as.numeric(param.est[i,]) #parameters for model run
     names(parms) = names(params) #fix names
-    out = data.frame(solvemodel(parms, state)) #run model  
+    out = data.frame(solvemodel(parms)) #run model  
   
     if(any(is.na(out)) | any(out[,2:6]<0)){ #if there are any NAs or negative stocks in the output
       reject = reject+1 #reject parameter set

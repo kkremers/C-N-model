@@ -19,11 +19,6 @@ params <- c(kplant = 0.2, #0.07-0.34
             Available_N = 1
             )
 
-#state <- c(Biomass_C = 400, 
-#           Biomass_N = 4.5, 
-#           SOM_C = 1600, 
-#           SOM_N = 35,
-#           Available_N = 0.1)
 
 time = seq(1, 1826, 1)
 
