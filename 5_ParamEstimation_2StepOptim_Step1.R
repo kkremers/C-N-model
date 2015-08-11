@@ -99,8 +99,8 @@ head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
 head(out1)
 time.assim = out1[match(data.assim$year_DOY, out1$year_DOY), 1]
-data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,5]))
-sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,5]))
+data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,5], GPP=data.assim[,6]))
+sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,5], GPP=data.sigma[,6]))
 head(data.compare1)
 head(sigma.obs1)
 
@@ -108,8 +108,8 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = length(params) #number of parameters to estimate
-M = 200000 #number of iterations
-D = 1 #number of data types being assimilated 
+M = 100000 #number of iterations
+D = 2 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
   n.time[d]=sum(!is.na(data.compare1[,d+1])) #calculate the number of time points that DO NOT have NA's
@@ -118,17 +118,17 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.85,0.98,0.012,0.9,0.9,3.3, 0.1, 30, 30)
-param.min=c(0.07,0.0001,0.11,0.26,0.002,0.1,0.1,1.4, 0.001, 0, 0)
+param.max=c(0.34,0.0024,0.85,0.98,0.012,0.9,0.9,3.3, 0.1, 30, 30, 0.85, 1.5, 0.04, 0.7)
+param.min=c(0.07,0.0001,0.11,0.26,0.002,0.1,0.1,1.4, 0.001, 0, 0, 0.3, 1, 0.01, 0.25)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output
-j=matrix(1E100, M, D) #to store error calculations for this iteration
+j = matrix(1E100, M, D) #to store error calculations for this iteration
 all.draws = data.frame(matrix(1, M, n.param)) #storage for all parameter estimate iterations;
 colnames(all.draws) = c(names(params))
 param.est = data.frame(matrix(1, M, n.param)) #storage for accepted parameter estimate iterations;
-param.est[1,]=(param.max-param.min)/2 #change first row to the value in the middle of the range
-all.draws[1,]=(param.max-param.min)/2 #change first row to the value in the middle of the range
+param.est[1,]=((param.max-param.min)/2)+param.min #change first row to the value in the middle of the range
+all.draws[1,]=((param.max-param.min)/2)+param.min #change first row to the value in the middle of the range
 colnames(param.est) = c(names(params))
 head(param.est) #check to make sure this is correct
 head(all.draws)
@@ -168,7 +168,7 @@ for (i in 2:M) {
   
   #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
 
-  out.compare1 = out[match(data.compare1$time, out$time),c(1,7)] #these columns need to match the ones that were pulled out before
+  out.compare1 = out[match(data.compare1$time, out$time),c(1,7,8)] #these columns need to match the ones that were pulled out before
   
   error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
   for (d in 1:D) { #for each data type
@@ -233,5 +233,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_UNBdata_MELstarting.Rdata")
+save.image(file="Step1_NEEGPP_UNBdata_MELstarting.Rdata")
 

@@ -11,7 +11,11 @@ params <- c(kplant = 0.2, #0.07-0.34
             q10 = 2, #1.4-3.3
             netNrate = 0.03, #0.001-0.1
             temp2_resp = 10, #0-30
-            temp2_netn = 10 #0-30
+            temp2_netn = 10, #0-30
+            k=0.63, #0.3-0.85
+            Pmax =1.18, #1-1.5
+            E0 = 0.03, #0.01-0.04
+            cue = 0.3 #0.25-0.7
             )
 
 state <- c(Biomass_C = 684.5, 
@@ -40,10 +44,6 @@ solvemodel <- function(params, state, times) {
       year = Year.d1(t)
       
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
-      k=0.63
-      Pmax =1.18
-      E0 = 0.03
-      cue = 0.5
       Ndep_rate = 0.0004 #calculated from LTER data
       
       
