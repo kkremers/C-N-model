@@ -6,7 +6,7 @@ plot(data$Temp_ARF~data$time, type="l", ylab = "Daily Max Temp (C)", col="red", 
 abline(h=0)
 plot(data$PAR_vis~data$time, type="l", ylab = "Daily Plant Avail. PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
 
-out = data.frame(solvemodel(params, state)) #creates table of model output
+out = data.frame(solvemodel(param.best, state)) #creates table of model output
 out1 = data.frame(solvemodel(param.best1, state)) #creates table of model output 
 
 #plot pools

@@ -2,19 +2,16 @@ require(deSolve)
 require(FME)
 
 params <- c(kplant = 0.2, #0.07-0.34
-            LitterRate = 0.0018, #0.0001-0.0024
-            retrans = 0.2, #0.11-0.85 
+            LitterRateC = 0.00035, #0.0001-0.0024
+            LitterRateN = 0.0015, #0.0001-0.0024 
             RespRate = 0.96, #0.26-0.98
             UptakeRate = 0.002, #0.002-0.012
-            propN_fol = 0.3, #0.1-0.9
+            propN_fol = 0.1, #0.1-0.9
             propN_roots = 0.5, #0.1-0.9
             q10 = 2, #1.4-3.3
             netNrate = 0.03, #0.001-0.1
             temp2_resp = 10, #0-30
             temp2_netn = 10, #0-30
-            k=0.63, #0.3-0.85
-            Pmax =1.18, #1-1.5
-            E0 = 0.03, #0.01-0.04
             cue = 0.3 #0.25-0.7
             )
 
@@ -45,6 +42,9 @@ solvemodel <- function(params, state, times) {
       
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
       Ndep_rate = 0.0004 #calculated from LTER data
+      k=0.63
+      Pmax =1.18
+      E0 = 0.03
       
       
       #FLUXES
@@ -69,15 +69,9 @@ solvemodel <- function(params, state, times) {
       Re = RespRate * (q10 ^ ( ( Temp - temp2_resp)/ 10 ) )
       Rh = Re - Ra
       Ntrans = netNrate * ( q10 ^ ( (Temp-temp2_netn) / 10 ) )
-      #if(PAR==0){
-      #  Ntrans = 3.3E-9 * SOM_C * 2.5
-      #} else {
-      #  Ntrans = 4E-8 * SOM_C * 2.5
-      #}
-            
       N_dep = Ndep_rate
-      Litterfall_N  =  LitterRate * Biomass_N * ( 1 - retrans )
-      Litterfall_C =  LitterRate * Biomass_C
+      Litterfall_N  =  LitterRateN * Biomass_N
+      Litterfall_C =  LitterRateC * Biomass_C
       
       
       #calculated variables to use for model fitting and analysis
