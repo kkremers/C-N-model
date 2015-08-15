@@ -128,7 +128,7 @@ repeat { #repeat until desired number of parameter sets are accepted
     }  
   }
   
-  if (num.accepted==100) { #if you have accepted the number of parameter sets you want (i.e., 1000)
+  if (num.accepted==1000) { #if you have accepted the number of parameter sets you want (i.e., 1000)
     break  #break repeat loop
   } 
   

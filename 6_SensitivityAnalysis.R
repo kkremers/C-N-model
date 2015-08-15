@@ -37,7 +37,9 @@ sensvars = c("Biomass_C",
              "SOM_C", 
              "SOM_N",
              "Available_N",
-             "NEE")
+             "NEE",
+             "NDVI",
+             "LAI")
 
 #local sensitivity analysis
 s.local <- sensFun(func=solvemodel, parms=params, state=state, sensvar = sensvars, varscale=1)
@@ -58,7 +60,7 @@ s.global <- sensRange(func=solvemodel, parms=param.best, state=state, sensvar = 
 s.global.summ = summary(s.global)
 head(s.global.summ)
 #plots 
-par(mfrow=c(3,2)) 
+par(mfrow=c(4,2)) 
 plot(s.global.summ, xlab = "Time (days)", mfrow = NULL,
      quant = TRUE, col = c("lightblue", "darkblue"), legpos = "topright")
 
