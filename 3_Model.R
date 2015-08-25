@@ -10,8 +10,6 @@ params <- c(kplant = 0.2, #0.07-0.34
             propN_roots = 0.5, #0.1-0.9
             q10 = 2, #1.4-3.3
             netNrate = 0.03, #0.001-0.1
-            temp2_resp = 10, #0-30
-            temp2_netn = 10, #0-30
             cue = 0.3 #0.25-0.7
             )
 
@@ -45,7 +43,8 @@ solvemodel <- function(params, state, times) {
       k=0.63
       Pmax =1.18
       E0 = 0.03
-      
+      temp2_resp = 10
+      temp2_netn = 10
       
       #FLUXES
       TFN=propN_fol*Biomass_N

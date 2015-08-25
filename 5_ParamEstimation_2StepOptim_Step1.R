@@ -118,8 +118,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.0024,0.98,0.012,0.9,0.9,3.3, 0.1, 30, 30, 0.7)
-param.min=c(0.07,0.0001,0.0001,0.26,0.002,0.1,0.1,1.4, 0.001, 0, 0, 0.25)
+param.max=c(0.34,0.0024,0.0024,0.98,0.012,0.9,0.9,3.3, 0.1, 0.7)
+param.min=c(0.07,0.0001,0.0001,0.26,0.002,0.1,0.1,1.4, 0.001, 0.25)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output
@@ -140,7 +140,7 @@ anneal.temp0=20000 #starting temperature
 anneal.temp=20000 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
-
+t=0.5
 
 #start exploration
 
@@ -148,11 +148,13 @@ for (i in 2:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
-      param.est[i,p] = runif(1, param.min[p], param.max[p])
+      param.est[i,p] = param.est[i-1,p]+rnorm(1, 0, t*(param.max[p]-param.min[p]))   #runif(1, param.min[p], param.max[p])
       all.draws[i,p] = param.est[i,p]
     } #end of parameter loop
-    if(param.est[i,p]>param.min[p] & param.est[i,p]<param.max[p]){
+    if(all(!is.na(param.est[i,]))){
+    if(all(param.est[i,]>=param.min) & all(param.est[i,]<=param.max)){
       break
+    } #end of if loop
     } #end of if loop
   } #end of repeat
 
@@ -192,12 +194,16 @@ for (i in 2:M) {
     
     u=runif(1, 0, 1) #draw random number between 0 and 1
     prob=exp((-1*diff)/anneal.temp) #simulated annealing - determines probability that a parameter set is accepted
-    
+      
     if(u>=prob){    
     reject = reject+1 #reject parameter set
     param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
     J[i] = J[i-1] #set current J to previous J (the minimum J so far)
+    t=1.001*t
     } #end of if loop
+    else{
+      t=0.999*t
+    } #end of else loop
   } #end of if loop
   
   } #end of else loop
@@ -212,10 +218,12 @@ for (i in 2:M) {
   if(anneal.temp<500){ #if temperature drops to less than 100
     anneal.temp0=(9/10)*anneal.temp0 #change initial temp to 9/10 of previous initial
     anneal.temp=anneal.temp0 #jump back up to that temp
+    t=0.5
     iter=1 #reset iteration counter
   }
     
 } #end of exploration
+
 
 #beep(5)
 #make plots to check for mixing and make sure parameter space is thuroughly explored
