@@ -108,7 +108,7 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = length(params) #number of parameters to estimate
-M = 100000 #number of iterations
+M = 300000 #number of iterations
 D = 1 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -118,8 +118,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.0024,0.98,0.012,0.9,0.9,3.3, 0.1, 0.7)
-param.min=c(0.07,0.0001,0.0001,0.26,0.002,0.1,0.1,1.4, 0.001, 0.25)
+param.max=c(0.34,0.0009,0.0022,0.98,0.012,0.9,0.9,3.3, 0.1, 0.7)
+param.min=c(0.07,0.0001,0.0009,0.26,0.002,0.1,0.1,1.4, 0.001, 0.25)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output
@@ -227,13 +227,13 @@ for (i in 2:M) {
 
 #beep(5)
 #make plots to check for mixing and make sure parameter space is thuroughly explored
-plot(all.draws[,1])
-lines(param.est[,1], col="red", lwd="2")
+plot(all.draws[1:i,2])
+lines(param.est[1:i,2], col="red", lwd="2")
 
-steps=seq(1:length(J)) #create a vector that represents the number of steps or iterations run
-J=data.frame(steps, J) #create a dataframe that has "steps" as the first column and "J" as the second column
-head(J); tail(J) #check the table
-step.best = J[which.min(J[,2]),1] #determine which step has the minimum value of J and store as "step.best"
+steps=seq(1:165000) #create a vector that represents the number of steps or iterations run
+J1=data.frame(steps, J[1:165000]) #create a dataframe that has "steps" as the first column and "J" as the second column
+head(J1); tail(J1) #check the table
+step.best = J1[which.min(J1[,2]),1] #determine which step has the minimum value of J and store as "step.best"
 param.est[step.best,] #show the parameter set that resulted in the best J
 param.best = as.numeric(param.est[step.best,]) #store that parameter set as param.best
 names(param.best) = names(params) #change the names to match params
