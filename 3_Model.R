@@ -2,14 +2,14 @@ require(deSolve)
 require(FME)
 
 params <- c(kplant = 0.2, #0.07-0.34
-            LitterRateC = 0.00035, #0.0001-0.0024
-            LitterRateN = 0.0015, #0.0001-0.0024 
+            LitterRateC = 0.0003, #0.0001-0.0009
+            LitterRateN = 0.001, #0.0001-0.0024 
             RespRate = 0.96, #0.26-0.98
-            UptakeRate = 0.002, #0.002-0.012
+            UptakeRate = 0.012, #0.002-0.012
             propN_fol = 0.1, #0.1-0.9
-            propN_roots = 0.5, #0.1-0.9
+            propN_roots = 0.01, #0.002-0.015
             q10 = 2, #1.4-3.3
-            netNrate = 0.03, #0.001-0.1
+            netNrate = 0.02, #0.001-0.04
             cue = 0.3 #0.25-0.7
             )
 
