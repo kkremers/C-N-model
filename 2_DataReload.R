@@ -53,21 +53,22 @@ par(mfrow=c(1,1))
 plot(data$GDD~data$time, type="l", ylab = "Growing Degree Days (GDD) ",  xlab="", col="forestgreen")
 abline(v=c(DOY.sen.year+c(0,365,365+365,365+365+366,365+365+366+365)))
 
-#last, we need to create a smoothed temperature scalar for LAI
+#create a smoothed temperature scalar for LAI
 #average of current sample, 7 future samples, and 7 past samples
-filt=rep(1/15,15)
-GDDslope.sm = filter(data$GDD.slope, filt, sides=2)
-is.na(GDDslope.sm) #the last 20 samples are NA
-GDDslope.sm[is.na(GDDslope.sm)]=0 #set these to zero
-plot(data$GDD.slope, type="l")
-lines(GDDslope.sm, col="red", lwd="3")
+#filt=rep(1/15,15)
+#GDDslope.sm = filter(data$GDD.slope, filt, sides=2)
+#is.na(GDDslope.sm) #the last 20 samples are NA
+#GDDslope.sm[is.na(GDDslope.sm)]=0 #set these to zero
+#plot(data$GDD.slope, type="l")
+#lines(GDDslope.sm, col="red", lwd="3")
 
-scal.temp.sm=NULL
-for (i in 1:length(GDDslope.sm)){
-  scal.temp.sm[i] = (GDDslope.sm[i] - min(GDDslope.sm))/(max(GDDslope.sm)-min(GDDslope.sm)) #growing degree day scalar
-}
-plot(scal.temp.sm, type="l")
+#scal.temp.sm=NULL
+#for (i in 1:length(GDDslope.sm)){
+#  scal.temp.sm[i] = (GDDslope.sm[i] - min(GDDslope.sm))/(max(GDDslope.sm)-min(GDDslope.sm)) #growing degree day scalar
+#}
+#plot(scal.temp.sm, type="l")
 
+#GDD slope is equal to positive temperatures, use that to calculate temperature scalar
 scal.temp=NULL
 for (i in 1:length(data$GDD.slope)){
   scal.temp[i] = (data$GDD.slope[i] - min(data$GDD.slope))/(max(data$GDD.slope)-min(data$GDD.slope)) #growing degree day scalar
@@ -93,16 +94,14 @@ for (i in 1:length(scal.new)){
   scal.add[i] = (scal.new[i] - min(scal.new))/(max(scal.new)-min(scal.new)) #growing degree day scalar
 }
 
-par(mfrow=c(1,1), mar=c(4,4,0.5,2))
-plot(scal.add, type="l")
+par(mfrow=c(3,1), mar=c(4,4,0.5,2))
+plot(scal.GDD, type="l")
 plot(scal.temp, type="l")
-
+plot(scal.add, type="l")
 
 #make into functions so that it will be continuous in the model
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
 PAR.d1 <- approxfun(x=data$time, y=data$PAR_vis, method="linear", rule=2)
-scaltemp.d1 <- approxfun(x=data$time, y=scal.temp, method="linear", rule=2)
-scaltempsm.d1 <- approxfun(x=data$time, y=scal.temp.sm, method="linear", rule=2)
 scalGDD.d1 <- approxfun(x=data$time, y=scal.GDD, method="linear", rule=2)
 scaladd.d1 <- approxfun(x=data$time, y=scal.add, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
