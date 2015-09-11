@@ -7,7 +7,6 @@ abline(h=0)
 plot(data$PAR_vis~data$time, type="l", ylab = "Daily Plant Avail. PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
 
 out = data.frame(solvemodel(param.best, state)) #creates table of model output
-out1 = data.frame(solvemodel(param.best1, state)) #creates table of model output 
 
 #plot pools
 par(mfrow=c(4,2), mar=c(4,4,1,2))
@@ -30,51 +29,59 @@ plot(out$time, out$scal, type="l")
 
 #see how well data matches
 #to compare on 1:1 line with data, need to select only points for which data is available
-data.compare=read.csv("ALLData_Assim.csv")
-data.compare=data.compare[complete.cases(data.compare),]
-head(data.compare)
-out.compare = out[match(data.compare$time, out$time),]
-head(out.compare)
+data.compare=read.csv("Assimilation_data_ALL.csv")
+data.compare_flux=data.compare[complete.cases(data.compare[,6]),c(1:7,9)]
+head(data.compare_flux)
+data.compare_NDVI=data.compare[complete.cases(data.compare[,8]),c(1:5,8)]
+head(data.compare_NDVI)
+out.compare_flux = out[match(data.compare_flux$Time, out$time),]
+head(out.compare_flux)
+out.compare_NDVI = out[match(data.compare_NDVI$Time, out$time),]
+head(out.compare_NDVI)
+
 
 par(mfrow=c(4,2), mar=c(4,4,2,2))
 plot(out$GPP~out$time, col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="Time (days)", type="l")
-points(data$GPP, col="blue", pch=18, cex=0.8)
-plot(data.compare$GPP, out.compare$GPP, ylab="Model", xlab="Data")
+points(data.compare$GPP~data.compare$Time, col="blue", pch=18, cex=0.8)
+plot(data.compare_flux$GPP, out.compare_flux$GPP, ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
 plot(-out$Re~out$time, col="azure4", pch=16, ylim=c(-5,0), xlab="Time (days)", ylab="Re (gC m-2 day-1)", type="l")
-points(-data$Re, col="blue", pch=16, cex=0.6)
+points(-data.compare$Re~data.compare$Time, col="blue", pch=16, cex=0.6)
 abline(h=0)
-plot(data.compare$Re, out.compare$Re, ylab="Model", xlab="Data")
+plot(data.compare_flux$Re, out.compare_flux$Re, ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
 plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-10,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
-points(data$NEE, col="blue", pch=16, cex=0.6)
+points(data.compare$NEE~data.compare$Time, col="blue", pch=16, cex=0.6)
 abline(h=0)
-plot(data.compare$NEE, out.compare$NEE, ylim=c(-4, 1), ylab="Model", xlab="Data")
+plot(data.compare_flux$NEE, out.compare_flux$NEE, ylim=c(-4, 1), ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
 plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", type="l", ylim=c(0, 1))
-points(data$NDVI, col="blue", pch=18, cex=0.8)
-plot(data.compare$NDVI, out.compare$NDVI, ylab="Model", xlab="Data")
+points(data.compare$NDVI~data.compare$Time, col="blue", pch=18, cex=0.8)
+plot(data.compare_NDVI$NDVI, out.compare_NDVI$NDVI, ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
 
-resid.GPP = data.compare$GPP - out.compare$GPP
-resid.NEE = data.compare$NEE - out.compare$NEE
-resid.Re = data.compare$Re - out.compare$Re
-resid.NDVI = data.compare$NDVI - out.compare$NDVI
-resid = data.frame(time=out.compare$time, DOY=out.compare$DOY, resid.GPP, resid.NEE, resid.Re, resid.NDVI)
-head(resid)
+resid.GPP = data.compare_flux$GPP - out.compare_flux$GPP
+resid.NEE = data.compare_flux$NEE - out.compare_flux$NEE
+resid.Re = data.compare_flux$Re - out.compare_flux$Re
+resid_flux = data.frame(time=out.compare_flux$time, DOY=out.compare_flux$DOY, resid.GPP, resid.NEE, resid.Re)
+head(resid_flux)
+
+resid.NDVI = data.compare_NDVI$NDVI - out.compare_NDVI$NDVI
+resid_NDVI = data.frame(time=out.compare_NDVI$time, DOY=out.compare_NDVI$DOY, resid.NDVI)
+head(resid_NDVI)
 
 par(mfrow=c(4,1), mar=c(4,4,2,2))
-plot(resid$DOY, resid$resid.GPP, main="GPP Residuals", ylab="Residuals", xlab="DOY")
+plot(resid_flux$DOY, resid_flux$resid.GPP, main="GPP Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
-plot(resid$DOY, resid$resid.Re, main="Re Residuals", ylab="Residuals", xlab="DOY")
+plot(resid_flux$DOY, resid_flux$resid.Re, main="Re Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
-plot(resid$DOY, resid$resid.NEE, main="NEE Residuals", ylab="Residuals", xlab="DOY")
+plot(resid_flux$DOY, resid_flux$resid.NEE, main="NEE Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
-plot(resid$DOY, resid$resid.NDVI, main="NDVI Residuals", ylab="Residuals", xlab="DOY")
+plot(resid_NDVI$DOY, resid_NDVI$resid.NDVI, main="NDVI Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
 
 
@@ -84,21 +91,23 @@ rmse.Re=sqrt(mean((resid.Re)^2))
 rmse.NDVI=sqrt(mean((resid.NDVI)^2))
 rmse.GPP;rmse.NEE;rmse.Re;rmse.NDVI
 
-resid.GPP.mean = tapply(resid$resid.GPP, resid$DOY, mean)
-resid.NEE.mean = tapply(resid$resid.NEE, resid$DOY, mean)
-resid.Re.mean = tapply(resid$resid.Re, resid$DOY, mean)
-resid.NDVI.mean = tapply(resid$resid.NDVI, resid$DOY, mean)
-resid.DOY=unique(resid$DOY)
-resid.means=data.frame(DOY=resid.DOY, resid.GPP.mean, resid.NEE.mean, resid.Re.mean, resid.NDVI.mean)
+resid.GPP.mean = tapply(resid_flux$resid.GPP, resid_flux$DOY, mean)
+resid.NEE.mean = tapply(resid_flux$resid.NEE, resid_flux$DOY, mean)
+resid.Re.mean = tapply(resid_flux$resid.Re, resid_flux$DOY, mean)
+resid.NDVI.mean = tapply(resid_NDVI$resid.NDVI, resid_NDVI$DOY, mean)
+resid.DOYflux=unique(resid_flux$DOY)
+resid.DOYNDVI=unique(resid_NDVI$DOY)
+resid.meansflux=data.frame(DOY=resid.DOYflux, resid.GPP.mean, resid.NEE.mean, resid.Re.mean)
+resid.meansNDVI=data.frame(DOY=resid.DOYNDVI, resid.NDVI.mean)
 
 par(mfrow=c(4,1), mar=c(4,4,2,2))
-plot(resid.means$DOY, resid.means$resid.GPP.mean, main="GPP Residuals", ylab="Residuals", xlab="DOY")
+plot(resid.meansflux$DOY, resid.meansflux$resid.GPP.mean, main="GPP Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
-plot(resid.means$DOY, resid.means$resid.Re.mean, main="Re Residuals", ylab="Residuals", xlab="DOY")
+plot(resid.meansflux$DOY, resid.meansflux$resid.Re.mean, main="Re Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
-plot(resid.means$DOY, resid.means$resid.NEE.mean, main="NEE Residuals", ylab="Residuals", xlab="DOY")
+plot(resid.meansflux$DOY, resid.meansflux$resid.NEE.mean, main="NEE Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
-plot(resid.means$DOY, resid.means$resid.NDVI.mean, main="NDVI Residuals", ylab="Residuals", xlab="DOY")
+plot(resid.meansNDVI$DOY, resid.meansNDVI$resid.NDVI.mean, main="NDVI Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
 
 
@@ -107,62 +116,4 @@ rmse.NEE=sqrt(mean((resid.NEE.mean)^2))
 rmse.Re=sqrt(mean((resid.Re.mean)^2))
 rmse.NDVI=sqrt(mean((resid.NDVI.mean)^2))
 rmse.GPP;rmse.NEE;rmse.Re;rmse.NDVI
-
-
-par(mfrow=c(3,1), mar=c(4,4,2,2))
-plot(data$GPP~data$PAR_vis, pch=16, ylab="GPP", xlab="PAR_vis")
-points(out$GPP~data$PAR_vis, col="red")
-
-plot(data$Re~data$Temp_ARF, pch=16, ylab="Re", xlab="Temperature")
-points(out$Re~data$Temp_ARF, col="red")
-
-plot(data$NEE~data$Temp_ARF, pch=16, ylab="NEE", xlab="Temperature")
-points(out$NEE~data$Temp_ARF, col="red")
-
-
-
-
-
-#see how well data matches
-#to compare on 1:1 line with data, need to select only points for which data is available
-par(mfrow=c(4,2), mar=c(4,4,2,2))
-plot(out$GPP~out$time, col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="Time (days)", type="l")
-points(out1$GPP, col="blue", pch=18, cex=0.8)
-plot(out$GPP, out1$GPP, ylab="Model", xlab="Data")
-abline(0,1, col="red")
-
-plot(-out$Re~out$time, col="azure4", pch=16, ylim=c(-5,0), xlab="Time (days)", ylab="Re (gC m-2 day-1)", type="l")
-points(-out1$Re, col="blue", pch=16, cex=0.6)
-abline(h=0)
-plot(out$Re, out1$Re, ylab="Model", xlab="Data")
-abline(0,1, col="red")
-
-plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-5,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
-points(out1$NEE, col="blue", pch=16, cex=0.6)
-abline(h=0)
-plot(out$NEE, out1$NEE, ylim=c(-4, 1), ylab="Model", xlab="Data")
-abline(0,1, col="red")
-
-plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", type="l", ylim=c(0, 1))
-points(out1$NDVI, col="blue", pch=18, cex=0.8)
-plot(out$NDVI, out1$NDVI, ylab="Model", xlab="Data")
-abline(0,1, col="red")
-
-
-resid.GPP = out$GPP - out1$GPP
-resid.NEE = out$NEE - out1$NEE
-resid.Re = out$Re - out1$Re
-resid.NDVI = out$NDVI - out1$NDVI
-resid = data.frame(time=out$time, DOY=out$DOY, resid.GPP, resid.NEE, resid.Re, resid.NDVI)
-head(resid)
-
-par(mfrow=c(4,1), mar=c(4,4,2,2))
-plot(resid$DOY, resid$resid.GPP, main="GPP Residuals", ylab="Residuals", xlab="DOY")
-abline(h=0, col="red")
-plot(resid$DOY, resid$resid.Re, main="Re Residuals", ylab="Residuals", xlab="DOY")
-abline(h=0, col="red")
-plot(resid$DOY, resid$resid.NEE, main="NEE Residuals", ylab="Residuals", xlab="DOY")
-abline(h=0, col="red")
-plot(resid$DOY, resid$resid.NDVI, main="NDVI Residuals", ylab="Residuals", xlab="DOY")
-abline(h=0, col="red")
 

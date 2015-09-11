@@ -98,9 +98,9 @@ head(data.sigma)
 head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
 head(out1)
-time.assim = out1[match(data.assim$year_DOY, out1$year_DOY), 1]
-data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,5], NDVI=data.assim[,7])) #, GPP=data.assim[,6]))
-sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,5], NDVI=data.sigma[,7]))
+time.assim = out1[match(data.assim$YearDOY, out1$year_DOY), 1]
+data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,8])) #, GPP=data.assim[,6]))
+sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,8]))
 head(data.compare1)
 head(sigma.obs1)
 

@@ -4,6 +4,12 @@
 data = read.csv("InputData_Processed.csv") #This is the "FluxData.csv" file, but with added calculations of GDD
 head(data)
 
+
+#subset for years of interest (2009-2012)
+data=data[data$year!=2013,]
+head(data)
+tail(data)
+
 #plot the data
 par(mfrow=c(2,2), mar=c(4,4,0.5,2))
 plot(data$Temp_ARF~data$time, type="l", ylab = "Daily Max Temp (C)", col="red", xlab="")
@@ -28,7 +34,6 @@ plot(data$GDD.slope) #there are 4 points that need to be set to 0 because this i
 data$GDD.slope[data$time[which(data$GDD.slope == min(data$GDD.slope))]] = 0
 data$GDD.slope[data$time[which(data$GDD.slope == min(data$GDD.slope))]] = 0
 data$GDD.slope[data$time[which(data$GDD.slope == min(data$GDD.slope))]] = 0
-data$GDD.slope[data$time[which(data$GDD.slope == min(data$GDD.slope))]] = 0
 data$time[which(data$GDD.slope == min(data$GDD.slope))]
 par(mfrow=c(1,1), mar=c(4,4,0.5,2))
 plot(data$DOY[1:365], data$GDD.slope[1:365], type="l")
@@ -45,13 +50,13 @@ for (i in 1: length(years)){
   DOY.sen.year[i]=delGDDmax[1]
 }
 DOY.sen.year #looked at this data to determine cutoff point
-num.days = c(365, 365, 365, 366, 365)
+num.days = c(365, 365, 365, 366)
 DOY.sen = rep(c(DOY.sen.year), c(num.days))
 data = data.frame(data, DOY.sen = DOY.sen)
 head(data)
 par(mfrow=c(1,1))
 plot(data$GDD~data$time, type="l", ylab = "Growing Degree Days (GDD) ",  xlab="", col="forestgreen")
-abline(v=c(DOY.sen.year+c(0,365,365+365,365+365+366,365+365+366+365)))
+abline(v=c(DOY.sen.year+c(0,365,365+365,365+365+366)))
 
 #create a smoothed temperature scalar for LAI
 #average of current sample, 7 future samples, and 7 past samples
@@ -87,7 +92,6 @@ plot(scal.GDD, type="l")
 
 #what if we add the GDD scalar and the smoothed temp scalar together?
 scal.new = scal.temp+scal.GDD
-
 #rescale to 1
 scal.add=NULL
 for (i in 1:length(scal.new)){
