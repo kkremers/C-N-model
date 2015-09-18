@@ -83,4 +83,4 @@ plot(data$PAR_ARF~data$time, type="l", ylab = "Daily Max PAR (mol m-2 s-1)", mai
 plot(data$PAR_vis~data$time, type="l", ylab = "Daily Max PAR (mol m-2 s-1)", main="Plant Available PAR", xlab="Time (days)")
 
 
-write.csv(data, "FluxData.csv") #added the updated data to the working directory so that it is easy to access - won't have to do any of the above steps again
+write.csv(data, "InputData_Processed.csv") #added the updated data to the working directory so that it is easy to access - won't have to do any of the above steps again

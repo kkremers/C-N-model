@@ -29,10 +29,10 @@ plot(out$time, out$scal, type="l")
 
 #see how well data matches
 #to compare on 1:1 line with data, need to select only points for which data is available
-data.compare=read.csv("Assimilation_data_ALL.csv")
-data.compare_flux=data.compare[complete.cases(data.compare[,6]),c(1:7,9)]
+data.compare2=read.csv("Assimilation_data_ALL.csv")
+data.compare_flux=data.compare2[complete.cases(data.compare2[,6]),c(1:7,9)]
 head(data.compare_flux)
-data.compare_NDVI=data.compare[complete.cases(data.compare[,8]),c(1:5,8)]
+data.compare_NDVI=data.compare2[complete.cases(data.compare2[,8]),c(1:5,8)]
 head(data.compare_NDVI)
 out.compare_flux = out[match(data.compare_flux$Time, out$time),]
 head(out.compare_flux)
@@ -42,24 +42,24 @@ head(out.compare_NDVI)
 
 par(mfrow=c(4,2), mar=c(4,4,2,2))
 plot(out$GPP~out$time, col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="Time (days)", type="l")
-points(data.compare$GPP~data.compare$Time, col="blue", pch=18, cex=0.8)
+points(data.compare2$GPP~data.compare2$Time, col="blue", pch=18, cex=0.8)
 plot(data.compare_flux$GPP, out.compare_flux$GPP, ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
 plot(-out$Re~out$time, col="azure4", pch=16, ylim=c(-5,0), xlab="Time (days)", ylab="Re (gC m-2 day-1)", type="l")
-points(-data.compare$Re~data.compare$Time, col="blue", pch=16, cex=0.6)
+points(-data.compare2$Re~data.compare2$Time, col="blue", pch=16, cex=0.6)
 abline(h=0)
 plot(data.compare_flux$Re, out.compare_flux$Re, ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
 plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-10,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
-points(data.compare$NEE~data.compare$Time, col="blue", pch=16, cex=0.6)
+points(data.compare2$NEE~data.compare2$Time, col="blue", pch=16, cex=0.6)
 abline(h=0)
 plot(data.compare_flux$NEE, out.compare_flux$NEE, ylim=c(-4, 1), ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
 plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", type="l", ylim=c(0, 1))
-points(data.compare$NDVI~data.compare$Time, col="blue", pch=18, cex=0.8)
+points(data.compare2$NDVI~data.compare2$Time, col="blue", pch=18, cex=0.8)
 plot(data.compare_NDVI$NDVI, out.compare_NDVI$NDVI, ylab="Model", xlab="Data")
 abline(0,1, col="red")
 

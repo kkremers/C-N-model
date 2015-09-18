@@ -222,8 +222,16 @@ for (i in 2:M) {
     iter=1 #reset iteration counter
   }
   
-  if(t<0.01){ #if t gets too small
-    t=0.1 #reset to 0.1
+  if(acceptance<=0.55){
+    t=1.01*t
+  }
+  
+  if(acceptance>0.45){
+    t=0.99*t
+  }
+  
+  if(t<0.05){
+    t=0.05
   }
     
 } #end of exploration
@@ -245,5 +253,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_NDVI_UNBdata_MELstarting.Rdata")
+save.image(file="Step1_NEE_NDVI_UNBdata_MELstarting_200000.Rdata")
 

@@ -108,7 +108,7 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = length(params) #number of parameters to estimate
-M = 200000 #number of iterations
+M = 100000 #number of iterations
 D = 1 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -222,8 +222,16 @@ for (i in 2:M) {
     iter=1 #reset iteration counter
   }
   
-  if(t<0.01){ #if t gets too small
-    t=0.1 #set to 0.1
+  if(acceptance<=0.55){
+    t=1.01*t
+  }
+  
+  if(acceptance>0.45){
+    t=0.99*t
+  }
+  
+  if(t<0.05){
+    t=0.05
   }
     
 } #end of exploration
