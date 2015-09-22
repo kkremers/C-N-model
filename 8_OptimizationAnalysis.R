@@ -131,10 +131,10 @@ head(out[,1:11])
 
 MVar_kplant = data.frame(matrix(1,1,11))
 colnames(MVar_kplant)=c("Month", colnames(out[,2:11]))
-MVar_LitterRate = data.frame(matrix(1,1,11))
-colnames(MVar_LitterRate)=c("Month", colnames(out[,2:11]))
-MVar_retrans = data.frame(matrix(1,1,11))
-colnames(MVar_retrans)=c("Month", colnames(out[,2:11]))
+MVar_LitterRateC = data.frame(matrix(1,1,11))
+colnames(MVar_LitterRateC)=c("Month", colnames(out[,2:11]))
+MVar_LitterRateN = data.frame(matrix(1,1,11))
+colnames(MVar_LitterRateN)=c("Month", colnames(out[,2:11]))
 MVar_RespRate = data.frame(matrix(1,1,11))
 colnames(MVar_RespRate)=c("Month", colnames(out[,2:11]))
 MVar_UptakeRate = data.frame(matrix(1,1,11))
@@ -147,10 +147,8 @@ MVar_q10 = data.frame(matrix(1,1,11))
 colnames(MVar_q10)=c("Month", colnames(out[,2:11]))
 MVar_netNrate = data.frame(matrix(1,1,11))
 colnames(MVar_netNrate)=c("Month", colnames(out[,2:11]))
-MVar_temp2_resp = data.frame(matrix(1,1,11))
-colnames(MVar_temp2_resp)=c("Month", colnames(out[,2:11]))
-MVar_temp2_netn = data.frame(matrix(1,1,11))
-colnames(MVar_temp2_netn)=c("Month", colnames(out[,2:11]))
+MVar_cue = data.frame(matrix(1,1,11))
+colnames(MVar_cue)=c("Month", colnames(out[,2:11]))
 
 
 #need to create a vector of months to append to model output
@@ -162,7 +160,7 @@ months.leap = rep(c(seq(1:12)),
 months = c(months, months, months, months.leap, months)
 
 #kplant
-for(i in 1:100){
+for(i in 1:1000){
   params.i = means #set parmeters to mean values
   params.i[1] = unlist(c(param.keep[i,1]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -172,30 +170,30 @@ for(i in 1:100){
   MVar_kplant = rbind(MVar_kplant, monthly.avg)
 }  
 
-#LitterRate
-for(i in 1:100){
+#LitterRateC
+for(i in 1:1000){
   params.i = means #set parmeters to mean values
   params.i[2] = unlist(c(param.keep[i,2]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
   out.i = cbind(out.i, Month = months) #add month vector
   monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
-  names(monthly.avg) = names(MVar_LitterRate)
-  MVar_LitterRate = rbind(MVar_LitterRate, monthly.avg)
+  names(monthly.avg) = names(MVar_LitterRateC)
+  MVar_LitterRateC = rbind(MVar_LitterRateC, monthly.avg)
 }  
 
-#retrans
-for(i in 1:100){
+#LitterRateN
+for(i in 1:1000){
   params.i = means #set parmeters to mean values
   params.i[3] = unlist(c(param.keep[i,3]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
   out.i = cbind(out.i, Month = months) #add month vector
   monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
-  names(monthly.avg) = names(MVar_retrans)
-  MVar_retrans = rbind(MVar_retrans, monthly.avg)
+  names(monthly.avg) = names(MVar_LitterRateN)
+  MVar_LitterRateN = rbind(MVar_LitterRateN, monthly.avg)
 }  
 
 #RespRate
-for(i in 1:100){
+for(i in 1:1000){
   params.i = means #set parmeters to mean values
   params.i[4] = unlist(c(param.keep[i,4]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -206,7 +204,7 @@ for(i in 1:100){
 }  
 
 #UptakeRate
-for(i in 1:100){
+for(i in 1:1000){
   params.i = means #set parmeters to mean values
   params.i[5] = unlist(c(param.keep[i,5]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -217,7 +215,7 @@ for(i in 1:100){
 }  
 
 #propN_fol
-for(i in 1:100){
+for(i in 1:1000){
   params.i = means #set parmeters to mean values
   params.i[6] = unlist(c(param.keep[i,6]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -228,7 +226,7 @@ for(i in 1:100){
 }  
 
 #propN_roots
-for(i in 1:100){
+for(i in 1:1000){
   params.i = means #set parmeters to mean values
   params.i[7] = unlist(c(param.keep[i,7]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -239,7 +237,7 @@ for(i in 1:100){
 }  
 
 #q10
-for(i in 1:100){
+for(i in 1:1000){
   params.i = means #set parmeters to mean values
   params.i[8] = unlist(c(param.keep[i,8]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -250,7 +248,7 @@ for(i in 1:100){
 }  
 
 #netNrate
-for(i in 1:100){
+for(i in 1:1000){
   params.i = means #set parmeters to mean values
   params.i[9] = unlist(c(param.keep[i,9]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -260,72 +258,61 @@ for(i in 1:100){
   MVar_netNrate = rbind(MVar_netNrate, monthly.avg)
 }  
 
-#temp2_resp
-for(i in 1:100){
+#cue
+for(i in 1:1000){
   params.i = means #set parmeters to mean values
   params.i[10] = unlist(c(param.keep[i,10]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
   out.i = cbind(out.i, Month = months) #add month vector
   monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
-  names(monthly.avg) = names(MVar_temp2_resp)
-  MVar_temp2_resp = rbind(MVar_temp2_resp, monthly.avg)
+  names(monthly.avg) = names(MVar_cue)
+  MVar_cue = rbind(MVar_cue, monthly.avg)
 }  
 
-#temp2_netn
-for(i in 1:100){
-  params.i = means #set parmeters to mean values
-  params.i[11] = unlist(c(param.keep[i,11]))  #change the parameter value of interest
-  out.i = data.frame(solvemodel(params.i, state)) #run model
-  out.i = cbind(out.i, Month = months) #add month vector
-  monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
-  names(monthly.avg) = names(MVar_temp2_netn)
-  MVar_temp2_netn = rbind(MVar_temp2_netn, monthly.avg)
-}  
 
 MVar_kplant = MVar_kplant[-1,]
-MVar_LitterRate = MVar_LitterRate[-1,]
-MVar_retrans = MVar_retrans[-1,]
+MVar_LitterRateC = MVar_LitterRateC[-1,]
+MVar_LitterRateN = MVar_LitterRateN[-1,]
 MVar_RespRate = MVar_RespRate[-1,]
 MVar_UptakeRate = MVar_UptakeRate[-1,]
 MVar_propN_fol = MVar_propN_fol[-1,]
 MVar_propN_roots = MVar_propN_roots[-1,]
 MVar_q10 = MVar_q10[-1,]
 MVar_netNrate = MVar_netNrate[-1,]
-MVar_temp2_resp = MVar_temp2_resp[-1,]
-MVar_temp2_netn = MVar_temp2_netn[-1,]
+MVar_cue = MVar_cue[-1,]
+
 
 
 var.kplant = aggregate(MVar_kplant[,2:11], list(MVar_kplant$Month), var)
-var.LitterRate = aggregate(MVar_LitterRate[,2:11], list(MVar_LitterRate$Month), var)
-var.retrans = aggregate(MVar_retrans[,2:11], list(MVar_retrans$Month), var)
+var.LitterRateC = aggregate(MVar_LitterRateC[,2:11], list(MVar_LitterRateC$Month), var)
+var.LitterRateN = aggregate(MVar_LitterRateN[,2:11], list(MVar_LitterRateN$Month), var)
 var.RespRate = aggregate(MVar_RespRate[,2:11], list(MVar_RespRate$Month), var)
 var.UptakeRate = aggregate(MVar_UptakeRate[,2:11], list(MVar_UptakeRate$Month), var)
 var.propN_fol = aggregate(MVar_propN_fol[,2:11], list(MVar_propN_fol$Month), var)
 var.propN_roots = aggregate(MVar_propN_roots[,2:11], list(MVar_propN_roots$Month), var)
 var.q10 = aggregate(MVar_q10[,2:11], list(MVar_q10$Month), var)
 var.netNrate = aggregate(MVar_netNrate[,2:11], list(MVar_netNrate$Month), var)
-var.temp2_resp = aggregate(MVar_temp2_resp[,2:11], list(MVar_temp2_resp$Month), var)
-var.temp2_netn = aggregate(MVar_temp2_netn[,2:11], list(MVar_temp2_netn$Month), var)
+var.cue = aggregate(MVar_cue[,2:11], list(MVar_cue$Month), var)
 
-parameters = rep(names(params), c(12,12,12,12,12,12,12,12,12,12,12))
+parameters = rep(names(params), c(12,12,12,12,12,12,12,12,12,12))
 
-all = rbind(var.kplant, var.LitterRate, var.retrans, var.RespRate, var.UptakeRate, var.propN_fol, 
-            var.propN_roots, var.q10, var.netNrate, var.temp2_resp, var.temp2_netn)
+all = rbind(var.kplant, var.LitterRateC, var.LitterRateN, var.RespRate, var.UptakeRate, var.propN_fol, 
+            var.propN_roots, var.q10, var.netNrate, var.cue)
 
 all=cbind(Parameters = parameters, all)
 
 #calculate total variance
-var.total = aggregate(all[3:12], list(all$Group.1), sum)
+var.total = aggregate(all[3:12], list(all$Group.1), sum)  #CHECK THIS
 
 #now calculate percent variance
 perc.kplant = (var.kplant[,2:11]/var.total[,2:11])*100
 perc.kplant = cbind(Parameter = rep("kplant", 12), Month=var.total$Group.1, perc.kplant)
 
-perc.LitterRate = (var.LitterRate[,2:11]/var.total[,2:11])*100
-perc.LitterRate = cbind(Parameter = rep("LitterRate", 12), Month=var.total$Group.1, perc.LitterRate)
+perc.LitterRateC = (var.LitterRateC[,2:11]/var.total[,2:11])*100
+perc.LitterRateC = cbind(Parameter = rep("LitterRateC", 12), Month=var.total$Group.1, perc.LitterRateC)
 
-perc.retrans = (var.retrans[,2:11]/var.total[,2:11])*100
-perc.retrans = cbind(Parameter = rep("retrans", 12), Month=var.total$Group.1, perc.retrans)
+perc.LitterRateN = (var.LitterRateN[,2:11]/var.total[,2:11])*100
+perc.LitterRateN = cbind(Parameter = rep("LitterRateN", 12), Month=var.total$Group.1, perc.LitterRateN)
 
 perc.RespRate = (var.RespRate[,2:11]/var.total[,2:11])*100
 perc.RespRate = cbind(Parameter = rep("RespRate", 12), Month=var.total$Group.1, perc.RespRate)
@@ -345,17 +332,15 @@ perc.q10 = cbind(Parameter = rep("q10", 12), Month=var.total$Group.1, perc.q10)
 perc.netNrate = (var.netNrate[,2:11]/var.total[,2:11])*100
 perc.netNrate = cbind(Parameter = rep("netNrate", 12), Month=var.total$Group.1, perc.netNrate)
 
-perc.temp2_resp = (var.temp2_resp[,2:11]/var.total[,2:11])*100
-perc.temp2_resp = cbind(Parameter = rep("temp2_resp", 12), Month=var.total$Group.1, perc.temp2_resp)
+perc.cue = (var.cue[,2:11]/var.total[,2:11])*100
+perc.cue = cbind(Parameter = rep("cue", 12), Month=var.total$Group.1, perc.cue)
 
-perc.temp2_netn = (var.temp2_netn[,2:11]/var.total[,2:11])*100
-perc.temp2_netn = cbind(Parameter = rep("temp2_netn", 12), Month=var.total$Group.1, perc.temp2_netn)
 
 #create a table binding all together
 
-perc.all = rbind(perc.kplant, perc.LitterRate, perc.retrans, perc.RespRate,
+perc.all = rbind(perc.kplant, perc.LitterRateC, perc.LitterRateN, perc.RespRate,
                  perc.UptakeRate, perc.propN_fol, perc.propN_roots, perc.q10, perc.netNrate,
-                 perc.temp2_resp, perc.temp2_netn)
+                 perc.cue)
 
 perc.all = perc.all[,-11]
 head(perc.all)
@@ -380,7 +365,7 @@ for (n in 3:11) { #for each parameter
   sub1[10,] = sub[109:120,3]
   sub1[11,] = sub[121:132,3]
   barplot(sub1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "darkseagreen", 
-                      "deepskyblue", "dodgerblue3", "forestgreen", "darkslategray1", "purple", "blue"),            
+                      "deepskyblue", "dodgerblue3", "forestgreen", "darkslategray1", "purple"),            
           main=names(perc.all[n]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100)) #plot the data
 } #end of for loop
 
@@ -403,27 +388,236 @@ sub1[9,] = sub[97:108,3]
 sub1[10,] = sub[109:120,3]
 sub1[11,] = sub[121:132,3]
 barplot(sub1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "darkseagreen", 
-                    "deepskyblue", "dodgerblue3", "forestgreen", "darkslategray1", "purple", "blue"),            
+                    "deepskyblue", "dodgerblue3", "forestgreen", "darkslategray1", "purple"),            
         main=names(perc.all[8]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100), legend=TRUE) #plot the data
 
-#GPP
-sub = perc.all[,c(1,2,9)]
-sub1 = table(sub$Parameter, sub$Month)
-sub1[1,] = sub[1:12,3]
-sub1[2,] = sub[13:24,3]
-sub1[3,] = sub[25:36,3]
-sub1[4,] = sub[37:48,3]
-sub1[5,] = sub[49:60,3]
-sub1[6,] = sub[61:72,3]
-sub1[7,] = sub[73:84,3]
-sub1[8,] = sub[85:96,3]
-sub1[9,] = sub[97:108,3]
-barplot(sub1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "darkseagreen", 
-                    "deepskyblue", "dodgerblue3", "forestgreen", "darkslategray1"),            
-        main=names(perc.all[9]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100)) #plot the data
 
-#Re
-sub = perc.all[,c(1,2,10)]
+####ANNUAL ANALYSIS####
+#need to make tables to store annual sums for each model output (each parameter has one table)
+
+AVar_kplant = data.frame(matrix(1,1,3))
+colnames(AVar_kplant)=colnames(out[,7:9])
+AVar_LitterRateC = data.frame(matrix(1,1,3))
+colnames(AVar_LitterRateC)=colnames(out[,7:9])
+AVar_LitterRateN = data.frame(matrix(1,1,3))
+colnames(AVar_LitterRateN)=colnames(out[,7:9])
+AVar_RespRate = data.frame(matrix(1,1,3))
+colnames(AVar_RespRate)=colnames(out[,7:9])
+AVar_UptakeRate = data.frame(matrix(1,1,3))
+colnames(AVar_UptakeRate)=colnames(out[,7:9])
+AVar_propN_fol = data.frame(matrix(1,1,3))
+colnames(AVar_propN_fol)=colnames(out[,7:9])
+AVar_propN_roots = data.frame(matrix(1,1,3))
+colnames(AVar_propN_roots)=colnames(out[,7:9])
+AVar_q10 = data.frame(matrix(1,1,3))
+colnames(AVar_q10)=colnames(out[,7:9])
+AVar_netNrate = data.frame(matrix(1,1,3))
+colnames(AVar_netNrate)=colnames(out[,7:9])
+AVar_cue = data.frame(matrix(1,1,3))
+colnames(AVar_cue)=colnames(out[,7:9])
+
+
+#kplant
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[1] = unlist(c(param.keep[i,1]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_kplant) #change names
+  AVar_kplant = rbind(AVar_kplant, annual.avg) #add row to table
+}  
+
+#LitterRateC
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[2] = unlist(c(param.keep[i,2]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_LitterRateC) #change names
+  AVar_LitterRateC = rbind(AVar_LitterRateC, annual.avg) #add row to table
+}  
+
+#LitterRateN
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[3] = unlist(c(param.keep[i,3]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_LitterRateN) #change names
+  AVar_LitterRateN = rbind(AVar_LitterRateN, annual.avg) #add row to table
+}  
+
+#RespRate
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[4] = unlist(c(param.keep[i,4]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_RespRate) #change names
+  AVar_RespRate = rbind(AVar_RespRate, annual.avg) #add row to table
+}  
+
+#UptakeRate
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[5] = unlist(c(param.keep[i,5]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_UptakeRate) #change names
+  AVar_UptakeRate = rbind(AVar_UptakeRate, annual.avg) #add row to table
+}  
+
+#propN_fol
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[6] = unlist(c(param.keep[i,6]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_propN_fol) #change names
+  AVar_propN_fol = rbind(AVar_propN_fol, annual.avg) #add row to table
+}  
+
+#propN_roots
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[7] = unlist(c(param.keep[i,7]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_propN_roots) #change names
+  AVar_propN_roots = rbind(AVar_propN_roots, annual.avg) #add row to table
+}  
+
+#q10
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[8] = unlist(c(param.keep[i,8]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_q10) #change names
+  AVar_q10 = rbind(AVar_q10, annual.avg) #add row to table
+}  
+
+#netNrate
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[9] = unlist(c(param.keep[i,9]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_netNrate) #change names
+  AVar_netNrate = rbind(AVar_netNrate, annual.avg) #add row to table
+}  
+
+#cue
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[10] = unlist(c(param.keep[i,10]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_cue) #change names
+  AVar_cue = rbind(AVar_cue, annual.avg) #add row to table
+}  
+
+
+
+
+
+AVar_kplant = AVar_kplant[-1,]
+AVar_LitterRateC = AVar_LitterRateC[-1,]
+AVar_LitterRateN = AVar_LitterRateN[-1,]
+AVar_RespRate = AVar_RespRate[-1,]
+AVar_UptakeRate = AVar_UptakeRate[-1,]
+AVar_propN_fol = AVar_propN_fol[-1,]
+AVar_propN_roots = AVar_propN_roots[-1,]
+AVar_q10 = AVar_q10[-1,]
+AVar_netNrate = AVar_netNrate[-1,]
+AVar_cue = AVar_cue[-1,]
+
+
+
+var.kplant = apply(AVar_kplant, 2, var)
+var.LitterRateC = apply(AVar_LitterRateC, 2, var)
+var.LitterRateN = apply(AVar_LitterRateN, 2, var)
+var.RespRate = apply(AVar_RespRate, 2, var)
+var.UptakeRate = apply(AVar_UptakeRate, 2, var)
+var.propN_fol = apply(AVar_propN_fol, 2, var)
+var.propN_roots = apply(AVar_propN_roots, 2, var)
+var.q10 = apply(AVar_q10, 2, var)
+var.netNrate = apply(AVar_netNrate, 2, var)
+var.cue = apply(AVar_cue, 2, var)
+
+parameters = names(params)
+
+all_1 = rbind(var.kplant, var.LitterRateC, var.LitterRateN, var.RespRate, var.UptakeRate, var.propN_fol, 
+            var.propN_roots, var.q10, var.netNrate, var.cue)
+
+all_1 = cbind(Parameters = parameters, all)
+
+#calculate total variance
+var.total = apply(all_1[2:4], sum)
+
+#now calculate percent variance
+perc.kplant = (var.kplant/var.total)*100
+perc.LitterRateC = (var.LitterRateC/var.total)*100
+perc.LitterRateN = (var.LitterRateN/var.total)*100
+perc.RespRate = (var.RespRate/var.total)*100
+perc.UptakeRate = (var.UptakeRate/var.total)*100
+perc.propN_fol = (var.propN_fol/var.total)*100
+perc.propN_roots = (var.propN_roots/var.total)*100
+perc.q10 = (var.q10/var.total)*100
+perc.netNrate = (var.netNrate/var.total)*100
+perc.cue = (var.cue/var.total)*100
+
+#create a table binding all together
+
+perc.all_1 = rbind(perc.kplant, perc.LitterRateC, perc.LitterRateN, perc.RespRate,
+                 perc.UptakeRate, perc.propN_fol, perc.propN_roots, perc.q10, perc.netNrate,
+                 perc.cue)
+
+perc.all_1 = cbind(Parameters=parameters, perc.all_1
+head(perc.all_1)
+tail(perc.all_1)
+
+####barplots####
+
+#START EDITING HERE
+
+par(mfrow=c(3,3), mar=c(4,4,2,2))
+
+for (n in 3:11) { #for each parameter
+  sub = perc.all[,c(1,2,n)]
+  sub1 = table(sub$Parameter, sub$Month)
+  sub1[1,] = sub[1:12,3]
+  sub1[2,] = sub[13:24,3]
+  sub1[3,] = sub[25:36,3]
+  sub1[4,] = sub[37:48,3]
+  sub1[5,] = sub[49:60,3]
+  sub1[6,] = sub[61:72,3]
+  sub1[7,] = sub[73:84,3]
+  sub1[8,] = sub[85:96,3]
+  sub1[9,] = sub[97:108,3]
+  sub1[10,] = sub[109:120,3]
+  sub1[11,] = sub[121:132,3]
+  barplot(sub1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "darkseagreen", 
+                      "deepskyblue", "dodgerblue3", "forestgreen", "darkslategray1", "purple"),            
+          main=names(perc.all[n]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100)) #plot the data
+} #end of for loop
+
+
+par(mfrow=c(1,1), mar=c(4,4,2,2))
+
+
+#NEE
+sub = perc.all[,c(1,2,8)]
 sub1 = table(sub$Parameter, sub$Month)
 sub1[1,] = sub[1:12,3]
 sub1[2,] = sub[13:24,3]
@@ -434,8 +628,12 @@ sub1[6,] = sub[61:72,3]
 sub1[7,] = sub[73:84,3]
 sub1[8,] = sub[85:96,3]
 sub1[9,] = sub[97:108,3]
+sub1[10,] = sub[109:120,3]
+sub1[11,] = sub[121:132,3]
 barplot(sub1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "darkseagreen", 
-                    "deepskyblue", "dodgerblue3", "forestgreen", "darkslategray1"),            
-        main=names(perc.all[10]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100)) #plot the data
+                    "deepskyblue", "dodgerblue3", "forestgreen", "darkslategray1", "purple"),            
+        main=names(perc.all[8]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100), legend=TRUE) #plot the data
+
 
 save.image(file="Variance_07142015.Rdata")
+
