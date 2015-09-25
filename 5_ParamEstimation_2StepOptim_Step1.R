@@ -136,8 +136,8 @@ head(all.draws)
 
 
 #set initial values
-anneal.temp0=20000 #starting temperature
-anneal.temp=20000 #starting temperature
+anneal.temp0=10000 #starting temperature
+anneal.temp=10000 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 t=0.5
@@ -210,7 +210,7 @@ for (i in 2:M) {
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
 
-  anneal.temp=anneal.temp0-(1*iter) #decrease temperature
+  anneal.temp=anneal.temp-1 #decrease temperature
   
   
   iter=iter+1 #increase number of iterations counter

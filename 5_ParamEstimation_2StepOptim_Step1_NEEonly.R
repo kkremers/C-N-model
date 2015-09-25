@@ -108,7 +108,7 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = length(params) #number of parameters to estimate
-M = 100000 #number of iterations
+M = 200000 #number of iterations
 D = 1 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -136,8 +136,8 @@ head(all.draws)
 
 
 #set initial values
-anneal.temp0=20000 #starting temperature
-anneal.temp=20000 #starting temperature
+anneal.temp0=10000 #starting temperature
+anneal.temp=10000 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 t=0.5
@@ -210,7 +210,7 @@ for (i in 2:M) {
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
 
-  anneal.temp=anneal.temp0-(1*iter) #decrease temperature
+  anneal.temp=anneal.temp-1 #decrease temperature
   
   
   iter=iter+1 #increase number of iterations counter
@@ -253,5 +253,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_UNBdata_MELstarting.Rdata")
+save.image(file="Step1_NEE_UNBdata_MELstarting_200000.Rdata")
 
