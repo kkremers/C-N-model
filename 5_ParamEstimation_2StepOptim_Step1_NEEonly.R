@@ -108,7 +108,7 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = length(params) #number of parameters to estimate
-M = 200000 #number of iterations
+M = 100000 #number of iterations
 D = 1 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -136,8 +136,8 @@ head(all.draws)
 
 
 #set initial values
-anneal.temp0=10000 #starting temperature
-anneal.temp=10000 #starting temperature
+anneal.temp0=2000 #starting temperature
+anneal.temp=2000 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 t=0.5
@@ -215,9 +215,8 @@ for (i in 2:M) {
   
   iter=iter+1 #increase number of iterations counter
   
-  if(anneal.temp<500){ #if temperature drops to less than 100
-    anneal.temp0=(9/10)*anneal.temp0 #change initial temp to 9/10 of previous initial
-    anneal.temp=anneal.temp0 #jump back up to that temp
+  if(anneal.temp<100){ #if temperature drops to less than 100
+    anneal.temp=anneal.temp0 #jump back up to initial temp
     t=0.5
     iter=1 #reset iteration counter
   }
