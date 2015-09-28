@@ -27,11 +27,11 @@ head(data.compare1)
 #calculate RMSE
 error = (data.compare1[,c(2,3)]-out.compare1[,c(2,3)])
 errorsquared = error^2
-mean = mean(errorsquared[!is.na(errorsquared)])
+mean = apply(errorsquared,2,mean,na.rm=TRUE)
 RMSE = sqrt(mean)
 #calculate MAE
 abs.error = abs(out.compare1-data.compare1)
-MAE_NEE = mean(abs.error[!is.na(abs.error)])
+MAE = apply(abs.error[,c(2,3)],2,mean,na.rm=TRUE)
 #calculate r2
 reg_NEE = lm(data.compare1[,2]~out.compare1[,2])
 r2_NEE = summary(reg_NEE)$r.squared
@@ -41,11 +41,11 @@ r2_NDVI = summary(reg_NDVI)$r.squared
 ##plot linear regression for assimilated data
 
 par(mfrow=c(2,2), mar=c(4,4,2,2))
-plot(data.compare1[,2], out.compare1[,2], xlab= "Actual", ylab="Modelled", main = "NEE")
+plot(data.compare1$NEE, out.compare1$NEE, xlab= "Actual", ylab="Modelled", main = "NEE")
 abline(0,1,col="red")
 plot(density(resid(reg_NEE)), main="Density of Residuals")
 
-plot(data.compare1[,3], out.compare1[,3], xlab= "Actual", ylab="Modelled", main = "NDVI")
+plot(data.compare1$NDVI, out.compare1$NDVI, xlab= "Actual", ylab="Modelled", main = "NDVI")
 abline(0,1,col="red")
 plot(density(resid(reg_NDVI)), main="Density of Residuals")
 
@@ -59,12 +59,13 @@ points(data.compare1$NDVI~data.compare1$time, col="red")
 
 ###comparison using data that was NOT assimilated
 data.compare=read.csv("Assimilation_data_ALL.csv")
-data.compare1 = data.compare[Year==2011,]
+data.compare1 = data.compare[data.compare$Year==2011,]
 
 data.compare1 = data.frame(data.compare1)
 out=data.frame(solvemodel(param.best, state)) #with columns to match data.assim
-out.compare1 = out[match(data.compare1$time, out$time),]
+out.compare1 = out[match(data.compare1$Time, out$time),]
 out.compare1=out.compare1[,c(1,7,11)]
+data.compare1=data.compare1[,c(3,6,8)]
 head(out.compare1)
 head(data.compare1)
 
@@ -73,11 +74,11 @@ head(data.compare1)
 #calculate RMSE
 error = (data.compare1[,c(2,3)]-out.compare1[,c(2,3)])
 errorsquared = error^2
-mean = mean(errorsquared[!is.na(errorsquared)])
+mean = apply(errorsquared,2,mean,na.rm=TRUE)
 RMSE = sqrt(mean)
 #calculate MAE
 abs.error = abs(out.compare1-data.compare1)
-MAE_NEE = mean(abs.error[!is.na(abs.error)])
+MAE_NEE = apply(abs.error,2,man,na.rm=TRUE)
 #calculate r2
 reg_NEE = lm(data.compare1[,2]~out.compare1[,2])
 r2_NEE = summary(reg_NEE)$r.squared
@@ -97,10 +98,10 @@ plot(density(resid(reg_NDVI)), main="Density of Residuals")
 
 par(mfrow=c(2,1), mar=c(4,4,2,2))
 plot(out.compare1$NEE~out.compare1$time, pch=16)
-points(data.compare1$NEE~data.compare1$time, col="red")
+points(data.compare1$NEE~data.compare1$Time, col="red")
 
 plot(out.compare1$NDVI~out.compare1$time, pch=16)
-points(data.compare1$NDVI~data.compare1$time, col="red")
+points(data.compare1$NDVI~data.compare1$Time, col="red")
 
 
 
@@ -157,7 +158,7 @@ months = rep(c(seq(1:12)),
 months.leap = rep(c(seq(1:12)),
                   c(31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31))
 
-months = c(months, months, months, months.leap, months)
+months = c(months, months, months, months.leap)
 
 #kplant
 for(i in 1:1000){
@@ -635,5 +636,5 @@ barplot(sub1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "darks
         main=names(perc.all[8]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100), legend=TRUE) #plot the data
 
 
-save.image(file="Variance_07142015.Rdata")
+save.image(file="Variance_09252015.Rdata")
 
