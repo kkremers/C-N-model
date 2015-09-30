@@ -74,16 +74,30 @@ abline(v=c(DOY.sen.year+c(0,365,365+365,365+365+366)))
 #plot(scal.temp.sm, type="l")
 
 #GDD slope is equal to positive temperatures, use that to calculate temperature scalar
+#first need to determine max and for each year (min is just zero)
+Tmax.day = NA
+GDDmax.day = NA
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data, data$year==year.i)
+  Tmax.day[i]=max(data.year$GDD.slope)
+  GDDmax.day[i]=max(data.year$GDD)
+}
+Tmax.day # max temps for each year
+GDDmax.day
+Tmax.mean=mean(Tmax.day)
+GDDmax.mean=mean(GDDmax.day)
+
 scal.temp=NULL
 for (i in 1:length(data$GDD.slope)){
-  scal.temp[i] = (data$GDD.slope[i] - min(data$GDD.slope))/(max(data$GDD.slope)-min(data$GDD.slope)) #growing degree day scalar
+  scal.temp[i] = (data$GDD.slope[i] - 0)/(Tmax.mean-0) #growing degree day scalar
 }
 plot(scal.temp, type="l")
 
 
 scal.GDD=NULL
 for (i in 1:length(data$GDD)){
-  scal.GDD[i] = (data$GDD[i] - min(data$GDD))/(max(data$GDD)-min(data$GDD)) #growing degree day scalar
+  scal.GDD[i] = (data$GDD[i] - 0)/(GDDmax.mean-0) #growing degree day scalar
   if(data$DOY[i]>data$DOY.sen[i]){
    scal.GDD[i]=0
   }
@@ -107,6 +121,7 @@ plot(scal.add, type="l")
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
 PAR.d1 <- approxfun(x=data$time, y=data$PAR_vis, method="linear", rule=2)
 scalGDD.d1 <- approxfun(x=data$time, y=scal.GDD, method="linear", rule=2)
+scaltemp.d1 <- approxfun(x=data$time, y=scal.temp, method="linear", rule=2)
 scaladd.d1 <- approxfun(x=data$time, y=scal.add, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 DOYsen.d1 <- approxfun(x=data$time, y=data$DOY.sen, method="linear", rule=2)

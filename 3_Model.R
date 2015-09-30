@@ -36,6 +36,7 @@ solvemodel <- function(params, state, times) {
       DOY = DOY.d1(t)
       scal=scaladd.d1(t)
       scalGDD=scalGDD.d1(t)
+      scaltemp=scaltemp.d1(t)
       year = Year.d1(t)
       
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
@@ -56,13 +57,13 @@ solvemodel <- function(params, state, times) {
       
       NDVI=0
       if(LAI>0){
-      NDVI = log((LAI*scalGDD)/0.003)/7.845}
+      NDVI = log((LAI*scalGDD)/0.0026)/8.0783} 
       
       if(NDVI==-Inf){
         NDVI=0
       }
             
-      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI * scal) ) ) * 12 
+      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI * scaltemp) ) ) * 12 
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) * scal
       Ra =  ( 1 - cue ) * GPP
       Re = RespRate * (q10 ^ ( ( Temp - temp2_resp)/ 10 ) )
