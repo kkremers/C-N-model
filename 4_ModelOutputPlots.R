@@ -38,6 +38,11 @@ out.compare_flux = out[match(data.compare_flux$Time, out$time),]
 head(out.compare_flux)
 out.compare_NDVI = out[match(data.compare_NDVI$Time, out$time),]
 head(out.compare_NDVI)
+sigma.compare2=read.csv("Assimilation_sigma_ALL.csv")
+sigma.compare_flux=sigma.compare2[complete.cases(sigma.compare2[,6]),c(1:7,9)]
+head(sigma.compare_flux)
+sigma.compare_NDVI=sigma.compare2[complete.cases(sigma.compare2[,8]),c(1:5,8)]
+head(sigma.compare_NDVI)
 
 
 par(mfrow=c(4,2), mar=c(4,4,2,2))
@@ -58,8 +63,9 @@ abline(h=0)
 plot(data.compare_flux$NEE, out.compare_flux$NEE, ylim=c(-4, 1), ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
-plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", type="l", ylim=c(0, 1))
-points(data.compare2$NDVI~data.compare2$Time, col="blue", pch=18, cex=0.8)
+plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", type="l", ylim=c(0.4, 0.8))
+points(data.compare_NDVI$NDVI~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
+arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
 plot(data.compare_NDVI$NDVI, out.compare_NDVI$NDVI, ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
@@ -116,4 +122,10 @@ rmse.NEE=sqrt(mean((resid.NEE.mean)^2))
 rmse.Re=sqrt(mean((resid.Re.mean)^2))
 rmse.NDVI=sqrt(mean((resid.NDVI.mean)^2))
 rmse.GPP;rmse.NEE;rmse.Re;rmse.NDVI
+
+mae.GPP=mean(abs(resid.GPP.mean))
+mae.NEE=mean(abs(resid.NEE.mean))
+mae.Re=mean(abs(resid.Re.mean))
+mae.NDVI=mean(abs(resid.NDVI.mean))
+mae.GPP;mae.NEE;mae.Re;mae.NDVI
 
