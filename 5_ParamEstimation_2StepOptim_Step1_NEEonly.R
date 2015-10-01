@@ -252,5 +252,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_UNBdata_MELstarting_200000.Rdata")
+save.image(file="Step1_NEE_UNBdata_MELstarting.Rdata")
 
