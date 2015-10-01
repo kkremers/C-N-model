@@ -127,13 +127,33 @@ j = matrix(1E100, M, D) #to store error calculations for this iteration
 all.draws = data.frame(matrix(1, M, n.param)) #storage for all parameter estimate iterations;
 colnames(all.draws) = c(names(params))
 param.est = data.frame(matrix(1, M, n.param)) #storage for accepted parameter estimate iterations;
-param.est[1,]=((param.max-param.min)/2)+param.min #change first row to the value in the middle of the range
-all.draws[1,]=((param.max-param.min)/2)+param.min #change first row to the value in the middle of the range
+param.est[1,]=params #change first row to current guess
+all.draws[1,]=params #change first row to current guess
 colnames(param.est) = c(names(params))
 head(param.est) #check to make sure this is correct
 head(all.draws)
 
+#replace 1st row with values for current parameters
+out=data.frame(solvemodel(params, state))
+out.compare1 = out[match(data.compare1$time, out$time),c(1,7,11)] #these columns need to match the ones that were pulled out before
 
+error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
+for (d in 1:D) { #for each data type
+  for (m in 1:length(data.compare1$time)){ #for each timestep
+    if(!is.na(data.compare1[m,d+1])){ #if there is data at that timestep for that data stream
+      error.time[m,d]=((data.compare1[m,d+1] - out.compare1[m,d+1])/sigma.obs1[m,d+1])^2 #calculates the error at that timestep for that data stream
+    } #end of if statement
+    #if there was no data at that timestep, the error will remain "0" so that it will not impact the sum calculation in the next step
+  } #end of time step loop
+  
+  j[1,d] = sum(error.time[,d])/n.time[d] #calculate cost function for each data stream
+  
+} #end of data type loop
+
+J[1] = sum(j[1,])/D #calculate aggregate cost function
+head(J)
+head(j)
+head(param.est)
 
 #set initial values
 anneal.temp0=2000 #starting temperature
