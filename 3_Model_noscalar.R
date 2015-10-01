@@ -24,7 +24,7 @@ time = seq(1, 1461, 1)
 
 ####################MODEL#################################
 
-solvemodel <- function(params, state, times) {
+solvemodel_ns <- function(params, state, times) {
   
   model<-function(t,state,params)
   { 
@@ -34,7 +34,6 @@ solvemodel <- function(params, state, times) {
       Temp=Temp.d1(t)
       PAR=PAR.d1(t)
       DOY = DOY.d1(t)
-      DOY.sen = DOYsen.d1(t)
       scal=scaladd.d1(t)
       scalGDD=scalGDD.d1(t)
       scaltemp=scaltemp.d1(t)
@@ -58,14 +57,13 @@ solvemodel <- function(params, state, times) {
       
       NDVI=0
       if(LAI>0){
-      NDVI = log((LAI*scalGDD)/0.0026)/8.0783} 
+      NDVI = log((LAI)/0.0026)/8.0783} 
       
       if(NDVI==-Inf){
         NDVI=0
       }
-      
-      
-      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI * scaltemp) ) ) * 12 
+            
+      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI) ) ) * 12 
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) * scal
       Ra =  ( 1 - cue ) * GPP
       Re = RespRate * (q10 ^ ( ( Temp - temp2_resp)/ 10 ) )
@@ -108,4 +106,4 @@ solvemodel <- function(params, state, times) {
 
 #####################################################################
 
-out = data.frame(solvemodel(params, state)) #creates table of model output
+out_ns = data.frame(solvemodel_ns(params, state)) #creates table of model output

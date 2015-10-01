@@ -129,3 +129,54 @@ mae.Re=mean(abs(resid.Re.mean))
 mae.NDVI=mean(abs(resid.NDVI.mean))
 mae.GPP;mae.NEE;mae.Re;mae.NDVI
 
+
+
+
+
+
+#PLOT BEFORE AND AFTER SCALAR
+data.compare2=read.csv("Assimilation_data_ALL.csv")
+data.compare_flux=data.compare2[complete.cases(data.compare2[,6]),c(1:7,9)]
+head(data.compare_flux)
+data.compare_NDVI=data.compare2[complete.cases(data.compare2[,8]),c(1:5,8)]
+out.compare_flux = out[match(data.compare_flux$Time, out$time),]
+out.compare_NDVI = out[match(data.compare_NDVI$Time, out$time),]
+outns.compare_flux = out_ns[match(data.compare_flux$Time, out_ns$time),]
+outns.compare_NDVI = out_ns[match(data.compare_NDVI$Time, out_ns$time),]
+
+
+par(mfrow=c(2,2), mar=c(4,4,1,1))
+plot(outns.compare_flux$GPP~outns.compare_flux$DOY, xlim=c(1,365), ylim=c(0,8))
+points(data.compare_flux$GPP~data.compare_flux$DOY, col="red", pch=16)
+plot(out.compare_flux$GPP~out.compare_flux$DOY, ylim=c(0,8), xlim=c(1,365))
+points(data.compare_flux$GPP~data.compare_flux$DOY, col="red", pch=16)
+plot(outns.compare_NDVI$NDVI~outns.compare_NDVI$DOY, xlim=c(1,365), ylim=c(0,1))
+points(data.compare_NDVI$NDVI~data.compare_NDVI$DOY, col="red", pch=16)
+plot(out.compare_NDVI$NDVI~out.compare_NDVI$DOY, xlim=c(1,365), ylim=c(0,1))
+points(data.compare_NDVI$NDVI~data.compare_NDVI$DOY, col="red", pch=16)
+
+#plot data
+par(mfrow=c(1,1), mar=c(4,4,1,4))
+plot(data.compare_flux$Time, data.compare_flux$GPP, xlim=c(1,1318), ylim=c(0, 8), xlab="Time", ylab="") # first plot
+par(new = TRUE)
+plot(data.compare_NDVI$Time, data.compare_NDVI$NDVI, xlim=c(1,1318), ylim=c(0, 0.8), pch=16, col="red", axes = FALSE, bty = "n", xlab = "", ylab = "")
+axis(4, ylim=c(0,0.7), col="red",col.axis="red",las=1)
+
+#plot without scalar
+plot(outns.compare_flux$time, outns.compare_flux$GPP, xlim=c(1,1318), ylim=c(0, 8), xlab="Time", ylab="") # first plot
+par(new = TRUE)
+plot(outns.compare_NDVI$time, outns.compare_NDVI$NDVI, xlim=c(1,1318), ylim=c(0, 0.8), pch=16, col="red", axes = FALSE, bty = "n", xlab = "", ylab = "")
+axis(4, ylim=c(0,0.7), col="red",col.axis="red",las=1)
+
+#plot with scalar
+plot(out.compare_flux$time, out.compare_flux$GPP, xlim=c(1,1318), ylim=c(0, 8), xlab="Time", ylab="") # first plot
+par(new = TRUE)
+plot(out.compare_NDVI$time, out.compare_NDVI$NDVI, xlim=c(1,1318), ylim=c(0, 0.8), pch=16, col="red", axes = FALSE, bty = "n", xlab = "", ylab = "")
+axis(4, ylim=c(0,0.7), col="red",col.axis="red",las=1)
+
+
+par(mfrow=c(1,1))
+plot(data.compare_flux$GPP~data.compare_flux$DOY, xlim=c(1,365), pch=16, ylim=c(0,10))
+points((data.compare_NDVI$NDVI)*10, col="red", pch=16)
+
+

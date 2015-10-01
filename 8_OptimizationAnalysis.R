@@ -10,7 +10,7 @@ means=apply(param.keep, 2, mean)
 q75=apply(param.keep, 2, quantile, 0.75) #calculate 75% quantile
 q95=apply(param.keep, 2, quantile, 0.95) #calculate 95%
 summarytable=data.frame(q05 = q05, q25 = q25, mean = means, 
-                        q75 = q75, q95 = q95, diff = diff) #bind all of the information together in the proper order (same order as summarytable columns)
+                        q75 = q75, q95 = q95) #bind all of the information together in the proper order (same order as summarytable columns)
 param.keep_NEE_NDVI_UNBdata = param.keep #save the table of accepted parameters under a new name
 write.csv(param.keep_NEE_NDVI_UNBdata, "Params_NEE_NDVI_UNBdata.csv")
 
@@ -64,25 +64,29 @@ data.compare1 = data.compare[data.compare$Year==2011,]
 data.compare1 = data.frame(data.compare1)
 out=data.frame(solvemodel(param.best, state)) #with columns to match data.assim
 out.compare1 = out[match(data.compare1$Time, out$time),]
-out.compare1=out.compare1[,c(1,7,11)]
-data.compare1=data.compare1[,c(3,6,8)]
+out.compare1=out.compare1[,c(1,7,8,9,11)]
+data.compare1=data.compare1[,c(3,6,7,8,9)]
 head(out.compare1)
 head(data.compare1)
 
 #now calculate bias mean error, MAE, and R2 for each stock/flux of interest
 
 #calculate RMSE
-error = (data.compare1[,c(2,3)]-out.compare1[,c(2,3)])
+error = (data.compare1[,c(2:5)]-out.compare1[,c(2:5)])
 errorsquared = error^2
 mean = apply(errorsquared,2,mean,na.rm=TRUE)
 RMSE = sqrt(mean)
 #calculate MAE
 abs.error = abs(out.compare1-data.compare1)
-MAE_NEE = apply(abs.error,2,man,na.rm=TRUE)
+MAE = apply(abs.error,2,mean,na.rm=TRUE)
 #calculate r2
 reg_NEE = lm(data.compare1[,2]~out.compare1[,2])
 r2_NEE = summary(reg_NEE)$r.squared
-reg_NDVI = lm(data.compare1[,3]~out.compare1[,3])
+reg_GPP = lm(data.compare1[,3]~out.compare1[,3])
+r2_GPP = summary(reg_GPP)$r.squared
+reg_Re = lm(data.compare1[,4]~out.compare1[,4])
+r2_Re = summary(reg_Re)$r.squared
+reg_NDVI = lm(data.compare1[,5]~out.compare1[,5])
 r2_NDVI = summary(reg_NDVI)$r.squared
 
 ##plot linear regression for assimilated data
@@ -92,7 +96,7 @@ plot(data.compare1[,2], out.compare1[,2], xlab= "Actual", ylab="Modelled", main 
 abline(0,1,col="red")
 plot(density(resid(reg_NEE)), main="Density of Residuals")
 
-plot(data.compare1[,3], out.compare1[,3], xlab= "Actual", ylab="Modelled", main = "NDVI")
+plot(data.compare1[,4], out.compare1[,4], xlab= "Actual", ylab="Modelled", main = "NDVI")
 abline(0,1,col="red")
 plot(density(resid(reg_NDVI)), main="Density of Residuals")
 
