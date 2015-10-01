@@ -51,21 +51,21 @@ solvemodel <- function(params, state, times) {
       #FLUXES
       TFN=propN_fol*Biomass_N
       
-      LAI = ((TFN-0.31)/1.29) #Williams and Rastetter 1999
+      LAI = ((TFN-0.31)/1.29)*scalGDD #Williams and Rastetter 1999
       if(PAR==0 | LAI<=0){
         LAI=0
       }
       
       NDVI=0
       if(LAI>0){
-      NDVI = log((LAI*scalGDD)/0.0026)/8.0783} 
+      NDVI = log((LAI)/0.0026)/8.0783} 
       
       if(NDVI==-Inf){
         NDVI=0
       }
       
       
-      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI * scaltemp) ) ) * 12 
+      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI) ) ) * 12 
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) * scal
       Ra =  ( 1 - cue ) * GPP
       Re = RespRate * (q10 ^ ( ( Temp - temp2_resp)/ 10 ) )
