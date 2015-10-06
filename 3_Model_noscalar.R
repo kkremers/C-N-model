@@ -63,7 +63,7 @@ solvemodel_ns <- function(params, state, times) {
         NDVI=0
       }
             
-      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI) ) ) * 12 
+      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI * scaltemp) ) ) * 12 
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) * scal
       Ra =  ( 1 - cue ) * GPP
       Re = RespRate * (q10 ^ ( ( Temp - temp2_resp)/ 10 ) )

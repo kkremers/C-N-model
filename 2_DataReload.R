@@ -60,18 +60,28 @@ abline(v=c(DOY.sen.year+c(0,365,365+365,365+365+366)))
 
 #create a smoothed temperature scalar for LAI
 #average of current sample, 7 future samples, and 7 past samples
-#filt=rep(1/15,15)
-#GDDslope.sm = filter(data$GDD.slope, filt, sides=2)
-#is.na(GDDslope.sm) #the last 20 samples are NA
-#GDDslope.sm[is.na(GDDslope.sm)]=0 #set these to zero
-#plot(data$GDD.slope, type="l")
-#lines(GDDslope.sm, col="red", lwd="3")
+filt=rep(1/15,15)
+GDDslope.sm = filter(data$GDD.slope, filt, sides=2)
+is.na(GDDslope.sm) #the last 20 samples are NA
+GDDslope.sm[is.na(GDDslope.sm)]=0 #set these to zero
+plot(data$GDD.slope, type="l")
+lines(GDDslope.sm, col="red", lwd="3")
+data=data.frame(data, GDDslope_sm=GDDslope.sm)
 
-#scal.temp.sm=NULL
-#for (i in 1:length(GDDslope.sm)){
-#  scal.temp.sm[i] = (GDDslope.sm[i] - min(GDDslope.sm))/(max(GDDslope.sm)-min(GDDslope.sm)) #growing degree day scalar
-#}
-#plot(scal.temp.sm, type="l")
+Tmaxsm.day = NA
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data, data$year==year.i)
+  Tmaxsm.day[i]=max(data.year$GDDslope_sm)
+}
+Tmaxsm.day # max temps for each year
+Tmaxsm.mean=mean(Tmaxsm.day)
+
+scal.temp.sm=NULL
+for (i in 1:length(GDDslope.sm)){
+  scal.temp.sm[i] = (GDDslope.sm[i] - 0)/(Tmaxsm.mean-0) #growing degree day scalar
+}
+plot(scal.temp.sm, type="l")
 
 #GDD slope is equal to positive temperatures, use that to calculate temperature scalar
 #first need to determine max and for each year (min is just zero)
@@ -94,7 +104,6 @@ for (i in 1:length(data$GDD.slope)){
 }
 plot(scal.temp, type="l")
 
-
 scal.GDD=NULL
 for (i in 1:length(data$GDD)){
   scal.GDD[i] = (data$GDD[i] - 0)/(GDDmax.mean-0) #growing degree day scalar
@@ -114,7 +123,7 @@ for (i in 1:length(scal.new)){
 
 par(mfrow=c(3,1), mar=c(4,4,0.5,2))
 plot(scal.GDD, type="l")
-plot(scal.temp, type="l")
+plot(scal.temp.sm, type="l")
 plot(scal.add, type="l")
 
 #make into functions so that it will be continuous in the model

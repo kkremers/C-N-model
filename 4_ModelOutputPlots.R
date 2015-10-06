@@ -63,8 +63,8 @@ abline(h=0)
 plot(data.compare_flux$NEE, out.compare_flux$NEE, ylim=c(-4, 1), ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
-plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", type="l", ylim=c(0.4, 0.8))
-points(data.compare_NDVI$NDVI~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
+plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", type="l")
+points(data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
 arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
 plot(data.compare_NDVI$NDVI, out.compare_NDVI$NDVI, ylab="Model", xlab="Data")
 abline(0,1, col="red")
@@ -148,11 +148,11 @@ outns.compare_NDVI = out_ns[match(data.compare_NDVI$Time, out_ns$time),]
 par(mfrow=c(2,2), mar=c(4,4,1,1))
 plot(outns.compare_flux$GPP~outns.compare_flux$DOY, xlim=c(1,365), ylim=c(0,8))
 points(data.compare_flux$GPP~data.compare_flux$DOY, col="red", pch=16)
-plot(out.compare_flux$GPP~out.compare_flux$DOY, ylim=c(0,8), xlim=c(1,365))
+plot(out.compare_flux$GPP~out.compare_flux$DOY, ylim=c(0,8))
 points(data.compare_flux$GPP~data.compare_flux$DOY, col="red", pch=16)
 plot(outns.compare_NDVI$NDVI~outns.compare_NDVI$DOY, xlim=c(1,365), ylim=c(0,1))
 points(data.compare_NDVI$NDVI~data.compare_NDVI$DOY, col="red", pch=16)
-plot(out.compare_NDVI$NDVI~out.compare_NDVI$DOY, xlim=c(1,365), ylim=c(0,1))
+plot(out.compare_NDVI$NDVI~out.compare_NDVI$DOY, ylim=c(0,1))
 points(data.compare_NDVI$NDVI~data.compare_NDVI$DOY, col="red", pch=16)
 
 #plot data
@@ -174,9 +174,5 @@ par(new = TRUE)
 plot(out.compare_NDVI$time, out.compare_NDVI$NDVI, xlim=c(1,1318), ylim=c(0, 0.8), pch=16, col="red", axes = FALSE, bty = "n", xlab = "", ylab = "")
 axis(4, ylim=c(0,0.7), col="red",col.axis="red",las=1)
 
-
-par(mfrow=c(1,1))
-plot(data.compare_flux$GPP~data.compare_flux$DOY, xlim=c(1,365), pch=16, ylim=c(0,10))
-points((data.compare_NDVI$NDVI)*10, col="red", pch=16)
 
 
