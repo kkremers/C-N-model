@@ -30,51 +30,63 @@ plot(out$time, out$scal, type="l")
 #see how well data matches
 #to compare on 1:1 line with data, need to select only points for which data is available
 data.compare2=read.csv("Assimilation_data_ALL.csv")
-data.compare_flux=data.compare2[complete.cases(data.compare2[,6]),c(1:7,9)]
-head(data.compare_flux)
-data.compare_NDVI=data.compare2[complete.cases(data.compare2[,8]),c(1:5,8)]
+data.compare_NEE=data.compare2[complete.cases(data.compare2[,6]),c(1:5,6)]
+head(data.compare_NEE)
+data.compare_Re=data.compare2[complete.cases(data.compare2[,7]),c(1:5,7)]
+head(data.compare_Re)
+data.compare_GPP=data.compare2[complete.cases(data.compare2[,8]),c(1:5,8)]
+head(data.compare_GPP)
+data.compare_NDVI=data.compare2[complete.cases(data.compare2[,9]),c(1:5,9)]
 head(data.compare_NDVI)
-out.compare_flux = out[match(data.compare_flux$Time, out$time),]
-head(out.compare_flux)
+out.compare_NEE = out[match(data.compare_NEE$Time, out$time),]
+out.compare_Re = out[match(data.compare_Re$Time, out$time),]
+out.compare_GPP = out[match(data.compare_GPP$Time, out$time),]
 out.compare_NDVI = out[match(data.compare_NDVI$Time, out$time),]
-head(out.compare_NDVI)
+
 sigma.compare2=read.csv("Assimilation_sigma_ALL.csv")
-sigma.compare_flux=sigma.compare2[complete.cases(sigma.compare2[,6]),c(1:7,9)]
-head(sigma.compare_flux)
-sigma.compare_NDVI=sigma.compare2[complete.cases(sigma.compare2[,8]),c(1:5,8)]
+sigma.compare_NEE=sigma.compare2[complete.cases(sigma.compare2[,6]),c(1:5,6)]
+head(sigma.compare_NEE)
+sigma.compare_Re=sigma.compare2[complete.cases(sigma.compare2[,7]),c(1:5,7)]
+head(sigma.compare_Re)
+sigma.compare_GPP=sigma.compare2[complete.cases(sigma.compare2[,8]),c(1:5,8)]
+head(sigma.compare_GPP)
+sigma.compare_NDVI=sigma.compare2[complete.cases(sigma.compare2[,9]),c(1:5,9)]
 head(sigma.compare_NDVI)
 
 
 par(mfrow=c(4,2), mar=c(4,4,2,2))
-plot(out$GPP~out$time, col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="Time (days)", type="l")
-points(data.compare2$GPP~data.compare2$Time, col="blue", pch=18, cex=0.8)
-plot(data.compare_flux$GPP, out.compare_flux$GPP, ylab="Model", xlab="Data")
+plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-10,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
+points(data.compare2$NEE~data.compare2$Time, col="blue", pch=16, cex=0.6)
+abline(h=0)
+plot(data.compare_NEE$NEE, out.compare_NEE$NEE, ylim=c(-4, 1), ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
 plot(-out$Re~out$time, col="azure4", pch=16, ylim=c(-5,0), xlab="Time (days)", ylab="Re (gC m-2 day-1)", type="l")
 points(-data.compare2$Re~data.compare2$Time, col="blue", pch=16, cex=0.6)
 abline(h=0)
-plot(data.compare_flux$Re, out.compare_flux$Re, ylab="Model", xlab="Data")
+plot(data.compare_Re$Re, out.compare_Re$Re, ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
-plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-10,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
-points(data.compare2$NEE~data.compare2$Time, col="blue", pch=16, cex=0.6)
-abline(h=0)
-plot(data.compare_flux$NEE, out.compare_flux$NEE, ylim=c(-4, 1), ylab="Model", xlab="Data")
+plot(out$GPP~out$time, col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="Time (days)", type="l")
+points(data.compare2$GPP~data.compare2$Time, col="blue", pch=18, cex=0.8)
+plot(data.compare_GPP$GPP, out.compare_GPP$GPP, ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
 plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", type="l")
-points(data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
-arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
+points((data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
+#arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
 plot(data.compare_NDVI$NDVI, out.compare_NDVI$NDVI, ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
 
-resid.GPP = data.compare_flux$GPP - out.compare_flux$GPP
-resid.NEE = data.compare_flux$NEE - out.compare_flux$NEE
-resid.Re = data.compare_flux$Re - out.compare_flux$Re
+##NEED TO KEEP WORKING ON THIS##
+resid.GPP = data.compare_GPP$GPP - out.compare_GPP$GPP
 resid_flux = data.frame(time=out.compare_flux$time, DOY=out.compare_flux$DOY, resid.GPP, resid.NEE, resid.Re)
-head(resid_flux)
+resid.NEE = data.compare_NEE$NEE - out.compare_NEE$NEE
+resid_flux = data.frame(time=out.compare_flux$time, DOY=out.compare_flux$DOY, resid.GPP, resid.NEE, resid.Re)
+resid.Re = data.compare_Re$Re - out.compare_Re$Re
+resid_flux = data.frame(time=out.compare_flux$time, DOY=out.compare_flux$DOY, resid.GPP, resid.NEE, resid.Re)
+
 
 resid.NDVI = data.compare_NDVI$NDVI - out.compare_NDVI$NDVI
 resid_NDVI = data.frame(time=out.compare_NDVI$time, DOY=out.compare_NDVI$DOY, resid.NDVI)

@@ -3,7 +3,7 @@
 #require(beepr)
 #beep(5) #test sounds; there are 9 options; don't need to run this every time, just to choose a sound
 
-######Synthetic data experiments######
+######################Synthetic data experiments#######################
 
 #Get data ready
 head(out) #this is the output from the model run
@@ -88,7 +88,7 @@ colnames(sigma.obs1) = colnames(data.compare1)
 #sigma.obs1: columns need to be in SAME ORDER as data.compare1
 head(data.compare1)
 head(sigma.obs1)
-
+############################################
 
 ###LOAD REAL DATA###
 data.assim = read.csv("Assimilation_data.csv")
