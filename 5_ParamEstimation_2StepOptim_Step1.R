@@ -95,12 +95,14 @@ data.assim = read.csv("Assimilation_data.csv")
 data.sigma = read.csv("Assimilation_sigma.csv")
 head(data.assim)
 head(data.sigma)
+tail(data.assim)
+tail(data.sigma)
 head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
 head(out1)
-time.assim = out1[match(data.assim$YearDOY, out1$year_DOY), 1]
-data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,8])) #, GPP=data.assim[,6]))
-sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,8]))
+time.assim = out1[match(data.assim$Year_DOY, out1$year_DOY), 1]
+data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,9]))
+sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,9]))
 head(data.compare1)
 head(sigma.obs1)
 
@@ -108,7 +110,7 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = length(params) #number of parameters to estimate
-M = 100000 #number of iterations
+M = 200000 #number of iterations
 D = 2 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -118,8 +120,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0009,0.0022,0.98,0.012,0.9,0.015,3.3, 0.04, 0.7)
-param.min=c(0.07,0.0001,0.0009,0.26,0.002,0.1,0.002,1.4, 0.001, 0.25)
+param.max=c(0.34,0.0009,0.0022,0.98,0.012,0.9,0.015,3.3, 0.04, 0.7,     820,15,22000,950,3)
+param.min=c(0.07,0.0001,0.0009,0.26,0.002,0.1,0.002,1.4, 0.001, 0.25,   550,10,16500,750,0.5)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output
@@ -134,7 +136,7 @@ head(param.est) #check to make sure this is correct
 head(all.draws)
 
 #replace 1st row with values for current parameters
-out=data.frame(solvemodel(params, state))
+out=data.frame(solvemodel(params))
 out.compare1 = out[match(data.compare1$time, out$time),c(1,7,11)] #these columns need to match the ones that were pulled out before
 
 error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
@@ -168,7 +170,7 @@ for (i in 2:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
-      param.est[i,p] = param.est[i-1,p]+rnorm(1, 0, t*(param.max[p]-param.min[p]))   #runif(1, param.min[p], param.max[p])
+      param.est[i,p] = param.est[i-1,p]+rnorm(1, 0, t*(param.max[p]-param.min[p]))
       all.draws[i,p] = param.est[i,p]
     } #end of parameter loop
     if(all(!is.na(param.est[i,]))){

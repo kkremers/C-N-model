@@ -81,49 +81,51 @@ abline(0,1, col="red")
 
 ##NEED TO KEEP WORKING ON THIS##
 resid.GPP = data.compare_GPP$GPP - out.compare_GPP$GPP
-resid_flux = data.frame(time=out.compare_flux$time, DOY=out.compare_flux$DOY, resid.GPP, resid.NEE, resid.Re)
+resid_GPP = data.frame(time=out.compare_GPP$time, DOY=out.compare_GPP$DOY, resid.GPP)
 resid.NEE = data.compare_NEE$NEE - out.compare_NEE$NEE
-resid_flux = data.frame(time=out.compare_flux$time, DOY=out.compare_flux$DOY, resid.GPP, resid.NEE, resid.Re)
+resid_NEE = data.frame(time=out.compare_NEE$time, DOY=out.compare_NEE$DOY, resid.NEE)
 resid.Re = data.compare_Re$Re - out.compare_Re$Re
-resid_flux = data.frame(time=out.compare_flux$time, DOY=out.compare_flux$DOY, resid.GPP, resid.NEE, resid.Re)
-
+resid_Re = data.frame(time=out.compare_Re$time, DOY=out.compare_Re$DOY, resid.Re)
+head(resid_GPP)
+head(resid_NEE)
+head(resid_Re)
 
 resid.NDVI = data.compare_NDVI$NDVI - out.compare_NDVI$NDVI
 resid_NDVI = data.frame(time=out.compare_NDVI$time, DOY=out.compare_NDVI$DOY, resid.NDVI)
 head(resid_NDVI)
 
 par(mfrow=c(4,1), mar=c(4,4,2,2))
-plot(resid_flux$DOY, resid_flux$resid.GPP, main="GPP Residuals", ylab="Residuals", xlab="DOY")
+plot(resid_NEE$DOY, resid_NEE$resid.NEE, main="NEE Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
-plot(resid_flux$DOY, resid_flux$resid.Re, main="Re Residuals", ylab="Residuals", xlab="DOY")
+plot(resid_Re$DOY, resid_Re$resid.Re, main="Re Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
-plot(resid_flux$DOY, resid_flux$resid.NEE, main="NEE Residuals", ylab="Residuals", xlab="DOY")
+plot(resid_GPP$DOY, resid_GPP$resid.GPP, main="GPP Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
 plot(resid_NDVI$DOY, resid_NDVI$resid.NDVI, main="NDVI Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
 
 
-rmse.GPP=sqrt(mean((resid.GPP)^2))
-rmse.NEE=sqrt(mean((resid.NEE)^2))
-rmse.Re=sqrt(mean((resid.Re)^2))
-rmse.NDVI=sqrt(mean((resid.NDVI)^2))
+rmse.GPP=sqrt(mean((resid.GPP)^2, na.rm=TRUE))
+rmse.NEE=sqrt(mean((resid.NEE)^2, na.rm=TRUE))
+rmse.Re=sqrt(mean((resid.Re)^2, na.rm=TRUE))
+rmse.NDVI=sqrt(mean((resid.NDVI)^2, na.rm=TRUE))
 rmse.GPP;rmse.NEE;rmse.Re;rmse.NDVI
 
-resid.GPP.mean = tapply(resid_flux$resid.GPP, resid_flux$DOY, mean)
-resid.NEE.mean = tapply(resid_flux$resid.NEE, resid_flux$DOY, mean)
-resid.Re.mean = tapply(resid_flux$resid.Re, resid_flux$DOY, mean)
-resid.NDVI.mean = tapply(resid_NDVI$resid.NDVI, resid_NDVI$DOY, mean)
-resid.DOYflux=unique(resid_flux$DOY)
-resid.DOYNDVI=unique(resid_NDVI$DOY)
-resid.meansflux=data.frame(DOY=resid.DOYflux, resid.GPP.mean, resid.NEE.mean, resid.Re.mean)
-resid.meansNDVI=data.frame(DOY=resid.DOYNDVI, resid.NDVI.mean)
+resid.GPP.mean = tapply(resid_GPP$resid.GPP, resid_GPP$DOY, mean, na.rm=TRUE)
+resid.NEE.mean = tapply(resid_NEE$resid.NEE, resid_NEE$DOY, mean, na.rm=TRUE)
+resid.Re.mean = tapply(resid_Re$resid.Re, resid_Re$DOY, mean, na.rm=TRUE)
+resid.NDVI.mean = tapply(resid_NDVI$resid.NDVI, resid_NDVI$DOY, mean, na.rm=TRUE)
+time=seq(140,250,1)
+resid.meansflux=data.frame(DOY=time, resid.GPP.mean, resid.NEE.mean, resid.Re.mean)
+time=seq(144,250,1)
+resid.meansNDVI=data.frame(DOY=time, resid.NDVI.mean)
 
 par(mfrow=c(4,1), mar=c(4,4,2,2))
-plot(resid.meansflux$DOY, resid.meansflux$resid.GPP.mean, main="GPP Residuals", ylab="Residuals", xlab="DOY")
+plot(resid.meansflux$DOY, resid.meansflux$resid.NEE.mean, main="NEE Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
 plot(resid.meansflux$DOY, resid.meansflux$resid.Re.mean, main="Re Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
-plot(resid.meansflux$DOY, resid.meansflux$resid.NEE.mean, main="NEE Residuals", ylab="Residuals", xlab="DOY")
+plot(resid.meansflux$DOY, resid.meansflux$resid.GPP.mean, main="GPP Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
 plot(resid.meansNDVI$DOY, resid.meansNDVI$resid.NDVI.mean, main="NDVI Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
