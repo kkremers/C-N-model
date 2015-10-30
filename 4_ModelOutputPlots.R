@@ -55,7 +55,7 @@ head(sigma.compare_NDVI)
 
 
 par(mfrow=c(4,2), mar=c(4,4,2,2))
-plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-10,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
+plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-6,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
 points(data.compare2$NEE~data.compare2$Time, col="blue", pch=16, cex=0.6)
 abline(h=0)
 plot(data.compare_NEE$NEE, out.compare_NEE$NEE, ylim=c(-4, 1), ylab="Model", xlab="Data")
@@ -72,7 +72,7 @@ points(data.compare2$GPP~data.compare2$Time, col="blue", pch=18, cex=0.8)
 plot(data.compare_GPP$GPP, out.compare_GPP$GPP, ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
-plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", type="l")
+plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", type="l", ylim=c(0, 1))
 points((data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
 #arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
 plot(data.compare_NDVI$NDVI, out.compare_NDVI$NDVI, ylab="Model", xlab="Data")
@@ -149,24 +149,28 @@ mae.GPP;mae.NEE;mae.Re;mae.NDVI
 
 
 #PLOT BEFORE AND AFTER SCALAR
-data.compare2=read.csv("Assimilation_data_ALL.csv")
-data.compare_flux=data.compare2[complete.cases(data.compare2[,6]),c(1:7,9)]
-head(data.compare_flux)
-data.compare_NDVI=data.compare2[complete.cases(data.compare2[,8]),c(1:5,8)]
-out.compare_flux = out[match(data.compare_flux$Time, out$time),]
+head(data.compare2)
+head(data.compare_NEE)
+head(data.compare_GPP)
+head(data.compare_Re)
+head(data.compare_NDVI)
+out.compare_NEE = out[match(data.compare_NEE$Time, out$time),]
+out.compare_Re = out[match(data.compare_Re$Time, out$time),]
+out.compare_GPP = out[match(data.compare_GPP$Time, out$time),]
 out.compare_NDVI = out[match(data.compare_NDVI$Time, out$time),]
-outns.compare_flux = out_ns[match(data.compare_flux$Time, out_ns$time),]
-outns.compare_NDVI = out_ns[match(data.compare_NDVI$Time, out_ns$time),]
-
+out.compare_NEE_ns = out_ns[match(data.compare_NEE$Time, out_ns$time),]
+out.compare_Re_ns = out_ns[match(data.compare_Re$Time, out_ns$time),]
+out.compare_GPP_ns = out_ns[match(data.compare_GPP$Time, out_ns$time),]
+out.compare_NDVI_ns = out_ns[match(data.compare_NDVI$Time, out_ns$time),]
 
 par(mfrow=c(2,2), mar=c(4,4,1,1))
-plot(outns.compare_flux$GPP~outns.compare_flux$DOY, xlim=c(1,365), ylim=c(0,8))
-points(data.compare_flux$GPP~data.compare_flux$DOY, col="red", pch=16)
-plot(out.compare_flux$GPP~out.compare_flux$DOY, ylim=c(0,8))
-points(data.compare_flux$GPP~data.compare_flux$DOY, col="red", pch=16)
-plot(outns.compare_NDVI$NDVI~outns.compare_NDVI$DOY, xlim=c(1,365), ylim=c(0,1))
+plot(out.compare_GPP_ns$GPP~out.compare_GPP_ns$DOY, xlim=c(1,365), ylim=c(0,8))
+points(data.compare_GPP$GPP~data.compare_GPP$DOY, col="red", pch=16)
+plot(out.compare_GPP$GPP~out.compare_GPP$DOY, xlim=c(1,365), ylim=c(0,8))
+points(data.compare_GPP$GPP~data.compare_GPP$DOY, col="red", pch=16)
+plot(out.compare_NDVI_ns$NDVI~out.compare_NDVI_ns$DOY, xlim=c(1,365), ylim=c(0,1))
 points(data.compare_NDVI$NDVI~data.compare_NDVI$DOY, col="red", pch=16)
-plot(out.compare_NDVI$NDVI~out.compare_NDVI$DOY, ylim=c(0,1))
+plot(out.compare_NDVI$NDVI~out.compare_NDVI$DOY, xlim=c(1,365), ylim=c(0,1))
 points(data.compare_NDVI$NDVI~data.compare_NDVI$DOY, col="red", pch=16)
 
 #plot data

@@ -22,6 +22,7 @@ num.years = 20
 Temp_avg = tapply(data$Temp_ARF, data$DOY, mean, na.rm=TRUE)
 plot(Temp_avg, type="l")
 Temp_spin = rep(Temp_avg, num.years)
+plot(Temp_spin)
 
 #calculate daily average PAR
 PAR_avg = tapply(data$PAR_vis, data$DOY, mean, na.rm=TRUE)
@@ -64,13 +65,6 @@ for (i in 1:length(GDD_spin)){
 }
 plot(scal.GDD, type="l")
 
-#what if we add the GDD scalar and the smoothed temp scalar together?
-scal.new = scal.temp+scal.GDD
-#rescale to 1
-scal.add=NULL
-for (i in 1:length(scal.new)){
-  scal.add[i] = (scal.new[i] - min(scal.new))/(max(scal.new)-min(scal.new)) #growing degree day scalar
-}
 
 par(mfrow=c(3,1), mar=c(4,4,0.5,2))
 plot(scal.GDD, type="l")
@@ -94,7 +88,7 @@ require(deSolve)
 require(FME)
 
 params <- c(kplant = 0.2, #0.07-0.34
-            LitterRateC = 0.00035, #0.0001-0.0009
+            LitterRateC = 0.0006, #0.0001-0.0009
             LitterRateN = 0.001, #0.0001-0.0024 
             RespRate = 0.96, #0.26-0.98
             UptakeRate = 0.012, #0.002-0.012
@@ -102,17 +96,18 @@ params <- c(kplant = 0.2, #0.07-0.34
             propN_roots = 0.01, #0.002-0.015
             q10 = 2, #1.4-3.3
             netNrate = 0.02, #0.001-0.04
-            cue = 0.3 #0.25-0.7
-)
+            Biomass_C = 684.5, 
+            Biomass_N = 12.9, 
+            SOM_C = 19358.7, 
+            SOM_N = 854.1,
+            Available_N = 1.6)
 
-state <- c(Biomass_C = 684.5, 
-           Biomass_N = 12.9, 
-           SOM_C = 19358.7, 
-           SOM_N = 854.1,
-           Available_N = 1.6)
+time = seq(1, 1826, 1)
 
 
-solvemodel_sp <- function(params, state, times) {
+####################MODEL#################################
+
+solvemodel <- function(params, times) {
   
   model<-function(t,state,params)
   { 
@@ -122,17 +117,19 @@ solvemodel_sp <- function(params, state, times) {
       Temp=Temp.d1(t)
       PAR=PAR.d1(t)
       DOY = DOY.d1(t)
+      DOY.sen = DOYsen.d1(t)
       scal=scaladd.d1(t)
       scalGDD=scalGDD.d1(t)
       scaltemp=scaltemp.d1(t)
+      year = Year.d1(t)
       
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
-      Ndep_rate = 0.0004 #calculated from LTER data
+      Ndep_rate = 0.00007 #calculated from Alaska's changing arctic pg 106
+      Nfix_rate=0.0015 #calculated from Alaska's changing arctic pg 106
       k=0.63
       Pmax =1.18
       E0 = 0.03
-      temp2_resp = 10
-      temp2_netn = 10
+      cue=0.7
       
       #FLUXES
       TFN=propN_fol*Biomass_N
@@ -153,12 +150,16 @@ solvemodel_sp <- function(params, state, times) {
       
       
       GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12 
-      Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) * scaltemp
+      Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) * scalGDD
       Ra =  ( 1 - cue ) * GPP
-      Re = RespRate * (q10 ^ ( ( Temp - temp2_resp)/ 10 ) )
+      Re = RespRate * (q10 ^ ( ( Temp - 10)/ 10 ) )
+      if(Ra>Re){
+        Re=Ra
+      }
       Rh = Re - Ra
-      Ntrans = netNrate * ( q10 ^ ( (Temp-temp2_netn) / 10 ) )
+      Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 10 ) )
       N_dep = Ndep_rate
+      N_fix=Nfix_rate*scaltemp
       Litterfall_N  =  LitterRateN * Biomass_N
       Litterfall_C =  LitterRateC * Biomass_C
       
@@ -171,7 +172,7 @@ solvemodel_sp <- function(params, state, times) {
       dBiomass_N = Uptake  - Litterfall_N 
       dSOM_C = Litterfall_C  - Rh
       dSOM_N = Litterfall_N - Ntrans
-      dAvailable_N = Ntrans - Uptake + N_dep
+      dAvailable_N = Ntrans - Uptake + N_dep + N_fix
       
       
       #what to output
@@ -182,17 +183,18 @@ solvemodel_sp <- function(params, state, times) {
              dSOM_N,
              dAvailable_N), 
            c(NEE=NEE, GPP=GPP, Re=Re, LAI=LAI, NDVI=NDVI, Ra=Ra, Rh=Rh, Uptake = Uptake, 
-             Ntrans=Ntrans, Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, 
-             scalGDD=scalGDD, scaltemp=scaltemp, DOY=DOY))
+             Ntrans=Ntrans, N_fix=N_fix, Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, 
+             scalGDD=scalGDD, scaltemp=scaltemp, DOY=DOY, year=year))
       
     })  #end of with(as.list(...
   } #end of model
   
   
-  return(ode(y=state,times=time,func=model,parms = params, method="rk4")) #integrate using runge-kutta 4 method
+  return(ode(y=params[10:14],times=time,func=model,parms = params[1:9], method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 
 #####################################################################
 
-out = data.frame(solvemodel_sp(params, state)) #creates table of model output
+out = data.frame(solvemodel(params)) #creates table of model output
+

@@ -10,6 +10,7 @@ params <- c(kplant = 0.2, #0.07-0.34
             propN_roots = 0.01, #0.002-0.015
             q10 = 2, #1.4-3.3
             netNrate = 0.02, #0.001-0.04
+            NDVI_scal = 7.845,
             Biomass_C = 684.5, 
             Biomass_N = 12.9, 
             SOM_C = 19358.7, 
@@ -48,14 +49,14 @@ solvemodel <- function(params, times) {
       #FLUXES
       TFN=propN_fol*Biomass_N
       
-      LAI = ((TFN-0.31)/1.29) * scaltemp #Williams and Rastetter 1999
+      LAI = ((TFN-0.31)/1.29) #Williams and Rastetter 1999
       if(PAR==0 | LAI<=0){
         LAI=0
       }
       
       NDVI=0
       if(LAI>0){
-        NDVI = log((LAI)/0.0026)/8.0783
+        NDVI = (log((LAI*scal)/0.003)/NDVI_scal)
       }
       
       if(NDVI==-Inf){
@@ -63,8 +64,8 @@ solvemodel <- function(params, times) {
       }
       
       
-      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12 
-      Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) * scalGDD
+      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12 *scaltemp
+      Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) )
       Ra =  ( 1 - cue ) * GPP
       Re = RespRate * (q10 ^ ( ( Temp - 10)/ 10 ) )
       if(Ra>Re){
@@ -104,10 +105,10 @@ solvemodel <- function(params, times) {
   } #end of model
   
   
-  return(ode(y=params[10:14],times=time,func=model,parms = params[1:9], method="rk4")) #integrate using runge-kutta 4 method
+  return(ode(y=params[11:15],times=time,func=model,parms = params[1:10], method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 
 #####################################################################
 
-out = data.frame(solvemodel(params)) #creates table of model output
+out= data.frame(solvemodel(params)) #creates table of model output
