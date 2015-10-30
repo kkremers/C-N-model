@@ -108,7 +108,7 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = length(params) #number of parameters to estimate
-M = 200000 #number of iterations
+M = 150000 #number of iterations
 D = 1 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -118,8 +118,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0009,0.0022,0.98,0.012,0.9,0.015,3.3, 0.04, 0.7,     820,15,22000,950,3)
-param.min=c(0.07,0.0001,0.0009,0.26,0.002,0.1,0.002,1.4, 0.001, 0.25,   550,10,16500,750,0.5)
+param.max=c(0.34,0.0009,0.0022,0.98,0.012,0.9,0.015,3.3, 0.04,     820,15,22000,950,3)
+param.min=c(0.07,0.0001,0.0009,0.26,0.002,0.1,0.002,1.4, 0.001,   550,10,16500,750,0.5)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output
@@ -157,8 +157,8 @@ head(param.est)
 
 
 #set initial values
-anneal.temp0=2000 #starting temperature
-anneal.temp=2000 #starting temperature
+anneal.temp0=100 #starting temperature
+anneal.temp=100 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 t=0.5
@@ -173,89 +173,88 @@ for (i in 2:M) {
       all.draws[i,p] = param.est[i,p]
     } #end of parameter loop
     if(all(!is.na(param.est[i,]))){
-    if(all(param.est[i,]>=param.min) & all(param.est[i,]<=param.max)){
-      break
-    } #end of if loop
+      if(all(param.est[i,]>=param.min) & all(param.est[i,]<=param.max)){
+        break
+      } #end of if loop
     } #end of if loop
   } #end of repeat
-
-    parms = as.numeric(param.est[i,]) #parameters for model run
-    names(parms) = names(params) #fix names
-    out = data.frame(solvemodel(parms, state)) #run model  
   
-    if(any(is.na(out)) | any(out[,2:6]<0)){ #if there are any NAs or negative stocks in the output
-      reject = reject+1 #reject parameter set
-      param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
-      J[i] = J[i-1] #set current J to previous J (the minimum J so far)
-    } else { #if there are no NAs or negative stocks
+  parms = as.numeric(param.est[i,]) #parameters for model run
+  names(parms) = names(params) #fix names
+  out = data.frame(solvemodel(parms, state)) #run model  
   
-  #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-
-  out.compare1 = out[match(data.compare1$time, out$time),c(1,7)] #these columns need to match the ones that were pulled out before
-  
-  error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
-  for (d in 1:D) { #for each data type
-    for (m in 1:length(data.compare1$time)){ #for each timestep
-    if(!is.na(data.compare1[m,d+1])){ #if there is data at that timestep for that data stream
-      error.time[m,d]=((data.compare1[m,d+1] - out.compare1[m,d+1])/sigma.obs1[m,d+1])^2 #calculates the error at that timestep for that data stream
-      } #end of if statement
-      #if there was no data at that timestep, the error will remain "0" so that it will not impact the sum calculation in the next step
-    } #end of time step loop
-    
-    j[i,d] = sum(error.time[,d])/n.time[d] #calculate cost function for each data stream
-    
-  } #end of data type loop
-  
-  J[i] = sum(j[i,])/D #calculate aggregate cost function
-  
-  
-  diff=J[i]-J[i-1] #calculate difference between current J and previous J
-  
-  if(diff>0){ #if difference is > 0 (or if the current J is greater than the previous J)
-    
-    u=runif(1, 0, 1) #draw random number between 0 and 1
-    prob=exp((-1*diff)/anneal.temp) #simulated annealing - determines probability that a parameter set is accepted
-      
-    if(u>=prob){    
+  if(any(is.na(out)) | any(out[,2:6]<0)){ #if there are any NAs or negative stocks in the output
     reject = reject+1 #reject parameter set
     param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
     J[i] = J[i-1] #set current J to previous J (the minimum J so far)
-    t=1.001*t
+  } else { #if there are no NAs or negative stocks
+    
+    #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
+    
+    out.compare1 = out[match(data.compare1$time, out$time),c(1,7)] #these columns need to match the ones that were pulled out before
+    
+    error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
+    for (d in 1:D) { #for each data type
+      for (m in 1:length(data.compare1$time)){ #for each timestep
+        if(!is.na(data.compare1[m,d+1])){ #if there is data at that timestep for that data stream
+          error.time[m,d]=((data.compare1[m,d+1] - out.compare1[m,d+1])/sigma.obs1[m,d+1])^2 #calculates the error at that timestep for that data stream
+        } #end of if statement
+        #if there was no data at that timestep, the error will remain "0" so that it will not impact the sum calculation in the next step
+      } #end of time step loop
+      
+      j[i,d] = sum(error.time[,d])/n.time[d] #calculate cost function for each data stream
+      
+    } #end of data type loop
+    
+    J[i] = sum(j[i,])/D #calculate aggregate cost function
+    
+    
+    diff=J[i]-J[i-1] #calculate difference between current J and previous J
+    
+    if(diff>0){ #if difference is > 0 (or if the current J is greater than the previous J)
+      
+      u=runif(1, 0, 1) #draw random number between 0 and 1
+      prob=exp((-1*diff)/anneal.temp) #simulated annealing - determines probability that a parameter set is accepted
+      
+      if(u>=prob){    
+        reject = reject+1 #reject parameter set
+        param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
+        J[i] = J[i-1] #set current J to previous J (the minimum J so far)
+        t=0.99*t
+      } #end of if loop
+      else{
+        t=1.01*t
+      } #end of else loop
     } #end of if loop
-    else{
-      t=0.999*t
-    } #end of else loop
-  } #end of if loop
-  
+    
   } #end of else loop
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
-
+  
   anneal.temp=anneal.temp-1 #decrease temperature
   
   
   iter=iter+1 #increase number of iterations counter
   
-  if(anneal.temp<100){ #if temperature drops to less than 100
-    anneal.temp=anneal.temp0 #jump back up to initial temp
+  if(anneal.temp<1){ #if temperature drops to less than 100
+    anneal.temp=anneal.temp0 #jump back up to initial
     t=0.5
     iter=1 #reset iteration counter
   }
   
-  if(acceptance<=0.55){
+  if(acceptance>=0.55){
     t=1.01*t
   }
   
-  if(acceptance>0.45){
+  if(acceptance<0.45){
     t=0.99*t
   }
   
   if(t<0.05){
     t=0.05
   }
-    
+  
 } #end of exploration
-
 
 #beep(5)
 #make plots to check for mixing and make sure parameter space is thuroughly explored
@@ -273,5 +272,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_UNBdata_MELstarting.Rdata")
+save.image(file="Step1_NEE_UNBdata2.Rdata")
 
