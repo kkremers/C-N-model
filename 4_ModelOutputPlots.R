@@ -24,7 +24,7 @@ plot(out$Available_N~out$time, type="l", col="red", main = "Available N", xlab="
 
 #plot scalar
 par(mfrow=c(2,1), mar=c(4,4,0.5,2))
-plot(out$time, out$scalGDD, type="l")
+plot(out$time, out$scaltemp, type="l")
 plot(out$time, out$scal, type="l")
 
 #see how well data matches
@@ -53,7 +53,7 @@ head(sigma.compare_GPP)
 sigma.compare_NDVI=sigma.compare2[complete.cases(sigma.compare2[,9]),c(1:5,9)]
 head(sigma.compare_NDVI)
 
-
+#PLOT DATA FOR ALL YEARS
 par(mfrow=c(4,2), mar=c(4,4,2,2))
 plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-6,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
 points(data.compare2$NEE~data.compare2$Time, col="blue", pch=16, cex=0.6)
@@ -72,11 +72,39 @@ points(data.compare2$GPP~data.compare2$Time, col="blue", pch=18, cex=0.8)
 plot(data.compare_GPP$GPP, out.compare_GPP$GPP, ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
-plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", type="l", ylim=c(0, 1))
+plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", ylim=c(0, 1))
 points((data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
 #arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
 plot(data.compare_NDVI$NDVI, out.compare_NDVI$NDVI, ylab="Model", xlab="Data")
 abline(0,1, col="red")
+
+
+#PLOT DATA FOR ONE YEAR
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+plot(out$NEE[out$year==2011]~out$time[out$year==2011], col="azure4", pch=18, ylim=c(-6,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
+points(data.compare2$NEE~data.compare2$Time, col="blue", pch=16, cex=0.6)
+abline(h=0)
+plot(data.compare_NEE$NEE[data.compare_NEE$Year==2011], out.compare_NEE$NEE[out.compare_NEE$year==2011], ylim=c(-4, 1), ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(-out$Re[out$year==2011]~out$time[out$year==2011], col="azure4", pch=16, ylim=c(-5,0), xlab="Time (days)", ylab="Re (gC m-2 day-1)", type="l")
+points(-data.compare2$Re~data.compare2$Time, col="blue", pch=16, cex=0.6)
+abline(h=0)
+plot(data.compare_Re$Re[data.compare_Re$Year==2011], out.compare_Re$Re[out.compare_Re$year==2011], ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(out$GPP[out$year==2011]~out$time[out$year==2011], col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="Time (days)", type="l")
+points(data.compare2$GPP~data.compare2$Time, col="blue", pch=18, cex=0.8)
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2011], out.compare_GPP$GPP[out.compare_GPP$year==2011], ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(out$NDVI[out$year==2011]~out$time[out$year==2011], col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", ylim=c(0, 1))
+points((data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
+#arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
+plot(data.compare_NDVI$NDVI[data.compare_NDVI$Year==2011], out.compare_NDVI$NDVI[out.compare_NDVI$year==2011], ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+
 
 
 ##NEED TO KEEP WORKING ON THIS##
@@ -164,33 +192,38 @@ out.compare_GPP_ns = out_ns[match(data.compare_GPP$Time, out_ns$time),]
 out.compare_NDVI_ns = out_ns[match(data.compare_NDVI$Time, out_ns$time),]
 
 par(mfrow=c(2,2), mar=c(4,4,1,1))
-plot(out.compare_GPP_ns$GPP~out.compare_GPP_ns$DOY, xlim=c(1,365), ylim=c(0,8))
-points(data.compare_GPP$GPP~data.compare_GPP$DOY, col="red", pch=16)
-plot(out.compare_GPP$GPP~out.compare_GPP$DOY, xlim=c(1,365), ylim=c(0,8))
-points(data.compare_GPP$GPP~data.compare_GPP$DOY, col="red", pch=16)
-plot(out.compare_NDVI_ns$NDVI~out.compare_NDVI_ns$DOY, xlim=c(1,365), ylim=c(0,1))
-points(data.compare_NDVI$NDVI~data.compare_NDVI$DOY, col="red", pch=16)
-plot(out.compare_NDVI$NDVI~out.compare_NDVI$DOY, xlim=c(1,365), ylim=c(0,1))
-points(data.compare_NDVI$NDVI~data.compare_NDVI$DOY, col="red", pch=16)
+plot(out.compare_GPP_ns$GPP~out.compare_GPP_ns$DOY, xlim=c(1,365), ylim=c(0,8), pch=16)
+points(data.compare_GPP$GPP~data.compare_GPP$DOY, col="red")
+plot(out.compare_GPP$GPP~out.compare_GPP$DOY, xlim=c(1,365), ylim=c(0,8), pch=16)
+points(data.compare_GPP$GPP~data.compare_GPP$DOY, col="red")
+plot(out.compare_NDVI_ns$NDVI~out.compare_NDVI_ns$DOY, xlim=c(1,365), ylim=c(0,1), pch=16)
+points(data.compare_NDVI$NDVI~data.compare_NDVI$DOY, col="red")
+plot(out.compare_NDVI$NDVI~out.compare_NDVI$DOY, xlim=c(1,365), ylim=c(0,1), pch=16)
+points(data.compare_NDVI$NDVI~data.compare_NDVI$DOY, col="red")
 
 #plot data
 par(mfrow=c(1,1), mar=c(4,4,1,4))
-plot(data.compare_flux$Time, data.compare_flux$GPP, xlim=c(1,1318), ylim=c(0, 8), xlab="Time", ylab="") # first plot
+plot(data.compare_GPP$Time, data.compare_GPP$GPP, ylim=c(0, 8), xlab="Time", ylab="") # first plot
 par(new = TRUE)
-plot(data.compare_NDVI$Time, data.compare_NDVI$NDVI, xlim=c(1,1318), ylim=c(0, 0.8), pch=16, col="red", axes = FALSE, bty = "n", xlab = "", ylab = "")
+plot(data.compare_NDVI$Time, data.compare_NDVI$NDVI, ylim=c(0, 0.8), pch=16, col="red", axes = FALSE, bty = "n", xlab = "", ylab = "")
 axis(4, ylim=c(0,0.7), col="red",col.axis="red",las=1)
 
 #plot without scalar
-plot(outns.compare_flux$time, outns.compare_flux$GPP, xlim=c(1,1318), ylim=c(0, 8), xlab="Time", ylab="") # first plot
+plot(out.compare_GPP_ns$time, out.compare_GPP_ns$GPP, xlim=c(1,1318), ylim=c(0, 8), xlab="Time", ylab="") # first plot
 par(new = TRUE)
-plot(outns.compare_NDVI$time, outns.compare_NDVI$NDVI, xlim=c(1,1318), ylim=c(0, 0.8), pch=16, col="red", axes = FALSE, bty = "n", xlab = "", ylab = "")
+plot(out.compare_NDVI_ns$time, out.compare_NDVI_ns$NDVI, xlim=c(1,1318), ylim=c(0, 0.8), pch=16, col="red", axes = FALSE, bty = "n", xlab = "", ylab = "")
 axis(4, ylim=c(0,0.7), col="red",col.axis="red",las=1)
 
 #plot with scalar
-plot(out.compare_flux$time, out.compare_flux$GPP, xlim=c(1,1318), ylim=c(0, 8), xlab="Time", ylab="") # first plot
+plot(out.compare_GPP$time, out.compare_GPP$GPP, xlim=c(1,1318), ylim=c(0, 8), xlab="Time", ylab="") # first plot
 par(new = TRUE)
 plot(out.compare_NDVI$time, out.compare_NDVI$NDVI, xlim=c(1,1318), ylim=c(0, 0.8), pch=16, col="red", axes = FALSE, bty = "n", xlab = "", ylab = "")
 axis(4, ylim=c(0,0.7), col="red",col.axis="red",las=1)
 
 
+
+#CHECK RELATIONSHIPS WITH FORCINGS
+data.check = data[match(out.compare_NEE$time, data$time),]
+plot(data.compare_NEE$NEE~data.check$PAR_ARF, pch=16)
+points(out.compare_NEE$NEE~data.check$PAR_ARF, col="red")
 

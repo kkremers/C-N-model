@@ -221,10 +221,10 @@ for (i in 2:M) {
         reject = reject+1 #reject parameter set
         param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
         J[i] = J[i-1] #set current J to previous J (the minimum J so far)
-        t=0.99*t
+        t=1.01*t
       } #end of if loop
       else{
-        t=1.01*t
+        t=0.99*t
       } #end of else loop
     } #end of if loop
     
@@ -243,14 +243,7 @@ for (i in 2:M) {
     iter=1 #reset iteration counter
   }
   
-  if(acceptance>=0.55){
-    t=1.01*t
-  }
-  
-  if(acceptance<0.45){
-    t=0.99*t
-  }
-  
+
   if(t<0.05){
     t=0.05
   }
@@ -263,7 +256,7 @@ for (i in 2:M) {
 plot(all.draws[1:i,2])
 lines(param.est[1:i,2], col="red", lwd="2")
 
-steps=seq(1:i) #create a vector that represents the number of steps or iterations run
+   steps=seq(1:i) #create a vector that represents the number of steps or iterations run
 J1=data.frame(steps, J[1:i]) #create a dataframe that has "steps" as the first column and "J" as the second column
 head(J1); tail(J1) #check the table
 step.best = J1[which.min(J1[,2]),1] #determine which step has the minimum value of J and store as "step.best"

@@ -220,10 +220,10 @@ for (i in 2:M) {
         reject = reject+1 #reject parameter set
         param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
         J[i] = J[i-1] #set current J to previous J (the minimum J so far)
-        t=0.99*t
+        t=1.01*t
       } #end of if loop
       else{
-        t=1.01*t
+        t=0.99*t
       } #end of else loop
     } #end of if loop
     
@@ -240,14 +240,6 @@ for (i in 2:M) {
     anneal.temp=anneal.temp0 #jump back up to initial
     t=0.5
     iter=1 #reset iteration counter
-  }
-  
-  if(acceptance>=0.55){
-    t=1.01*t
-  }
-  
-  if(acceptance<0.45){
-    t=0.99*t
   }
   
   if(t<0.05){

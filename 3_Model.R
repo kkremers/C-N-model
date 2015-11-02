@@ -2,7 +2,7 @@ require(deSolve)
 require(FME)
 
 params <- c(kplant = 0.2, #0.07-0.34
-            LitterRateC = 0.0006, #0.0001-0.0009
+            LitterRateC = 0.0009, #0.0001-0.0009
             LitterRateN = 0.001, #0.0001-0.0024 
             RespRate = 0.96, #0.26-0.98
             UptakeRate = 0.012, #0.002-0.012
@@ -10,12 +10,11 @@ params <- c(kplant = 0.2, #0.07-0.34
             propN_roots = 0.01, #0.002-0.015
             q10 = 2, #1.4-3.3
             netNrate = 0.02, #0.001-0.04
-            NDVI_scal = 7.845,
             Biomass_C = 684.5, 
             Biomass_N = 12.9, 
             SOM_C = 19358.7, 
             SOM_N = 854.1,
-            Available_N = 1.6)
+            Available_N = 0.80)
 
 time = seq(1, 1826, 1)
 
@@ -33,8 +32,7 @@ solvemodel <- function(params, times) {
       PAR=PAR.d1(t)
       DOY = DOY.d1(t)
       DOY.sen = DOYsen.d1(t)
-      scal=scaladd.d1(t)
-      scalGDD=scalGDD.d1(t)
+      scal=scaldiff.d1(t)
       scaltemp=scaltemp.d1(t)
       year = Year.d1(t)
       
@@ -56,16 +54,13 @@ solvemodel <- function(params, times) {
       
       NDVI=0
       if(LAI>0){
-        NDVI = (log((LAI*scal)/0.003)/NDVI_scal)
+        NDVI = (log((LAI)/0.0026)/8.0783) * scal
       }
       
-      if(NDVI==-Inf){
-        NDVI=0
-      }
-      
+
       
       GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12 *scaltemp
-      Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) )
+      Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) *scaltemp
       Ra =  ( 1 - cue ) * GPP
       Re = RespRate * (q10 ^ ( ( Temp - 10)/ 10 ) )
       if(Ra>Re){
@@ -99,13 +94,13 @@ solvemodel <- function(params, times) {
              dAvailable_N), 
            c(NEE=NEE, GPP=GPP, Re=Re, LAI=LAI, NDVI=NDVI, Ra=Ra, Rh=Rh, Uptake = Uptake, 
              Ntrans=Ntrans, N_fix=N_fix, Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, 
-             scalGDD=scalGDD, scaltemp=scaltemp, DOY=DOY, year=year))
+             scal=scal, scaltemp=scaltemp, DOY=DOY, year=year, TFN=TFN))
       
     })  #end of with(as.list(...
   } #end of model
   
   
-  return(ode(y=params[11:15],times=time,func=model,parms = params[1:10], method="rk4")) #integrate using runge-kutta 4 method
+  return(ode(y=params[10:14],times=time,func=model,parms = params[1:9], method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 

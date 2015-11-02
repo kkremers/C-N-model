@@ -54,7 +54,7 @@ par(mfrow=c(1,1))
 plot(data$GDD~data$time, type="l", ylab = "Growing Degree Days (GDD) ",  xlab="", col="forestgreen")
 abline(v=c(DOY.sen.year+c(0,365,365+365,365+365+366, 365+365+366+365)))
 
-#create a smoothed temperature scalar for LAI
+#create a smoothed temperature scalar for GPP
 #average of current sample, 7 future samples, and 7 past samples
 filt=rep(1/15,15)
 GDDslope.sm = filter(data$GDD.slope, filt, sides=2)
@@ -81,53 +81,101 @@ plot(scal.temp.sm, type="l")
 
 #GDD slope is equal to positive temperatures, use that to calculate temperature scalar
 #first need to determine max and for each year (min is just zero)
-Tmax.day = NA
-GDDmax.day = NA
+#Tmax.day = NA
+#GDDmax.day = NA
+#for (i in 1: length(years)){
+#  year.i = years[i]
+#  data.year = subset(data, data$year==year.i)
+#  Tmax.day[i]=max(data.year$GDD.slope)
+#  GDDmax.day[i]=max(data.year$GDD)
+#}
+#Tmax.day # max temps for each year
+#GDDmax.day
+#Tmax.mean=mean(Tmax.day)
+#GDDmax.mean=mean(GDDmax.day)
+#
+#scal.temp=NULL
+#for (i in 1:length(data$GDD.slope)){
+#  scal.temp[i] = (data$GDD.slope[i] - 0)/(Tmax.mean-0) #growing degree day scalar
+#}
+#plot(scal.temp, type="l")
+
+#scal.GDD=NULL
+#for (i in 1:length(data$GDD)){
+#  scal.GDD[i] = (data$GDD[i] - 0)/(GDDmax.mean-0) #growing degree day scalar
+#  if(data$DOY[i]>data$DOY.sen[i]){
+#   scal.GDD[i]=0
+#  }
+#}
+#plot(scal.GDD, type="l")
+
+#what if we add the GDD scalar and the smoothed temp scalar together?
+#scal.new = scal.temp.sm+scal.GDD
+#rescale to 1
+#scal.add=NULL
+#for (i in 1:length(scal.new)){
+#  scal.add[i] = (scal.new[i] - min(scal.new))/(max(scal.new)-min(scal.new)) #growing degree day scalar
+#}
+
+#par(mfrow=c(3,1), mar=c(4,4,0.5,2))
+#plot(scal.GDD, type="l")
+#plot(scal.temp.sm, type="l")
+#plot(scal.add, type="l")
+
+#making a new scalar for NDVI calculation
+
+Tmaxmean.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  Tmax.day[i]=max(data.year$GDD.slope)
-  GDDmax.day[i]=max(data.year$GDD)
+  Tmaxmean.day[i]=max(data.year$Temp_ARF)
 }
-Tmax.day # max temps for each year
-GDDmax.day
-Tmax.mean=mean(Tmax.day)
-GDDmax.mean=mean(GDDmax.day)
+Tmaxmean.day # max temps for each year
+Tmax.avg = mean(Tmaxmean.day) #calculate average
 
-scal.temp=NULL
-for (i in 1:length(data$GDD.slope)){
-  scal.temp[i] = (data$GDD.slope[i] - 0)/(Tmax.mean-0) #growing degree day scalar
+Tmax.diff = data$Temp_ARF-Tmax.avg
+plot(Tmax.diff[1:365])
+filt=rep(1/30,30)
+Tmaxdiff.sm = filter(Tmax.diff, filt, sides=2)
+is.na(Tmaxdiff.sm) #the last 7 samples are NA
+plot(Tmax.diff, type="l", xlim=c(1,365))
+lines(Tmaxdiff.sm, col="red", lwd="3")
+Tmax.diff1 = Tmax.diff
+Tmax.diff=Tmaxdiff.sm
+data=data.frame(data, TmaxDiff = Tmax.diff)
+head(data)
+Tmaxmean.diff = NA
+Tminmean.diff = NA
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data, data$year==year.i)
+  Tmaxmean.diff[i]=max(data.year$TmaxDiff, na.rm=TRUE)
+  Tminmean.diff[i]=min(data.year$TmaxDiff, na.rm=TRUE)
 }
-plot(scal.temp, type="l")
+Tmaxmean.diff # max temps for each year
+Tmaxdiff.avg = mean(Tmaxmean.diff) #calculate average
+Tminmean.diff # min temps for each year
+Tmindiff.avg = mean(Tminmean.diff) #calculate average
 
-scal.GDD=NULL
-for (i in 1:length(data$GDD)){
-  scal.GDD[i] = (data$GDD[i] - 0)/(GDDmax.mean-0) #growing degree day scalar
-  if(data$DOY[i]>data$DOY.sen[i]){
-   scal.GDD[i]=0
-  }
-}
-plot(scal.GDD, type="l")
 
-#what if we add the GDD scalar and the smoothed temp scalar together?
-scal.new = scal.temp+scal.GDD
-#rescale to 1
-scal.add=NULL
-for (i in 1:length(scal.new)){
-  scal.add[i] = (scal.new[i] - min(scal.new))/(max(scal.new)-min(scal.new)) #growing degree day scalar
+scal.diff=NULL
+for (i in 1:length(Tmax.diff)){
+  scal.diff[i] = (Tmax.diff[i] - Tmindiff.avg)/(Tmaxdiff.avg-Tmindiff.avg)
 }
 
-par(mfrow=c(3,1), mar=c(4,4,0.5,2))
-plot(scal.GDD, type="l")
-plot(scal.temp.sm, type="l")
-plot(scal.add, type="l")
+par(mfrow=c(2,1))
+plot(Tmax.diff1, type="l", xlim=c(1,365))
+lines(Tmaxdiff.sm, col="red", lwd="3")
+plot(scal.diff[1:365])
+
 
 #make into functions so that it will be continuous in the model
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
 PAR.d1 <- approxfun(x=data$time, y=data$PAR_vis, method="linear", rule=2)
-scalGDD.d1 <- approxfun(x=data$time, y=scal.GDD, method="linear", rule=2)
+#scalGDD.d1 <- approxfun(x=data$time, y=scal.GDD, method="linear", rule=2)
 scaltemp.d1 <- approxfun(x=data$time, y=scal.temp.sm, method="linear", rule=2)
-scaladd.d1 <- approxfun(x=data$time, y=scal.add, method="linear", rule=2)
+#scaladd.d1 <- approxfun(x=data$time, y=scal.add, method="linear", rule=2)
+scaldiff.d1 <- approxfun(x=data$time, y=scal.diff, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 DOYsen.d1 <- approxfun(x=data$time, y=data$DOY.sen, method="linear", rule=2)
 Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
