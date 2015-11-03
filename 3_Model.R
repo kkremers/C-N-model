@@ -61,12 +61,12 @@ solvemodel <- function(params, times) {
       
       
       GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12
-      #if(DOY<=175){
-      #  GPP = GPP*scalspring
-      #}
-      #if(DOY>175){
-      #  GPP=GPP*scaltemp
-      #}
+      if(DOY<=175){
+        GPP = GPP*scalspring
+      }
+      if(DOY>175){
+        GPP=GPP*scaltemp
+      }
       
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) *scaltemp
       Ra =  ( 1 - cue ) * GPP

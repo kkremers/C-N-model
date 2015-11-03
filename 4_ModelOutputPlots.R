@@ -79,7 +79,107 @@ plot(data.compare_NDVI$NDVI, out.compare_NDVI$NDVI, ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
 
-#PLOT DATA FOR ONE YEAR
+#PLOT DATA FOR 2009
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+plot(out$NEE[out$year==2009]~out$time[out$year==2009], col="azure4", pch=18, ylim=c(-6,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
+points(data.compare2$NEE~data.compare2$Time, col="blue", pch=16, cex=0.6)
+abline(h=0)
+plot(data.compare_NEE$NEE[data.compare_NEE$Year==2009], out.compare_NEE$NEE[out.compare_NEE$year==2009], ylim=c(-4, 1), ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(-out$Re[out$year==2009]~out$time[out$year==2009], col="azure4", pch=16, ylim=c(-5,0), xlab="Time (days)", ylab="Re (gC m-2 day-1)", type="l")
+points(-data.compare2$Re~data.compare2$Time, col="blue", pch=16, cex=0.6)
+abline(h=0)
+plot(data.compare_Re$Re[data.compare_Re$Year==2009], out.compare_Re$Re[out.compare_Re$year==2009], ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(out$GPP[out$year==2009]~out$time[out$year==2009], col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="Time (days)", type="l")
+points(data.compare2$GPP~data.compare2$Time, col="blue", pch=18, cex=0.8)
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2009], out.compare_GPP$GPP[out.compare_GPP$year==2009], ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(out$NDVI[out$year==2009]~out$time[out$year==2009], col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", ylim=c(0, 1))
+points((data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
+#arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
+plot(data.compare_NDVI$NDVI[data.compare_NDVI$Year==2009], out.compare_NDVI$NDVI[out.compare_NDVI$year==2009], ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+#PLOT DATA FOR 2010
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+plot(out$NEE[out$year==2010]~out$time[out$year==2010], col="azure4", pch=18, ylim=c(-6,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
+points(data.compare2$NEE~data.compare2$Time, col="blue", pch=16, cex=0.6)
+abline(h=0)
+plot(data.compare_NEE$NEE[data.compare_NEE$Year==2010], out.compare_NEE$NEE[out.compare_NEE$year==2010], ylim=c(-4, 1), ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(-out$Re[out$year==2010]~out$time[out$year==2010], col="azure4", pch=16, ylim=c(-5,0), xlab="Time (days)", ylab="Re (gC m-2 day-1)", type="l")
+points(-data.compare2$Re~data.compare2$Time, col="blue", pch=16, cex=0.6)
+abline(h=0)
+plot(data.compare_Re$Re[data.compare_Re$Year==2010], out.compare_Re$Re[out.compare_Re$year==2010], ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(out$GPP[out$year==2010]~out$time[out$year==2010], col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="Time (days)", type="l")
+points(data.compare2$GPP~data.compare2$Time, col="blue", pch=18, cex=0.8)
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2010], out.compare_GPP$GPP[out.compare_GPP$year==2010], ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(out$NDVI[out$year==2010]~out$time[out$year==2010], col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", ylim=c(0, 1))
+points((data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
+#arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
+plot(data.compare_NDVI$NDVI[data.compare_NDVI$Year==2010], out.compare_NDVI$NDVI[out.compare_NDVI$year==2010], ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+#PLOT DATA FOR 2011
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+plot(out$NEE[out$year==2011]~out$time[out$year==2011], col="azure4", pch=18, ylim=c(-6,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
+points(data.compare2$NEE~data.compare2$Time, col="blue", pch=16, cex=0.6)
+abline(h=0)
+plot(data.compare_NEE$NEE[data.compare_NEE$Year==2011], out.compare_NEE$NEE[out.compare_NEE$year==2011], ylim=c(-4, 1), ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(-out$Re[out$year==2011]~out$time[out$year==2011], col="azure4", pch=16, ylim=c(-5,0), xlab="Time (days)", ylab="Re (gC m-2 day-1)", type="l")
+points(-data.compare2$Re~data.compare2$Time, col="blue", pch=16, cex=0.6)
+abline(h=0)
+plot(data.compare_Re$Re[data.compare_Re$Year==2011], out.compare_Re$Re[out.compare_Re$year==2011], ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(out$GPP[out$year==2011]~out$time[out$year==2011], col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="Time (days)", type="l")
+points(data.compare2$GPP~data.compare2$Time, col="blue", pch=18, cex=0.8)
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2011], out.compare_GPP$GPP[out.compare_GPP$year==2011], ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(out$NDVI[out$year==2011]~out$time[out$year==2011], col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", ylim=c(0, 1))
+points((data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
+#arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
+plot(data.compare_NDVI$NDVI[data.compare_NDVI$Year==2011], out.compare_NDVI$NDVI[out.compare_NDVI$year==2011], ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+#PLOT DATA FOR 2012
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+plot(out$NEE[out$year==2012]~out$time[out$year==2012], col="azure4", pch=18, ylim=c(-6,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
+points(data.compare2$NEE~data.compare2$Time, col="blue", pch=16, cex=0.6)
+abline(h=0)
+plot(data.compare_NEE$NEE[data.compare_NEE$Year==2012], out.compare_NEE$NEE[out.compare_NEE$year==2012], ylim=c(-4, 1), ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(-out$Re[out$year==2012]~out$time[out$year==2012], col="azure4", pch=16, ylim=c(-5,0), xlab="Time (days)", ylab="Re (gC m-2 day-1)", type="l")
+points(-data.compare2$Re~data.compare2$Time, col="blue", pch=16, cex=0.6)
+abline(h=0)
+plot(data.compare_Re$Re[data.compare_Re$Year==2012], out.compare_Re$Re[out.compare_Re$year==2012], ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(out$GPP[out$year==2012]~out$time[out$year==2012], col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="Time (days)", type="l")
+points(data.compare2$GPP~data.compare2$Time, col="blue", pch=18, cex=0.8)
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2012], out.compare_GPP$GPP[out.compare_GPP$year==2012], ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(out$NDVI[out$year==2012]~out$time[out$year==2012], col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", ylim=c(0, 1))
+points((data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
+#arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
+plot(data.compare_NDVI$NDVI[data.compare_NDVI$Year==2012], out.compare_NDVI$NDVI[out.compare_NDVI$year==2012], ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+#PLOT DATA FOR 2013
 par(mfrow=c(4,2), mar=c(4,4,2,2))
 plot(out$NEE[out$year==2013]~out$time[out$year==2013], col="azure4", pch=18, ylim=c(-6,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
 points(data.compare2$NEE~data.compare2$Time, col="blue", pch=16, cex=0.6)
@@ -106,38 +206,198 @@ abline(0,1, col="red")
 
 
 
-#linear regressions
-par(mfrow=c(2,2), mar=c(4,4,2,2))
+#linear regressions for all years
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+
+reg_NEE = lm(out.compare_NEE$NEE~data.compare_NEE$NEE)
 plot(data.compare_NEE$NEE, out.compare_NEE$NEE, xlab= "Actual", ylab="Modelled", main = "NEE")
-abline(0,1,col="red")
+abline(reg_NEE, col="red")
 plot(density(resid(reg_NEE)), main="Density of Residuals")
 
-plot(data.compare1$NDVI, out.compare1$NDVI, xlab= "Actual", ylab="Modelled", main = "NDVI")
-abline(0,1,col="red")
+reg_Re = lm(out.compare_Re$Re~data.compare_Re$Re)
+plot(data.compare_Re$Re, out.compare_Re$Re, xlab= "Actual", ylab="Modelled", main = "Re")
+abline(reg_Re,col="red")
+plot(density(resid(reg_Re)), main="Density of Residuals")
+
+reg_GPP = lm(out.compare_GPP$GPP~data.compare_GPP$GPP)
+plot(data.compare_GPP$GPP, out.compare_GPP$GPP, xlab= "Actual", ylab="Modelled", main = "GPP")
+abline(reg_GPP,col="red")
+plot(density(resid(reg_GPP)), main="Density of Residuals")
+
+reg_NDVI = lm(out.compare_NDVI$NDVI~data.compare_NDVI$NDVI)
+plot(data.compare_NDVI$NDVI, out.compare_NDVI$NDVI, xlab= "Actual", ylab="Modelled", main = "NDVI")
+abline(reg_NDVI,col="red")
 plot(density(resid(reg_NDVI)), main="Density of Residuals")
 
-par(mfrow=c(2,1), mar=c(4,4,2,2))
-plot(out.compare1$NEE~out.compare1$time, pch=16)
-points(data.compare1$NEE~data.compare1$time, col="red")
 
-plot(out.compare1$NDVI~out.compare1$time, pch=16)
-points(data.compare1$NDVI~data.compare1$time, col="red")
-
+summary(reg_NEE)
+summary(reg_GPP)
+summary(reg_Re)
+summary(reg_NDVI)
 
 
-##NEED TO KEEP WORKING ON THIS##
+#linear regressions for 2009
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+
+reg_NEE = lm(out.compare_NEE$NEE[out.compare_NEE$year==2009]~data.compare_NEE$NEE[data.compare_NEE$Year==2009])
+plot(data.compare_NEE$NEE[data.compare_NEE$Year==2009], out.compare_NEE$NEE[out.compare_NEE$year==2009], xlab= "Actual", ylab="Modelled", main = "NEE")
+abline(reg_NEE, col="red")
+plot(density(resid(reg_NEE)), main="Density of Residuals")
+
+reg_Re = lm(out.compare_Re$Re[out.compare_Re$year==2009]~data.compare_Re$Re[data.compare_Re$Year==2009])
+plot(data.compare_Re$Re[data.compare_Re$Year==2009], out.compare_Re$Re[out.compare_Re$year==2009], xlab= "Actual", ylab="Modelled", main = "Re")
+abline(reg_Re, col="red")
+plot(density(resid(reg_Re)), main="Density of Residuals")
+
+reg_GPP = lm(out.compare_GPP$GPP[out.compare_GPP$year==2009]~data.compare_GPP$GPP[data.compare_GPP$Year==2009])
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2009], out.compare_GPP$GPP[out.compare_GPP$year==2009], xlab= "Actual", ylab="Modelled", main = "GPP")
+abline(reg_GPP, col="red")
+plot(density(resid(reg_GPP)), main="Density of Residuals")
+
+reg_NDVI = lm(out.compare_NDVI$NDVI[out.compare_NDVI$year==2009]~data.compare_NDVI$NDVI[data.compare_NDVI$Year==2009])
+plot(data.compare_NDVI$NDVI[data.compare_NDVI$Year==2009], out.compare_NDVI$NDVI[out.compare_NDVI$year==2009], xlab= "Actual", ylab="Modelled", main = "NDVI")
+abline(reg_NDVI, col="red")
+plot(density(resid(reg_NDVI)), main="Density of Residuals")
+
+summary(reg_NEE)
+summary(reg_Re)
+summary(reg_GPP)
+summary(reg_NDVI)
+
+
+
+#linear regressions for 2010
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+
+reg_NEE = lm(out.compare_NEE$NEE[out.compare_NEE$year==2010]~data.compare_NEE$NEE[data.compare_NEE$Year==2010])
+plot(data.compare_NEE$NEE[data.compare_NEE$Year==2010], out.compare_NEE$NEE[out.compare_NEE$year==2010], xlab= "Actual", ylab="Modelled", main = "NEE")
+abline(reg_NEE, col="red")
+plot(density(resid(reg_NEE)), main="Density of Residuals")
+
+reg_Re = lm(out.compare_Re$Re[out.compare_Re$year==2010]~data.compare_Re$Re[data.compare_Re$Year==2010])
+plot(data.compare_Re$Re[data.compare_Re$Year==2010], out.compare_Re$Re[out.compare_Re$year==2010], xlab= "Actual", ylab="Modelled", main = "Re")
+abline(reg_Re, col="red")
+plot(density(resid(reg_Re)), main="Density of Residuals")
+
+reg_GPP = lm(out.compare_GPP$GPP[out.compare_GPP$year==2010]~data.compare_GPP$GPP[data.compare_GPP$Year==2010])
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2010], out.compare_GPP$GPP[out.compare_GPP$year==2010], xlab= "Actual", ylab="Modelled", main = "GPP")
+abline(reg_GPP, col="red")
+plot(density(resid(reg_GPP)), main="Density of Residuals")
+
+reg_NDVI = lm(out.compare_NDVI$NDVI[out.compare_NDVI$year==2010]~data.compare_NDVI$NDVI[data.compare_NDVI$Year==2010])
+plot(data.compare_NDVI$NDVI[data.compare_NDVI$Year==2010], out.compare_NDVI$NDVI[out.compare_NDVI$year==2010], xlab= "Actual", ylab="Modelled", main = "NDVI")
+abline(reg_NDVI, col="red")
+plot(density(resid(reg_NDVI)), main="Density of Residuals")
+
+summary(reg_NEE)
+summary(reg_Re)
+summary(reg_GPP)
+summary(reg_NDVI)
+
+
+
+#linear regressions for 2011
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+
+reg_NEE = lm(out.compare_NEE$NEE[out.compare_NEE$year==2011]~data.compare_NEE$NEE[data.compare_NEE$Year==2011])
+plot(data.compare_NEE$NEE[data.compare_NEE$Year==2011], out.compare_NEE$NEE[out.compare_NEE$year==2011], xlab= "Actual", ylab="Modelled", main = "NEE")
+abline(reg_NEE, col="red")
+plot(density(resid(reg_NEE)), main="Density of Residuals")
+
+reg_Re = lm(out.compare_Re$Re[out.compare_Re$year==2011]~data.compare_Re$Re[data.compare_Re$Year==2011])
+plot(data.compare_Re$Re[data.compare_Re$Year==2011], out.compare_Re$Re[out.compare_Re$year==2011], xlab= "Actual", ylab="Modelled", main = "Re")
+abline(reg_Re, col="red")
+plot(density(resid(reg_Re)), main="Density of Residuals")
+
+reg_GPP = lm(out.compare_GPP$GPP[out.compare_GPP$year==2011]~data.compare_GPP$GPP[data.compare_GPP$Year==2011])
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2011], out.compare_GPP$GPP[out.compare_GPP$year==2011], xlab= "Actual", ylab="Modelled", main = "GPP")
+abline(reg_GPP, col="red")
+plot(density(resid(reg_GPP)), main="Density of Residuals")
+
+reg_NDVI = lm(out.compare_NDVI$NDVI[out.compare_NDVI$year==2011]~data.compare_NDVI$NDVI[data.compare_NDVI$Year==2011])
+plot(data.compare_NDVI$NDVI[data.compare_NDVI$Year==2011], out.compare_NDVI$NDVI[out.compare_NDVI$year==2011], xlab= "Actual", ylab="Modelled", main = "NDVI")
+abline(reg_NDVI, col="red")
+plot(density(resid(reg_NDVI)), main="Density of Residuals")
+
+summary(reg_NEE)
+summary(reg_Re)
+summary(reg_GPP)
+summary(reg_NDVI)
+
+
+
+#linear regressions for 2012
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+
+reg_NEE = lm(out.compare_NEE$NEE[out.compare_NEE$year==2012]~data.compare_NEE$NEE[data.compare_NEE$Year==2012])
+plot(data.compare_NEE$NEE[data.compare_NEE$Year==2012], out.compare_NEE$NEE[out.compare_NEE$year==2012], xlab= "Actual", ylab="Modelled", main = "NEE")
+abline(reg_NEE, col="red")
+plot(density(resid(reg_NEE)), main="Density of Residuals")
+
+reg_Re = lm(out.compare_Re$Re[out.compare_Re$year==2012]~data.compare_Re$Re[data.compare_Re$Year==2012])
+plot(data.compare_Re$Re[data.compare_Re$Year==2012], out.compare_Re$Re[out.compare_Re$year==2012], xlab= "Actual", ylab="Modelled", main = "Re")
+abline(reg_Re, col="red")
+plot(density(resid(reg_Re)), main="Density of Residuals")
+
+reg_GPP = lm(out.compare_GPP$GPP[out.compare_GPP$year==2012]~data.compare_GPP$GPP[data.compare_GPP$Year==2012])
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2012], out.compare_GPP$GPP[out.compare_GPP$year==2012], xlab= "Actual", ylab="Modelled", main = "GPP")
+abline(reg_GPP, col="red")
+plot(density(resid(reg_GPP)), main="Density of Residuals")
+
+reg_NDVI = lm(out.compare_NDVI$NDVI[out.compare_NDVI$year==2012]~data.compare_NDVI$NDVI[data.compare_NDVI$Year==2012])
+plot(data.compare_NDVI$NDVI[data.compare_NDVI$Year==2012], out.compare_NDVI$NDVI[out.compare_NDVI$year==2012], xlab= "Actual", ylab="Modelled", main = "NDVI")
+abline(reg_NDVI, col="red")
+plot(density(resid(reg_NDVI)), main="Density of Residuals")
+
+summary(reg_NEE)
+summary(reg_Re)
+summary(reg_GPP)
+summary(reg_NDVI)
+
+
+#linear regressions for 2013
+par(mfrow=c(4,2), mar=c(4,4,2,2))
+
+reg_NEE = lm(out.compare_NEE$NEE[out.compare_NEE$year==2013]~data.compare_NEE$NEE[data.compare_NEE$Year==2013])
+plot(data.compare_NEE$NEE[data.compare_NEE$Year==2013], out.compare_NEE$NEE[out.compare_NEE$year==2013], xlab= "Actual", ylab="Modelled", main = "NEE")
+abline(reg_NEE, col="red")
+plot(density(resid(reg_NEE)), main="Density of Residuals")
+
+reg_Re = lm(out.compare_Re$Re[out.compare_Re$year==2013]~data.compare_Re$Re[data.compare_Re$Year==2013])
+plot(data.compare_Re$Re[data.compare_Re$Year==2013], out.compare_Re$Re[out.compare_Re$year==2013], xlab= "Actual", ylab="Modelled", main = "Re")
+abline(reg_Re, col="red")
+plot(density(resid(reg_Re)), main="Density of Residuals")
+
+reg_GPP = lm(out.compare_GPP$GPP[out.compare_GPP$year==2013]~data.compare_GPP$GPP[data.compare_GPP$Year==2013])
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2013], out.compare_GPP$GPP[out.compare_GPP$year==2013], xlab= "Actual", ylab="Modelled", main = "GPP")
+abline(reg_GPP, col="red")
+plot(density(resid(reg_GPP)), main="Density of Residuals")
+
+reg_NDVI = lm(out.compare_NDVI$NDVI[out.compare_NDVI$year==2013]~data.compare_NDVI$NDVI[data.compare_NDVI$Year==2013])
+plot(data.compare_NDVI$NDVI[data.compare_NDVI$Year==2013], out.compare_NDVI$NDVI[out.compare_NDVI$year==2013], xlab= "Actual", ylab="Modelled", main = "NDVI")
+abline(reg_NDVI, col="red")
+plot(density(resid(reg_NDVI)), main="Density of Residuals")
+
+summary(reg_NEE)
+summary(reg_Re)
+summary(reg_GPP)
+summary(reg_NDVI)
+
+
+
+####RESIDUAL ANALYSIS###
 resid.GPP = data.compare_GPP$GPP - out.compare_GPP$GPP
-resid_GPP = data.frame(time=out.compare_GPP$time, DOY=out.compare_GPP$DOY, resid.GPP)
+resid_GPP = data.frame(time=out.compare_GPP$time, Year=out.compare_GPP$year, DOY=out.compare_GPP$DOY, resid.GPP)
 resid.NEE = data.compare_NEE$NEE - out.compare_NEE$NEE
-resid_NEE = data.frame(time=out.compare_NEE$time, DOY=out.compare_NEE$DOY, resid.NEE)
+resid_NEE = data.frame(time=out.compare_NEE$time, Year=out.compare_NEE$year, DOY=out.compare_NEE$DOY, resid.NEE)
 resid.Re = data.compare_Re$Re - out.compare_Re$Re
-resid_Re = data.frame(time=out.compare_Re$time, DOY=out.compare_Re$DOY, resid.Re)
+resid_Re = data.frame(time=out.compare_Re$time, Year=out.compare_Re$year, DOY=out.compare_Re$DOY, resid.Re)
 head(resid_GPP)
 head(resid_NEE)
 head(resid_Re)
 
 resid.NDVI = data.compare_NDVI$NDVI - out.compare_NDVI$NDVI
-resid_NDVI = data.frame(time=out.compare_NDVI$time, DOY=out.compare_NDVI$DOY, resid.NDVI)
+resid_NDVI = data.frame(time=out.compare_NDVI$time, Year=out.compare_NDVI$year, DOY=out.compare_NDVI$DOY, resid.NDVI)
 head(resid_NDVI)
 
 par(mfrow=c(4,1), mar=c(4,4,2,2))
@@ -153,12 +413,14 @@ abline(h=0, col="red")
 rmse <- function(x){
   sqrt(mean(x^2))
 }
-rmse.GPP=rmse(resid.GPP)
+
 rmse.NEE=rmse(resid.NEE)
 rmse.Re=rmse(resid.Re)
+rmse.GPP=rmse(resid.GPP)
 rmse.NDVI=rmse(resid.NDVI)
-rmse.GPP;rmse.NEE;rmse.Re;rmse.NDVI
+rmse.NEE;rmse.Re;rmse.GPP;rmse.NDVI
 
+#mean residuals across years
 resid.GPP.mean = tapply(resid_GPP$resid.GPP, resid_GPP$DOY, mean, na.rm=TRUE)
 resid.NEE.mean = tapply(resid_NEE$resid.NEE, resid_NEE$DOY, mean, na.rm=TRUE)
 resid.Re.mean = tapply(resid_Re$resid.Re, resid_Re$DOY, mean, na.rm=TRUE)
@@ -179,20 +441,36 @@ plot(resid.meansNDVI$DOY, resid.meansNDVI$resid.NDVI.mean, main="NDVI Residuals"
 abline(h=0, col="red")
 
 
-rmse.GPP=rmse(resid.GPP.mean)
+
 rmse.NEE=rmse(resid.NEE.mean)
 rmse.Re=rmse(resid.Re.mean)
+rmse.GPP=rmse(resid.GPP.mean)
 rmse.NDVI=rmse(resid.NDVI.mean)
-rmse.GPP;rmse.NEE;rmse.Re;rmse.NDVI
+rmse.NEE;rmse.Re;rmse.GPP;rmse.NDVI
 
-mae.GPP=mean(abs(resid.GPP.mean))
-mae.NEE=mean(abs(resid.NEE.mean))
-mae.Re=mean(abs(resid.Re.mean))
-mae.NDVI=mean(abs(resid.NDVI.mean))
-mae.GPP;mae.NEE;mae.Re;mae.NDVI
+#calculate RMSE by year:
+
+tapply(resid_NEE$resid.NEE, resid_NEE$Year, rmse)
+tapply(resid_Re$resid.Re, resid_Re$Year, rmse)
+tapply(resid_GPP$resid.GPP, resid_GPP$Year, rmse)
+tapply(resid_NDVI$resid.NDVI, resid_NDVI$Year, rmse)
 
 
-
+##look at relationship between spring NEE RMSE and DOY.minGDD
+#first, filter data for spring only
+head(resid_NEE)
+resid_NEE.spring = resid_NEE[resid_NEE$DOY<=175,]
+resid_NEE.spring
+#now calculate the RMSE for each year
+RMSE.spring = tapply(resid_NEE.spring$resid.NEE, resid_NEE.spring$Year, rmse)
+RMSE.spring
+minGDD.day
+NEE_springRMSE = data.frame(RMSE = RMSE.spring, minGDD.day = minGDD.day) 
+NEE_springRMSE
+reg.spring = lm(NEE_springRMSE$RMSE~NEE_springRMSE$minGDD.day)
+plot(NEE_springRMSE$RMSE~NEE_springRMSE$minGDD.day)
+abline(reg.spring, col="red")
+summary(reg.spring)
 
 
 #PLOT BEFORE AND AFTER SCALAR
