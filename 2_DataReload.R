@@ -79,6 +79,7 @@ for (i in 1:length(GDDslope.sm)){
 }
 plot(scal.temp.sm, type="l")
 
+
 #GDD slope is equal to positive temperatures, use that to calculate temperature scalar
 #first need to determine max and for each year (min is just zero)
 #Tmax.day = NA
@@ -169,12 +170,46 @@ lines(Tmaxdiff.sm, col="red", lwd="3")
 plot(scal.diff[1:365])
 
 
+#create sigmoidal scalar to help model capture spring GPP
+plot(data$GDD)
+#need to figure out which DOY was the day when GDDs began to increase
+years = unique(data$year) #tells you which years we have data for 
+minGDD.day = NA
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data, data$year==year.i)
+  minGDD.day[i] = min(data.year$DOY[which(data.year$GDD.slope>5)])
+}
+minGDD.day
+par(mfrow=c(1,1))
+plot(data$GDD~data$time, type="l", ylab = "Growing Degree Days (GDD) ",  xlab="", col="forestgreen")
+abline(v=c(minGDD.day+c(0,365,365+365,365+365+366, 365+365+366+365)))
+
+#day.sat = 175-minGDD.day #decided that spring will end at DOY 175
+num.days = c(365, 365, 365, 366, 365)
+minGDD = rep(c(minGDD.day), c(num.days))
+#daySAT = rep(c(day.sat), c(num.days))
+data = data.frame(data, DOY.minGDD = minGDD) #daySAT = daySAT)
+head(data)
+
+scal.spring=NULL
+for (i in 1:length(data$DOY)){
+  xsat = (175-data$DOY.minGDD[i])
+  x =  data$DOY[i] - data$DOY.minGDD[i] #calculate number of days since start of growing season
+  scal.spring[i] = (1*x)/(xsat+x)
+  if(data$DOY[i]<data$DOY.minGDD[i]){
+    scal.spring[i]=0
+  }
+}
+plot(scal.spring)
+points(scal.temp.sm, col="red")
+
 #make into functions so that it will be continuous in the model
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
 PAR.d1 <- approxfun(x=data$time, y=data$PAR_vis, method="linear", rule=2)
 #scalGDD.d1 <- approxfun(x=data$time, y=scal.GDD, method="linear", rule=2)
 scaltemp.d1 <- approxfun(x=data$time, y=scal.temp.sm, method="linear", rule=2)
-#scaladd.d1 <- approxfun(x=data$time, y=scal.add, method="linear", rule=2)
+scalspring.d1 <- approxfun(x=data$time, y=scal.spring, method="linear", rule=2)
 scaldiff.d1 <- approxfun(x=data$time, y=scal.diff, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 DOYsen.d1 <- approxfun(x=data$time, y=data$DOY.sen, method="linear", rule=2)

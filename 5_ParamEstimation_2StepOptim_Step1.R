@@ -184,10 +184,11 @@ for (i in 2:M) {
   names(parms) = names(params) #fix names
   out = data.frame(solvemodel(parms, state)) #run model  
   
-  if(any(is.na(out)) | any(out[,2:6]<0)){ #if there are any NAs or negative stocks in the output
+  if(any(is.na(out)) | any(out[,2:6]<0) | abs(out[1826,2]-out[1,2])>200 ){ #if there are any NAs or negative stocks in the output
     reject = reject+1 #reject parameter set
     param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
     J[i] = J[i-1] #set current J to previous J (the minimum J so far)
+    t=1.01*t
   } else { #if there are no NAs or negative stocks
     
     #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
@@ -256,7 +257,7 @@ for (i in 2:M) {
 plot(all.draws[1:i,2])
 lines(param.est[1:i,2], col="red", lwd="2")
 
-   steps=seq(1:i) #create a vector that represents the number of steps or iterations run
+steps=seq(1:i) #create a vector that represents the number of steps or iterations run
 J1=data.frame(steps, J[1:i]) #create a dataframe that has "steps" as the first column and "J" as the second column
 head(J1); tail(J1) #check the table
 step.best = J1[which.min(J1[,2]),1] #determine which step has the minimum value of J and store as "step.best"

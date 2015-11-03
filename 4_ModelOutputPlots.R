@@ -6,7 +6,7 @@ plot(data$Temp_ARF~data$time, type="l", ylab = "Daily Max Temp (C)", col="red", 
 abline(h=0)
 plot(data$PAR_vis~data$time, type="l", ylab = "Daily Plant Avail. PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
 
-out = data.frame(solvemodel(param.best, state)) #creates table of model output
+out = data.frame(solvemodel(params)) #creates table of model output
 
 #plot pools
 par(mfrow=c(4,2), mar=c(4,4,1,2))
@@ -81,29 +81,47 @@ abline(0,1, col="red")
 
 #PLOT DATA FOR ONE YEAR
 par(mfrow=c(4,2), mar=c(4,4,2,2))
-plot(out$NEE[out$year==2011]~out$time[out$year==2011], col="azure4", pch=18, ylim=c(-6,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
+plot(out$NEE[out$year==2013]~out$time[out$year==2013], col="azure4", pch=18, ylim=c(-6,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
 points(data.compare2$NEE~data.compare2$Time, col="blue", pch=16, cex=0.6)
 abline(h=0)
-plot(data.compare_NEE$NEE[data.compare_NEE$Year==2011], out.compare_NEE$NEE[out.compare_NEE$year==2011], ylim=c(-4, 1), ylab="Model", xlab="Data")
+plot(data.compare_NEE$NEE[data.compare_NEE$Year==2013], out.compare_NEE$NEE[out.compare_NEE$year==2013], ylim=c(-4, 1), ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
-plot(-out$Re[out$year==2011]~out$time[out$year==2011], col="azure4", pch=16, ylim=c(-5,0), xlab="Time (days)", ylab="Re (gC m-2 day-1)", type="l")
+plot(-out$Re[out$year==2013]~out$time[out$year==2013], col="azure4", pch=16, ylim=c(-5,0), xlab="Time (days)", ylab="Re (gC m-2 day-1)", type="l")
 points(-data.compare2$Re~data.compare2$Time, col="blue", pch=16, cex=0.6)
 abline(h=0)
-plot(data.compare_Re$Re[data.compare_Re$Year==2011], out.compare_Re$Re[out.compare_Re$year==2011], ylab="Model", xlab="Data")
+plot(data.compare_Re$Re[data.compare_Re$Year==2013], out.compare_Re$Re[out.compare_Re$year==2013], ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
-plot(out$GPP[out$year==2011]~out$time[out$year==2011], col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="Time (days)", type="l")
+plot(out$GPP[out$year==2013]~out$time[out$year==2013], col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="Time (days)", type="l")
 points(data.compare2$GPP~data.compare2$Time, col="blue", pch=18, cex=0.8)
-plot(data.compare_GPP$GPP[data.compare_GPP$Year==2011], out.compare_GPP$GPP[out.compare_GPP$year==2011], ylab="Model", xlab="Data")
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2013], out.compare_GPP$GPP[out.compare_GPP$year==2013], ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
-plot(out$NDVI[out$year==2011]~out$time[out$year==2011], col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", ylim=c(0, 1))
+plot(out$NDVI[out$year==2013]~out$time[out$year==2013], col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", ylim=c(0, 1))
 points((data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
 #arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
-plot(data.compare_NDVI$NDVI[data.compare_NDVI$Year==2011], out.compare_NDVI$NDVI[out.compare_NDVI$year==2011], ylab="Model", xlab="Data")
+plot(data.compare_NDVI$NDVI[data.compare_NDVI$Year==2013], out.compare_NDVI$NDVI[out.compare_NDVI$year==2013], ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
+
+
+#linear regressions
+par(mfrow=c(2,2), mar=c(4,4,2,2))
+plot(data.compare_NEE$NEE, out.compare_NEE$NEE, xlab= "Actual", ylab="Modelled", main = "NEE")
+abline(0,1,col="red")
+plot(density(resid(reg_NEE)), main="Density of Residuals")
+
+plot(data.compare1$NDVI, out.compare1$NDVI, xlab= "Actual", ylab="Modelled", main = "NDVI")
+abline(0,1,col="red")
+plot(density(resid(reg_NDVI)), main="Density of Residuals")
+
+par(mfrow=c(2,1), mar=c(4,4,2,2))
+plot(out.compare1$NEE~out.compare1$time, pch=16)
+points(data.compare1$NEE~data.compare1$time, col="red")
+
+plot(out.compare1$NDVI~out.compare1$time, pch=16)
+points(data.compare1$NDVI~data.compare1$time, col="red")
 
 
 
@@ -132,11 +150,13 @@ abline(h=0, col="red")
 plot(resid_NDVI$DOY, resid_NDVI$resid.NDVI, main="NDVI Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
 
-
-rmse.GPP=sqrt(mean((resid.GPP)^2, na.rm=TRUE))
-rmse.NEE=sqrt(mean((resid.NEE)^2, na.rm=TRUE))
-rmse.Re=sqrt(mean((resid.Re)^2, na.rm=TRUE))
-rmse.NDVI=sqrt(mean((resid.NDVI)^2, na.rm=TRUE))
+rmse <- function(x){
+  sqrt(mean(x^2))
+}
+rmse.GPP=rmse(resid.GPP)
+rmse.NEE=rmse(resid.NEE)
+rmse.Re=rmse(resid.Re)
+rmse.NDVI=rmse(resid.NDVI)
 rmse.GPP;rmse.NEE;rmse.Re;rmse.NDVI
 
 resid.GPP.mean = tapply(resid_GPP$resid.GPP, resid_GPP$DOY, mean, na.rm=TRUE)
@@ -159,10 +179,10 @@ plot(resid.meansNDVI$DOY, resid.meansNDVI$resid.NDVI.mean, main="NDVI Residuals"
 abline(h=0, col="red")
 
 
-rmse.GPP=sqrt(mean((resid.GPP.mean)^2))
-rmse.NEE=sqrt(mean((resid.NEE.mean)^2))
-rmse.Re=sqrt(mean((resid.Re.mean)^2))
-rmse.NDVI=sqrt(mean((resid.NDVI.mean)^2))
+rmse.GPP=rmse(resid.GPP.mean)
+rmse.NEE=rmse(resid.NEE.mean)
+rmse.Re=rmse(resid.Re.mean)
+rmse.NDVI=rmse(resid.NDVI.mean)
 rmse.GPP;rmse.NEE;rmse.Re;rmse.NDVI
 
 mae.GPP=mean(abs(resid.GPP.mean))
@@ -170,7 +190,6 @@ mae.NEE=mean(abs(resid.NEE.mean))
 mae.Re=mean(abs(resid.Re.mean))
 mae.NDVI=mean(abs(resid.NDVI.mean))
 mae.GPP;mae.NEE;mae.Re;mae.NDVI
-
 
 
 

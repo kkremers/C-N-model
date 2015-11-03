@@ -88,7 +88,7 @@ colnames(sigma.obs1) = colnames(data.compare1)
 #sigma.obs1: columns need to be in SAME ORDER as data.compare1
 head(data.compare1)
 head(sigma.obs1)
-
+###################################
 
 ###LOAD REAL DATA###
 data.assim = read.csv("Assimilation_data.csv")
@@ -183,12 +183,12 @@ for (i in 2:M) {
   names(parms) = names(params) #fix names
   out = data.frame(solvemodel(parms, state)) #run model  
   
-  if(any(is.na(out)) | any(out[,2:6]<0)){ #if there are any NAs or negative stocks in the output
+  if(any(is.na(out)) | any(out[,2:6]<0) | abs(out[1826,2]-out[1,2])>200 ){ #if there are any NAs or negative stocks in the output
     reject = reject+1 #reject parameter set
     param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
     J[i] = J[i-1] #set current J to previous J (the minimum J so far)
+    t=1.01*t
   } else { #if there are no NAs or negative stocks
-    
     #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
     
     out.compare1 = out[match(data.compare1$time, out$time),c(1,7)] #these columns need to match the ones that were pulled out before
@@ -266,3 +266,4 @@ j.best #view the minimum J
 
 save.image(file="Step1_NEE_UNBdata2.Rdata")
 
+#at 100 ierations at 12:30PM
