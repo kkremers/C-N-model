@@ -41,8 +41,8 @@ solvemodel <- function(params, times) {
       Ndep_rate = 0.00007 #calculated from Alaska's changing arctic pg 106
       Nfix_rate=0.0015 #calculated from Alaska's changing arctic pg 106
       k=0.63
-      Pmax = 1.18 
-      E0 = 0.03 *scalGPP
+      Pmax = 1.18
+      E0 = 0.03 * scalGPP
       cue=0.7
       q10=2
       
@@ -60,9 +60,6 @@ solvemodel <- function(params, times) {
       }
       
       GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12
-      if(albedo>0.15){
-        GPP=0
-      }
             
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) 
       Ra =  ( 1 - cue ) * GPP
