@@ -24,8 +24,9 @@ plot(out$Available_N~out$time, type="l", col="red", main = "Available N", xlab="
 
 #plot scalar
 par(mfrow=c(2,1), mar=c(4,4,0.5,2))
-plot(out$time, out$scaltemp, type="l")
-plot(out$time, out$scal, type="l")
+plot(data$Temp_ARF)
+lines(Temp.sm, col="red", lwd=3)
+plot(scal.temp.sm)
 
 #see how well data matches
 #to compare on 1:1 line with data, need to select only points for which data is available
@@ -72,7 +73,7 @@ points(data.compare2$GPP~data.compare2$Time, col="blue", pch=18, cex=0.8)
 plot(data.compare_GPP$GPP, out.compare_GPP$GPP, ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
-plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", ylim=c(0, 1))
+plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", ylim=c(0,1))
 points((data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
 #arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
 plot(data.compare_NDVI$NDVI, out.compare_NDVI$NDVI, ylab="Model", xlab="Data")
@@ -231,8 +232,8 @@ plot(density(resid(reg_NDVI)), main="Density of Residuals")
 
 
 summary(reg_NEE)
-summary(reg_GPP)
 summary(reg_Re)
+summary(reg_GPP)
 summary(reg_NDVI)
 
 
