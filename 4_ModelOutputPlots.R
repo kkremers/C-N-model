@@ -387,6 +387,11 @@ summary(reg_NDVI)
 
 
 ####RESIDUAL ANALYSIS###
+out.compare_NEE = out[match(data.compare_NEE$Time, out$time),]
+out.compare_Re = out[match(data.compare_Re$Time, out$time),]
+out.compare_GPP = out[match(data.compare_GPP$Time, out$time),]
+out.compare_NDVI = out[match(data.compare_NDVI$Time, out$time),]
+
 resid.GPP = data.compare_GPP$GPP - out.compare_GPP$GPP
 resid_GPP = data.frame(time=out.compare_GPP$time, Year=out.compare_GPP$year, DOY=out.compare_GPP$DOY, resid.GPP)
 resid.NEE = data.compare_NEE$NEE - out.compare_NEE$NEE
@@ -460,18 +465,21 @@ tapply(resid_NDVI$resid.NDVI, resid_NDVI$Year, rmse)
 ##look at relationship between spring NEE RMSE and DOY.minGDD
 #first, filter data for spring only
 head(resid_NEE)
-resid_NEE.spring = resid_NEE[resid_NEE$DOY<=175,]
-resid_NEE.spring
-#now calculate the RMSE for each year
-RMSE.spring = tapply(resid_NEE.spring$resid.NEE, resid_NEE.spring$Year, rmse)
-RMSE.spring
-minGDD.day
-NEE_springRMSE = data.frame(RMSE = RMSE.spring, minGDD.day = minGDD.day) 
-NEE_springRMSE
-reg.spring = lm(NEE_springRMSE$RMSE~NEE_springRMSE$minGDD.day)
-plot(NEE_springRMSE$RMSE~NEE_springRMSE$minGDD.day)
-abline(reg.spring, col="red")
-summary(reg.spring)
+years = unique(data$year) #tells you which years we have data for 
+for (i in 1: length(years)){
+  year.i = years[i] #select year
+  data.year = subset(resid_NEE, resid_NEE$Year==year.i) #subset for that year
+  resid_NEE.spring = data.year[data.year$DOY<=mid.day[i],] #subset for spring
+  RMSE.spring[i] = rmse(resid_NEE.spring$resid.NEE) #calculate rmse
+}
+RMSE.spring #show yearly values
+melt.day #show day of melt
+NEE_springRMSE = data.frame(RMSE = RMSE.spring, melt.day = melt.day)#create data frame
+NEE_springRMSE #view
+reg.spring = lm(NEE_springRMSE$RMSE~NEE_springRMSE$melt.day) #run linear model
+plot(NEE_springRMSE$RMSE~NEE_springRMSE$melt.day) #plot data
+abline(reg.spring, col="red") #add model line
+summary(reg.spring) #view model stats
 
 
 #PLOT BEFORE AND AFTER SCALAR

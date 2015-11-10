@@ -285,21 +285,27 @@ peakPAR.day
 mid.day=round((frost.day+melt.day)/2)
 mid.day
 
+avg.day = NA
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data, data$year==year.i)
+  avg.day[i] = round((peakTemp.day[i]+peakPAR.day[i])/2)
+}
+avg.day
+
 #figure out which is best
 sum(abs(peakTemp.day-peakGPP.day))
 sum(abs(peakPAR.day-peakGPP.day))
+sum(abs(avg.day-peakGPP.day)) 
 sum(abs(mid.day-peakGPP.day)) #this is the best
 
-mid.day
+
 plot(data.compare2$GPP~data.compare2$Time, col="forestgreen", xlim=c(1,1826))
-abline(v=c(mid.day+c(0,365,365+365,365+365+366, 365+365+366+365)))
+abline(v=c(avg.day+c(0,365,365+365,365+365+366, 365+365+366+365)))
 num.days = c(365, 365, 365, 366, 365)
-peakDOY = rep(c(mid.day), c(num.days))
+peakDOY = rep(mid.day, c(num.days))
 data = data.frame(data, peakDOY = peakDOY)
 head(data)
-
-
-
 
 scal.GPP=NULL
 for (i in 1:length(data$DOY)){
@@ -308,14 +314,17 @@ for (i in 1:length(data$DOY)){
   }
   if(data$DOY[i]>=data$meltDOY[i]){ #after melt
     if(data$DOY[i]<=data$peakDOY[i]){ #prior to peak
-      slope = 1/(data$peakDOY[i]-data$meltDOY[i])
-      scal.GPP[i] = 0+(slope*(data$DOY[i]-data$meltDOY[i]))
+      xsat = (data$peakDOY[i]-data$meltDOY[i])/2
+      x=data$DOY[i]-data$meltDOY[i] #calculate number of days since snowmelt
+      scal.GPP[i]=(1*x)/(xsat+x)
+      #slope = 1/(data$peakDOY[i]-data$meltDOY[i])
+      #scal.GPP[i] = 0+(slope*(data$DOY[i]-data$meltDOY[i]))
     }
-    if(data$DOY[i]>data$peakDOY[i] & data$DOY[i]<data$frostDOY[i]){ #after to peak
+    if(data$DOY[i]>data$peakDOY[i] & data$DOY[i]<data$frostDOY[i]){ #after peak but before frost
       slope = 1/(data$frostDOY[i]-data$peakDOY[i])
       scal.GPP[i] = 0+(slope*(data$frostDOY[i]-data$DOY[i]))
     }
-    if(data$DOY[i]>=data$frostDOY[i]){ #prior to snow melt
+    if(data$DOY[i]>=data$frostDOY[i]){ #after frost
       scal.GPP[i]=0
     }
   }
