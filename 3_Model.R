@@ -2,20 +2,20 @@ require(deSolve)
 require(FME)
 
 params <- c(kplant = 0.2, #0.07-0.34
-            LitterRateC = 0.0009, #0.0001-0.0009
+            LitterRateC = 0.0005, #0.0001-0.0009
             LitterRateN = 0.001, #0.0001-0.0024
             UptakeRate = 0.012, #0.002-0.012
             propN_fol = 0.1, #0.1-0.9
             propN_roots = 0.01, #0.002-0.015
             netNrate = 0.02, #0.001-0.04
+            cue=0.6, #0.42-0.8
             Biomass_C = 684.5, 
             Biomass_N = 12.9, 
             SOM_C = 19358.7, 
             SOM_N = 854.1,
-            Available_N = 0.80)
+            Available_N = 0.1)
 
 time = seq(1, 1826, 1)
-
 
 ####################MODEL#################################
 
@@ -30,9 +30,9 @@ solvemodel <- function(params, times) {
       PAR=PAR.d1(t)
       albedo = albedo.d1(t)
       DOY = DOY.d1(t)
-      DOY.sen = DOYsen.d1(t)
+      DOYpeak = DOYpeak.d1(t)
       scaltemp=scaltemp.d1(t)
-      scalGPP=scalGPP.d1(t)
+      scalseason=scalseason.d1(t)
       year = Year.d1(t)
       
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
@@ -40,12 +40,13 @@ solvemodel <- function(params, times) {
       Nfix_rate=0.0015 #calculated from Alaska's changing arctic pg 106
       k=0.63
       Pmax = 1.18 
-      E0 = 0.03 * scalGPP
-      cue=0.7
+      E0 = 0.03 * scalseason
       q10=2
-      R0 = 0.08*scalGPP
-      beta = 0.06
+      R0 = 0.06 * scalseason
+      beta = 0.05 
+      Rx = 0.02 
       
+  
       #FLUXES
       TFN=propN_fol*Biomass_N
       
@@ -53,7 +54,7 @@ solvemodel <- function(params, times) {
     
       NDVI=0
       if(LAI>0){
-        NDVI = (log((LAI)/0.0026)/8.0783) * scaltemp
+        NDVI = (log((LAI)/0.0026)/8.0783) #* scaltemp
       }
       if(albedo>0.15){
         NDVI = 0
@@ -62,9 +63,9 @@ solvemodel <- function(params, times) {
       GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12
       
       
-      Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) 
+      Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) ) *scaltemp
       Ra =  ( 1 - cue ) * GPP
-      Re = R0*LAI*exp(beta*Temp)*12
+      Re = ((R0*LAI)+Rx)*exp(beta*Temp)*12  
       Rh = Re - Ra
       Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 10 ) )
       N_dep = Ndep_rate
@@ -99,10 +100,12 @@ solvemodel <- function(params, times) {
   } #end of model
   
   
-  return(ode(y=params[8:12],times=time,func=model,parms = params[1:7], method="rk4")) #integrate using runge-kutta 4 method
+  return(ode(y=params[9:13],times=time,func=model,parms = params[1:8], method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 
 #####################################################################
 
 out= data.frame(solvemodel(params)) #creates table of model output
+
+sum(out$Ra)/sum(out$Re)
