@@ -6,7 +6,7 @@ head(data)
 
 
 #plot the data
-par(mfrow=c(2,2), mar=c(4,4,0.5,2))
+par(mfrow=c(1,1), mar=c(4,4,0.5,2))
 plot(data$Temp_ARF~data$time, type="l", ylab = "Daily Max Temp (C)", col="red", xlab="")
 abline(h=0)
 plot(data$GDD~data$time, ylab = "Growing Degree Days (GDD) ",  xlab="", col="forestgreen")
@@ -83,7 +83,7 @@ plot(scal.temp, type="l")
 
 
 #create a smoothed temperature scalar
-#average of current sample, 7 future samples, and 7 past samples
+#average of current sample, 10 future samples, and 10 past samples
 filt=rep(1/21,21)
 Temp.sm = filter(data$Temp_ARF, filt, sides=2)
 is.na(Temp.sm) #the last 20 samples are NA
@@ -118,100 +118,8 @@ for (i in 1:length(scal.temp.sm)){
 
 plot(scal.temp.sm, type="l")
 
-#create a smoothed PAR scalar
-#average of current sample, 7 future samples, and 7 past samples
-filt=rep(1/21,21)
-PAR.sm = filter(data$PAR_ARF, filt, sides=2)
-is.na(PAR.sm) #the last 20 samples are NA
-PAR.sm[is.na(PAR.sm)]=0 #set these to zero
-plot(data$PAR_ARF, type="l")
-lines(PAR.sm, col="red", lwd="3")
-data=data.frame(data, PAR_sm=PAR.sm)
 
-Pmaxsm.day = NA
-Pminsm.day = NA
-for (i in 1: length(years)){
-  year.i = years[i]
-  data.year = subset(data, data$year==year.i)
-  Pmaxsm.day[i]=max(data.year$PAR_sm)
-  Pminsm.day[i]=min(data.year$PAR_sm)
-}
-Pmaxsm.day # max temps for each year
-Pmaxsm.mean=mean(Pmaxsm.day)
-Pminsm.mean=mean(Pminsm.day)
-
-scal.PAR.sm=NULL
-for (i in 1:length(PAR.sm)){
-  scal.PAR.sm[i] = (PAR.sm[i] - Pminsm.mean)/(Pmaxsm.mean-Pminsm.mean)
-}
-
-#rescale to 1
-minscal = min(scal.PAR.sm)
-maxscal = max(scal.PAR.sm)
-for (i in 1:length(scal.PAR.sm)){
-  scal.PAR.sm[i] = (scal.PAR.sm[i] - minscal)/(maxscal-minscal) 
-}
-
-plot(scal.PAR.sm, type="l")
-
-
-
-#making a new scalar for NDVI calculation
-
-Tmaxmean.day = NA
-for (i in 1: length(years)){
-  year.i = years[i]
-  data.year = subset(data, data$year==year.i)
-  Tmaxmean.day[i]=max(data.year$Temp_ARF)
-}
-Tmaxmean.day # max temps for each year
-Tmax.avg = mean(Tmaxmean.day) #calculate average
-
-Tmax.diff = data$Temp_ARF-Tmax.avg
-plot(Tmax.diff[1:365])
-filt=rep(1/30,30)
-Tmaxdiff.sm = filter(Tmax.diff, filt, sides=2)
-is.na(Tmaxdiff.sm) #the last 7 samples are NA
-Tmaxdiff.sm[is.na(Tmaxdiff.sm)]=0 #set these to zero
-plot(Tmax.diff, type="l", xlim=c(1,365))
-lines(Tmaxdiff.sm, col="red", lwd="3")
-Tmax.diff1 = Tmax.diff
-Tmax.diff=Tmaxdiff.sm
-data=data.frame(data, TmaxDiff = Tmax.diff)
-head(data)
-Tmaxmean.diff = NA
-Tminmean.diff = NA
-for (i in 1: length(years)){
-  year.i = years[i]
-  data.year = subset(data, data$year==year.i)
-  Tmaxmean.diff[i]=max(data.year$TmaxDiff, na.rm=TRUE)
-  Tminmean.diff[i]=min(data.year$TmaxDiff, na.rm=TRUE)
-}
-Tmaxmean.diff # max temps for each year
-Tmaxdiff.avg = mean(Tmaxmean.diff) #calculate average
-Tminmean.diff # min temps for each year
-Tmindiff.avg = mean(Tminmean.diff) #calculate average
-
-
-scal.diff=NULL
-for (i in 1:length(Tmax.diff)){
-  scal.diff[i] = (Tmax.diff[i] - Tmindiff.avg)/(Tmaxdiff.avg-Tmindiff.avg)
-}
-
-#rescale to 1
-minscal = min(scal.diff)
-maxscal = max(scal.diff)
-for (i in 1:length(scal.diff)){
-  scal.diff[i] = (scal.diff[i] - minscal)/(maxscal-minscal)
-}
-
-par(mfrow=c(2,1))
-plot(Tmax.diff1, type="l", xlim=c(1,365))
-lines(Tmaxdiff.sm, col="red", lwd="3")
-plot(scal.diff)
-
-
-#create sigmoidal scalar to help model capture spring GPP
+#create GPP scalar to assist with shoulder seasons
 par(mfrow=c(2,1))
 plot(data$GDD)
 plot(data$Albedo)
@@ -250,7 +158,6 @@ data = data.frame(data, frostDOY = frostDOY)
 head(data)
 
 #now determine peak season day
-
 #figure out which corresponds to peak in GPP
 data.compare2=read.csv("Assimilation_data_ALL.csv")
 
@@ -289,36 +196,39 @@ avg.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  avg.day[i] = round((peakTemp.day[i]+peakPAR.day[i])/2)
+  avg.day[i] = round((peakTemp.day[i]+peakPAR.day[i]+mid.day[i])/3)
 }
 avg.day
 
 #figure out which is best
 sum(abs(peakTemp.day-peakGPP.day))
 sum(abs(peakPAR.day-peakGPP.day))
-sum(abs(avg.day-peakGPP.day)) 
-sum(abs(mid.day-peakGPP.day)) #this is the best
+sum(abs(avg.day-peakGPP.day)) #this is the best
+sum(abs(mid.day-peakGPP.day)) 
 
 
 plot(data.compare2$GPP~data.compare2$Time, col="forestgreen", xlim=c(1,1826))
 abline(v=c(avg.day+c(0,365,365+365,365+365+366, 365+365+366+365)))
 num.days = c(365, 365, 365, 366, 365)
-peakDOY = rep(mid.day, c(num.days))
+peakDOY = rep(avg.day, c(num.days))
 data = data.frame(data, peakDOY = peakDOY)
 head(data)
 
-scal.GPP=NULL
+peakPAR_DOY = rep(peakPAR.day, c(365, 365, 365, 366, 365))
+peakTemp_DOY = rep(peakTemp.day, c(365, 365, 365, 366, 365))
+
+scal.GPP=rep(1, length(data$DOY))
 for (i in 1:length(data$DOY)){
   if(data$DOY[i]<data$meltDOY[i]){ #prior to snow melt
     scal.GPP[i]=0
   }
   if(data$DOY[i]>=data$meltDOY[i]){ #after melt
     if(data$DOY[i]<=data$peakDOY[i]){ #prior to peak
-      xsat = (data$peakDOY[i]-data$meltDOY[i])/2
-      x=data$DOY[i]-data$meltDOY[i] #calculate number of days since snowmelt
-      scal.GPP[i]=(1*x)/(xsat+x)
-      #slope = 1/(data$peakDOY[i]-data$meltDOY[i])
-      #scal.GPP[i] = 0+(slope*(data$DOY[i]-data$meltDOY[i]))
+      #xsat = (data$peakDOY[i]-data$meltDOY[i])/2
+      #x=data$DOY[i]-data$meltDOY[i] #calculate number of days since snowmelt
+      #scal.GPP[i]=(1*x)/(xsat+x)
+      slope = 1/(data$peakDOY[i]-data$meltDOY[i])
+      scal.GPP[i] = 0+(slope*(data$DOY[i]-data$meltDOY[i]))
     }
     if(data$DOY[i]>data$peakDOY[i] & data$DOY[i]<data$frostDOY[i]){ #after peak but before frost
       slope = 1/(data$frostDOY[i]-data$peakDOY[i])
@@ -338,7 +248,7 @@ Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
 PAR.d1 <- approxfun(x=data$time, y=data$PAR_ARF, method="linear", rule=2)
 albedo.d1 <- approxfun(x=data$time, y=data$Albedo, method="linear", rule=2)
 scaltemp.d1 <- approxfun(x=data$time, y=scal.temp.sm, method="linear", rule=2)
-scalGPP.d1 <- approxfun(x=data$time, y=scal.GPP, method="linear", rule=2)
+scalseason.d1 <- approxfun(x=data$time, y=scal.GPP, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
-DOYsen.d1 <- approxfun(x=data$time, y=data$DOY.sen, method="linear", rule=2)
+DOYpeak.d1 <- approxfun(x=data$time, y=data$peakDOY, method="linear", rule=2)
 Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
