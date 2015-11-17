@@ -9,7 +9,7 @@ plot(data$PAR_vis~data$time, type="l", ylab = "Daily Plant Avail. PAR (mol m-2 d
 out = data.frame(solvemodel(params)) #creates table of model output
 
 #plot pools
-par(mfrow=c(4,2), mar=c(4,4,1,2))
+par(mfrow=c(3,2), mar=c(4,4,1,2))
 plot(out$Biomass_C~out$time, type="l", col="forestgreen", main = "Biomass C", xlab="", ylab="g C m-2")
 plot(out$Biomass_N~out$time, type="l", col="forestgreen",  main = "Biomass N", xlab="", ylab="g N m-2")
 plot(out$SOM_C~out$time, type="l", col="brown", main = "SOM C", xlab="", ylab="g C m-2")

@@ -18,7 +18,7 @@ sen.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  sen.day[i] = min(data.year$DOY[which(data.year$estTemp_avg<=0 & data.year$DOY>180)])
+  sen.day[i] = min(data.year$DOY[which(data.year$estTemp_min<=0 & data.year$DOY>180)])
 }
 sen.day
 num.days = c(365, 365, 365, 366, 365)
@@ -121,6 +121,21 @@ frostDOY = rep(c(frost.day), c(num.days))
 data = data.frame(data, frostDOY = frostDOY)
 head(data)
 
+#need to figure out which DOY was the day when snow fell
+years = unique(data$year) #tells you which years we have data for 
+snow.day = NA
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data, data$year==year.i)
+  snow.day[i] = min(data.year$DOY[which(data.year$Albedo>0.2 & data.year$DOY>180)])
+}
+snow.day
+num.days = c(365, 365, 365, 366, 365)
+snowDOY = rep(c(snow.day), c(num.days))
+data = data.frame(data, snowDOY = snowDOY)
+head(data)
+
+
 #now determine peak season day
 #figure out which corresponds to peak in GPP
 data.compare2=read.csv("Assimilation_data_ALL.csv")
@@ -163,7 +178,7 @@ mean(abs(mid.day-peakGPP.day))
 
 
 plot(data.compare2$GPP~data.compare2$Time, col="forestgreen", xlim=c(1,1826))
-abline(v=c(mid.day+c(0,365,365+365,365+365+366, 365+365+366+365)))
+abline(v=c(snow.day+c(0,365,365+365,365+365+366, 365+365+366+365)))
 num.days = c(365, 365, 365, 366, 365)
 peakDOY = rep(mid.day, c(num.days))
 data = data.frame(data, peakDOY = peakDOY)
@@ -247,7 +262,7 @@ plot(scal.GPP.f)
 scal.GPP=scal.GPP.i*scal.GPP.f
 plot(scal.GPP)
 
-
+###############seasonal scalar##############
 
 peakPAR_DOY = rep(peakPAR.day, c(365, 365, 365, 366, 365))
 peakTemp_DOY = rep(peakTemp.day, c(365, 365, 365, 366, 365))
@@ -258,15 +273,15 @@ for (i in 1:length(data$DOY)){
     scal.seas[i]=0
   }
   if(data$DOY[i]>=data$meltDOY[i]){ #after melt
-    if(data$DOY[i]<=data$peakDOY[i]){ #prior to peak
-      slope = 1/(data$peakDOY[i]-data$meltDOY[i])
+    if(data$DOY[i]<=data$senDOY[i]){ #prior to peak
+      slope = 1/(data$senDOY[i]-data$meltDOY[i])
       scal.seas[i] = 0+(slope*(data$DOY[i]-data$meltDOY[i]))
     }
-    if(data$DOY[i]>data$peakDOY[i] & data$DOY[i]<data$frostDOY[i]){ #after peak but before frost
-      slope = 1/(data$frostDOY[i]-data$peakDOY[i])
-      scal.seas[i] = 0+(slope*(data$frostDOY[i]-data$DOY[i]))
+    if(data$DOY[i]>data$senDOY[i] & data$DOY[i]<data$snowDOY[i]){ #after peak but before frost
+      slope = 1/(data$snowDOY[i]-data$senDOY[i])
+      scal.seas[i] = 0+(slope*(data$snowDOY[i]-data$DOY[i]))
     }
-    if(data$DOY[i]>=data$frostDOY[i]){ #after frost
+    if(data$DOY[i]>=data$snowDOY[i]){ #after frost
       scal.seas[i]=0
     }
   }
