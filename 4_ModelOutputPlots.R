@@ -575,3 +575,53 @@ plot(data.compare_NEE$NEE~data.check$PAR_ARF, pch=16)
 points(out.compare_NEE$NEE~data.check$PAR_ARF, col="red")
 plot(data.compare_NEE$NEE~data.check$Temp_ARF, pch=16)
 points(out.compare_NEE$NEE~data.check$Temp_ARF, col="red")
+
+
+
+#####new plots for adrian######
+
+par(mfrow=c(2,1), mar=c(4,4,1,4))
+plot(out$DOY, out$TFN, xlab="DOY", ylab="") # first plot
+par(new = TRUE)
+plot(out$DOY, out$scalseason, ylim=c(0, 1), pch=16, col="red", axes = FALSE, bty = "n", xlab = "", ylab = "")
+axis(4, ylim=c(0,0.7), col="red",col.axis="red",las=1)
+
+plot(out$DOY, out$LAI, xlab="DOY", ylab="") # first plot
+par(new = TRUE)
+plot(out$DOY, out$NDVI, ylim=c(0, 1), pch=16, col="red", axes = FALSE, bty = "n", xlab = "", ylab = "")
+axis(4, ylim=c(0,0.7), col="red",col.axis="red",las=1)
+
+
+dat.compare = data[match(data.compare2$Time, data$time),]
+
+
+par(mfrow=c(5,1), mar=c(2,4,1,4))
+plot(data$estTemp_min[data$year==2009]~data$DOY[data$year==2009], xlim=c(0,366), type="l", xlab="", ylab="")
+abline(h=0, col="red")
+par(new = TRUE)
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2009]~data.compare_GPP$DOY[data.compare_GPP$Year==2009], ylim=c(0,6), xlim=c(0,366), type="l", col="blue", axes = FALSE, bty = "n", xlab = "", ylab = "")
+axis(4, ylim=c(0,0.7), col="blue",col.axis="blue",las=1)
+
+plot(data$estTemp_min[data$year==2010]~data$DOY[data$year==2010], xlim=c(0,366),type="l", xlab="", ylab="")
+abline(h=0, col="red")
+par(new = TRUE)
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2010]~data.compare_GPP$DOY[data.compare_GPP$Year==2010], ylim=c(0,6), xlim=c(0,366),type="l", col="blue", axes = FALSE, bty = "n", xlab = "", ylab = "")
+axis(4, ylim=c(0,0.7), col="blue",col.axis="blue",las=1)
+
+plot(data$estTemp_min[data$year==2011]~data$DOY[data$year==2011], xlim=c(0,366),type="l", xlab="", ylab="")
+abline(h=0, col="red")
+par(new = TRUE)
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2011]~data.compare_GPP$DOY[data.compare_GPP$Year==2011], ylim=c(0,6), xlim=c(0,366),type="l", col="blue", axes = FALSE, bty = "n", xlab = "", ylab = "")
+axis(4, ylim=c(0,0.7), col="blue",col.axis="blue",las=1)
+
+plot(data$estTemp_min[data$year==2012]~data$DOY[data$year==2012], xlim=c(0,366),type="l", xlab="", ylab="")
+abline(h=0, col="red")
+par(new = TRUE)
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2012]~data.compare_GPP$DOY[data.compare_GPP$Year==2012], ylim=c(0,6), xlim=c(0,366),type="l", col="blue", axes = FALSE, bty = "n", xlab = "", ylab = "")
+axis(4, ylim=c(0,0.7), col="blue",col.axis="blue",las=1)
+
+plot(data$estTemp_min[data$year==2013]~data$DOY[data$year==2013], xlim=c(0,366),type="l", xlab="", ylab="")
+abline(h=0, col="red")
+par(new = TRUE)
+plot(data.compare_GPP$GPP[data.compare_GPP$Year==2013]~data.compare_GPP$DOY[data.compare_GPP$Year==2013], ylim=c(0,6), xlim=c(0,366),type="l", col="blue", axes = FALSE, bty = "n", xlab = "", ylab = "")
+axis(4, ylim=c(0,0.7), col="blue",col.axis="blue",las=1, ylab="GPP")

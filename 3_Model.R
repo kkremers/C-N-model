@@ -2,11 +2,11 @@ require(deSolve)
 require(FME)
 
 params <- c(kplant = 0.2, #0.07-0.34
-            LitterRateC = 0.00068, #0.0001-0.0009
-            LitterRateN = 0.0013, #0.0001-0.0024
-            UptakeRate = 0.004, #0.002-0.012
+            LitterRateC = 0.0005, #0.0001-0.0024
+            LitterRateN = 0.0008, #0.0001-0.0024
+            UptakeRate = 0.008, #0.002-0.012
             propN_fol = 0.1, #0.1-0.9
-            propN_roots = 0.01, #0.002-0.015
+            propN_roots = 0.015, #0.002-0.015
             netNrate = 0.015, #0.001-0.04
             cue=0.6, #0.42-0.8
             Biomass_C = 684.5, 
@@ -38,13 +38,14 @@ solvemodel <- function(params, times) {
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
       Ndep_rate = 0.00007 #calculated from Alaska's changing arctic pg 106
       Nfix_rate=0.0015 #calculated from Alaska's changing arctic pg 106
-      k=0.63
-      Pmax = 1.18 
+      k=0.5
+      Pmax = 1.16 
       E0 = 0.03
-      q10=2
+      q10=1.9
       R0 = 0.06 
-      beta = 0.05 
+      beta = 0.04 
       Rx = 0.02 
+      SOM_CN = 36
       
       
       #FLUXES
@@ -55,10 +56,10 @@ solvemodel <- function(params, times) {
       
       NDVI=0
       if(LAI>0){
-        NDVI = (log(LAI/0.0026)/8.0783) 
+        NDVI = (log(LAI/0.0026)/8.0783)
       }      
       
-      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI ) ) ) * 12
+      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI) ) ) * 12
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) )
       Ra =  ( 1 - cue ) * GPP
       Re = ((R0*LAI)+Rx)*exp(beta*Temp)*12  
@@ -66,9 +67,8 @@ solvemodel <- function(params, times) {
       Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 10 ) )
       N_dep = Ndep_rate
       N_fix=Nfix_rate*scaltemp
-      Litterfall_N  =  LitterRateN * Biomass_N * ( q10 ^ ( (Temp-10) / 10 ) )
-      Litterfall_C =  LitterRateC * Biomass_C * ( q10 ^ ( (Temp-10) / 10 ) )
-      
+      Litterfall_C =  LitterRateC * Biomass_C
+      Litterfall_N  =  LitterRateN * Biomass_N
       
       #calculated variables to use for model fitting and analysis
       NEE = Re - GPP
@@ -90,7 +90,7 @@ solvemodel <- function(params, times) {
              dAvailable_N), 
            c(NEE=NEE, GPP=GPP, Re=Re, LAI=LAI, NDVI=NDVI, Ra=Ra, Rh=Rh, Uptake = Uptake, 
              Ntrans=Ntrans, N_fix=N_fix, Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, 
-             DOY=DOY, year=year, TFN=TFN, Temp=Temp))
+             DOY=DOY, year=year, TFN=TFN, Temp=Temp, scaltemp = scaltemp, scalseason = scalseason))
       
     })  #end of with(as.list(...
   } #end of model
