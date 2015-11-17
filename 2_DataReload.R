@@ -6,54 +6,25 @@ head(data)
 
 
 #plot the data
-par(mfrow=c(1,1), mar=c(4,4,0.5,2))
-plot(data$Temp_ARF~data$time, type="l", ylab = "Daily Max Temp (C)", col="red", xlab="")
+par(mfrow=c(3,1), mar=c(4,4,0.5,2))
+plot(data$estTemp_avg~data$time, type="l", ylab = "Daily Avg Temp (C)", col="red", xlab="")
 abline(h=0)
-plot(data$GDD~data$time, ylab = "Growing Degree Days (GDD) ",  xlab="", col="forestgreen")
 plot(data$PAR_ARF~data$time, type="l", ylab = "Daily PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
 plot(data$PAR_vis~data$time, type="l", ylab = "Daily Plant Avail. PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
 
-
-plot(data$GDD[1:365]~data$DOY[1:365], ylab = "Growing Degree Days (GDD) ",  xlab="", col="forestgreen")
-
-
-GDD.slope = rep(0, length = length(data$GDD))
-for (i in 2: length(data$GDD)){
-  GDD.slope[i] = data$GDD[i] - data$GDD[i-1]
-}
-
-plot(GDD.slope) #this is really just temperature but for only positive values
-data = cbind(data, GDD.slope=GDD.slope)
-head(data)
-plot(data$GDD.slope) #there are 4 points that need to be set to 0 because this is when we switch years
-data$GDD.slope[data$time[which(data$GDD.slope == min(data$GDD.slope))]] = 0
-data$GDD.slope[data$time[which(data$GDD.slope == min(data$GDD.slope))]] = 0
-data$GDD.slope[data$time[which(data$GDD.slope == min(data$GDD.slope))]] = 0
-data$GDD.slope[data$time[which(data$GDD.slope == min(data$GDD.slope))]] = 0
-data$time[which(data$GDD.slope == min(data$GDD.slope))]
-par(mfrow=c(1,1), mar=c(4,4,0.5,2))
-plot(data$DOY[1:365], data$GDD.slope[1:365], type="l")
-
-#need to figure out which DOY was the day when GDDs level off
+#need to calculate DOY of senescence 
 years = unique(data$year) #tells you which years we have data for 
-delGDDmax.day = NA
-DOY.sen.year = NA
+sen.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  delGDDmax = data.year$DOY[which(data.year$DOY>182 & data.year$GDD.slope<1 & data.year$GDD.slope>0)]
-  DOY.sen.year[i]=delGDDmax[1]
+  sen.day[i] = min(data.year$DOY[which(data.year$estTemp_avg<=0 & data.year$DOY>180)])
 }
-DOY.sen.year #looked at this data to determine cutoff point
+sen.day
 num.days = c(365, 365, 365, 366, 365)
-DOY.sen = rep(c(DOY.sen.year), c(num.days))
-data = data.frame(data, DOY.sen = DOY.sen)
+senDOY = rep(c(sen.day), c(num.days))
+data = data.frame(data, senDOY = senDOY)
 head(data)
-par(mfrow=c(1,1))
-plot(data$GDD~data$time, type="l", ylab = "Growing Degree Days (GDD) ",  xlab="", col="forestgreen")
-abline(v=c(DOY.sen.year+c(0,365,365+365,365+365+366, 365+365+366+365)))
-
-
 
 #create a temperature scalar
 Tmax.day = NA
@@ -61,16 +32,16 @@ Tmin.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  Tmax.day[i]=max(data.year$Temp_ARF)
-  Tmin.day[i]=min(data.year$Temp_ARF)
+  Tmax.day[i]=max(data.year$estTemp_avg)
+  Tmin.day[i]=min(data.year$estTemp_avg)
 }
 Tmax.day # max temps for each year
 Tmax.mean=mean(Tmax.day)
 Tmin.mean=mean(Tmin.day)
 
 scal.temp=NULL
-for (i in 1:length(data$Temp_ARF)){
-  scal.temp[i] = (data$Temp_ARF[i] - Tmin.mean)/(Tmax.mean-Tmin.mean) 
+for (i in 1:length(data$estTemp_avg)){
+  scal.temp[i] = (data$estTemp_avg[i] - Tmin.mean)/(Tmax.mean-Tmin.mean) 
 }
 
 #rescale to 1
@@ -85,10 +56,10 @@ plot(scal.temp, type="l")
 #create a smoothed temperature scalar
 #average of current sample, 10 future samples, and 10 past samples
 filt=rep(1/21,21)
-Temp.sm = filter(data$Temp_ARF, filt, sides=2)
-is.na(Temp.sm) #the last 20 samples are NA
+Temp.sm = filter(scal.temp, filt, sides=2)
+is.na(Temp.sm) #shows that last few are NAs
 Temp.sm[is.na(Temp.sm)]=0 #set these to zero
-plot(data$Temp_ARF, type="l")
+plot(scal.temp, type="l")
 lines(Temp.sm, col="red", lwd="3")
 data=data.frame(data, Temp_sm=Temp.sm)
 
@@ -120,8 +91,7 @@ plot(scal.temp.sm, type="l")
 
 
 #create GPP scalar to assist with shoulder seasons
-par(mfrow=c(2,1))
-plot(data$GDD)
+par(mfrow=c(1,1))
 plot(data$Albedo)
 #need to figure out which DOY was the day when snow began to melt
 years = unique(data$year) #tells you which years we have data for 
@@ -129,12 +99,9 @@ melt.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  melt.day[i] = min(data.year$DOY[which(data.year$Albedo<0.15)])
+  melt.day[i] = min(data.year$DOY[which(data.year$Albedo<0.2)])
 }
 melt.day
-par(mfrow=c(1,1))
-plot(data$GDD~data$time, type="l", ylab = "Growing Degree Days (GDD) ",  xlab="", col="forestgreen")
-abline(v=c(melt.day+c(0,365,365+365,365+365+366, 365+365+366+365)))
 num.days = c(365, 365, 365, 366, 365)
 meltDOY = rep(c(melt.day), c(num.days))
 data = data.frame(data, meltDOY = meltDOY)
@@ -146,12 +113,9 @@ frost.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  frost.day[i] = min(data.year$DOY[which(data.year$Temp_ARF<=0 & data.year$DOY>180)])
+  frost.day[i] = min(data.year$DOY[which(data.year$estTemp_avg<=0 & data.year$DOY>180)])
 }
 frost.day
-par(mfrow=c(1,1))
-plot(data$GDD~data$time, type="l", ylab = "Growing Degree Days (GDD) ",  xlab="", col="forestgreen")
-abline(v=c(frost.day+c(0,365,365+365,365+365+366, 365+365+366+365)))
 num.days = c(365, 365, 365, 366, 365)
 frostDOY = rep(c(frost.day), c(num.days))
 data = data.frame(data, frostDOY = frostDOY)
@@ -192,55 +156,123 @@ peakPAR.day
 mid.day=round((frost.day+melt.day)/2)
 mid.day
 
-avg.day = NA
-for (i in 1: length(years)){
-  year.i = years[i]
-  data.year = subset(data, data$year==year.i)
-  avg.day[i] = round((peakTemp.day[i]+peakPAR.day[i]+mid.day[i])/3)
-}
-avg.day
-
 #figure out which is best
-sum(abs(peakTemp.day-peakGPP.day))
-sum(abs(peakPAR.day-peakGPP.day))
-sum(abs(avg.day-peakGPP.day)) #this is the best
-sum(abs(mid.day-peakGPP.day)) 
+mean(abs(peakTemp.day-peakGPP.day))
+mean(abs(peakPAR.day-peakGPP.day))
+mean(abs(mid.day-peakGPP.day)) 
 
 
 plot(data.compare2$GPP~data.compare2$Time, col="forestgreen", xlim=c(1,1826))
-abline(v=c(avg.day+c(0,365,365+365,365+365+366, 365+365+366+365)))
+abline(v=c(mid.day+c(0,365,365+365,365+365+366, 365+365+366+365)))
 num.days = c(365, 365, 365, 366, 365)
-peakDOY = rep(avg.day, c(num.days))
+peakDOY = rep(mid.day, c(num.days))
 data = data.frame(data, peakDOY = peakDOY)
 head(data)
+
+#now determine slope of GPP increase after melt
+plot(data.compare2$GPP~data.compare2$Time, col="forestgreen", xlim=c(1,1826))
+head(data.compare2) #view data
+data.compare2 = data.compare2[!is.na(data.compare2$GPP),]
+head(data.compare2) #view data
+
+#determine data to calculate slope
+years = unique(data$year) #tells you which years we have data for 
+startGPP.day = NA #day which GPP starts
+startGPP = NA #GPP at starting day
+endGPP.day = NA #day which GPP ends
+endGPP = NA #GPP at end day
+peakGPP = NA #GPP at peak day
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data.compare2, data.compare2$Year==year.i)
+  startGPP.day[i] = min(data.year$DOY)
+  startGPP[i] = data.year$GPP[which(data.year$DOY==startGPP.day[i])]
+  endGPP.day[i] = max(data.year$DOY)
+  endGPP[i] = data.year$GPP[which(data.year$DOY==endGPP.day[i])]
+  peakGPP[i] = data.year$GPP[which(data.year$DOY==peakGPP.day[i])]
+}
+startGPP.day
+startGPP
+endGPP.day
+endGPP
+peakGPP.day
+peakGPP
+slope.GPP.i = (peakGPP-startGPP)/(peakGPP.day-startGPP.day) #calculate initial slope for each year
+slope.GPP.f = (peakGPP-endGPP)/abs((peakGPP.day-endGPP.day)) #calculate final slope for each year
+slope.GPP.i 
+slope.GPP.f
+mean(slope.GPP.i)
+mean(slope.GPP.f)
+
+#see how slope relates to other variables
+Tmax = tapply(data$estTemp_avg, data$year, max)
+Pmax = tapply(data$PAR_ARF, data$year, max)
+plot(slope.GPP, Tmax) #no relationship
+plot(slope.GPP, Pmax) #no relationship
+slope.GPP
+
+
+#now, create a scalar
+scal.GPP.i = NA
+for(i in 1:length(data$time)){
+  if(data$DOY[i]<=data$meltDOY[i]){
+    scal.GPP.i[i] = 0 
+  }
+  if(data$DOY[i]>data$meltDOY[i]){
+    scal.GPP.i[i] = 0 + mean(slope.GPP.i)*(data$DOY[i]-data$meltDOY[i])
+  }
+  if(scal.GPP.i[i]>1){
+    scal.GPP.i[i] = 1
+  }
+}
+
+plot(scal.GPP.i)
+
+scal.GPP.f = NA
+for(i in 1:length(data$time)){  
+  if(data$DOY[i]<data$frostDOY[i]){
+    scal.GPP.f[i] = 0 + mean(slope.GPP.f)*(data$frostDOY[i]-data$DOY[i])
+  }
+  if(data$DOY[i]>=data$frostDOY[i]){
+    scal.GPP.f[i] = 0
+  }
+  
+  if(scal.GPP.f[i]>1){
+    scal.GPP.f[i] = 1
+  }
+}
+
+plot(scal.GPP.f)
+
+scal.GPP=scal.GPP.i*scal.GPP.f
+plot(scal.GPP)
+
+
 
 peakPAR_DOY = rep(peakPAR.day, c(365, 365, 365, 366, 365))
 peakTemp_DOY = rep(peakTemp.day, c(365, 365, 365, 366, 365))
 
-scal.GPP=rep(1, length(data$DOY))
+scal.seas=rep(1, length(data$DOY))
 for (i in 1:length(data$DOY)){
   if(data$DOY[i]<data$meltDOY[i]){ #prior to snow melt
-    scal.GPP[i]=0
+    scal.seas[i]=0
   }
   if(data$DOY[i]>=data$meltDOY[i]){ #after melt
     if(data$DOY[i]<=data$peakDOY[i]){ #prior to peak
-      #xsat = (data$peakDOY[i]-data$meltDOY[i])/2
-      #x=data$DOY[i]-data$meltDOY[i] #calculate number of days since snowmelt
-      #scal.GPP[i]=(1*x)/(xsat+x)
       slope = 1/(data$peakDOY[i]-data$meltDOY[i])
-      scal.GPP[i] = 0+(slope*(data$DOY[i]-data$meltDOY[i]))
+      scal.seas[i] = 0+(slope*(data$DOY[i]-data$meltDOY[i]))
     }
     if(data$DOY[i]>data$peakDOY[i] & data$DOY[i]<data$frostDOY[i]){ #after peak but before frost
       slope = 1/(data$frostDOY[i]-data$peakDOY[i])
-      scal.GPP[i] = 0+(slope*(data$frostDOY[i]-data$DOY[i]))
+      scal.seas[i] = 0+(slope*(data$frostDOY[i]-data$DOY[i]))
     }
     if(data$DOY[i]>=data$frostDOY[i]){ #after frost
-      scal.GPP[i]=0
+      scal.seas[i]=0
     }
   }
 }
 
-plot(scal.GPP)
+plot(scal.seas)
 
 
 #make into functions so that it will be continuous in the model
@@ -248,7 +280,7 @@ Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
 PAR.d1 <- approxfun(x=data$time, y=data$PAR_ARF, method="linear", rule=2)
 albedo.d1 <- approxfun(x=data$time, y=data$Albedo, method="linear", rule=2)
 scaltemp.d1 <- approxfun(x=data$time, y=scal.temp.sm, method="linear", rule=2)
-scalseason.d1 <- approxfun(x=data$time, y=scal.GPP, method="linear", rule=2)
+scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 DOYpeak.d1 <- approxfun(x=data$time, y=data$peakDOY, method="linear", rule=2)
 Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)

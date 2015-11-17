@@ -10,17 +10,11 @@ out = data.frame(solvemodel(params)) #creates table of model output
 
 #plot pools
 par(mfrow=c(4,2), mar=c(4,4,1,2))
-plot(out$Biomass_C~out$time, type="l", col="red", main = "Biomass C", xlab="", ylab="g C m-2")
-#points(out1$Biomass_C~out1$time, col="gray1", cex=0.25)
-plot(out$Biomass_N~out$time, type="l", col="red",  main = "Biomass N", xlab="", ylab="g N m-2", lty=2)
-#points(out1$Biomass_N~out1$time, col="gray1", cex=0.25)
-plot(out$SOM_C~out$time, type="l", col="red", main = "SOM C", xlab="", ylab="g C m-2")
-#points(out1$SOM_C~out1$time, col="gray1", cex=0.25)
-plot(out$SOM_N~out$time, type="l", col="red", main = "SOM N", xlab="Time (days)", ylab="g N m-2",lty=2)
-#points(out1$SOM_N~out1$time, col="gray1", cex=0.25)
-plot(out$Available_N~out$time, type="l", col="red", main = "Available N", xlab="Time (days)", ylab="g N m-2",lty=2)
-#points(out1$Available_N~out1$time, col="gray1", cex=0.25)
-
+plot(out$Biomass_C~out$time, type="l", col="forestgreen", main = "Biomass C", xlab="", ylab="g C m-2")
+plot(out$Biomass_N~out$time, type="l", col="forestgreen",  main = "Biomass N", xlab="", ylab="g N m-2")
+plot(out$SOM_C~out$time, type="l", col="brown", main = "SOM C", xlab="", ylab="g C m-2")
+plot(out$SOM_N~out$time, type="l", col="brown", main = "SOM N", xlab="Time (days)", ylab="g N m-2")
+plot(out$Available_N~out$time, type="l", col="blue", main = "Available_ N", xlab="Time (days)", ylab="g N m-2",lty=2)
 
 #plot scalar
 par(mfrow=c(2,1), mar=c(4,4,0.5,2))
@@ -44,38 +38,27 @@ out.compare_Re = out[match(data.compare_Re$Time, out$time),]
 out.compare_GPP = out[match(data.compare_GPP$Time, out$time),]
 out.compare_NDVI = out[match(data.compare_NDVI$Time, out$time),]
 
-sigma.compare2=read.csv("Assimilation_sigma_ALL.csv")
-sigma.compare_NEE=sigma.compare2[complete.cases(sigma.compare2[,6]),c(1:5,6)]
-head(sigma.compare_NEE)
-sigma.compare_Re=sigma.compare2[complete.cases(sigma.compare2[,7]),c(1:5,7)]
-head(sigma.compare_Re)
-sigma.compare_GPP=sigma.compare2[complete.cases(sigma.compare2[,8]),c(1:5,8)]
-head(sigma.compare_GPP)
-sigma.compare_NDVI=sigma.compare2[complete.cases(sigma.compare2[,9]),c(1:5,9)]
-head(sigma.compare_NDVI)
-
 #PLOT DATA FOR ALL YEARS
 par(mfrow=c(4,2), mar=c(4,4,2,2))
-plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-6,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
+plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-6,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)")
 points(data.compare2$NEE~data.compare2$Time, col="blue", pch=16, cex=0.6)
 abline(h=0)
 plot(data.compare_NEE$NEE, out.compare_NEE$NEE, ylim=c(-4, 4), xlim=c(-4,4), ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
-plot(-out$Re~out$time, col="azure4", pch=16, ylim=c(-5,0), xlab="Time (days)", ylab="Re (gC m-2 day-1)", type="l")
+plot(-out$Re~out$time, col="azure4", pch=18, ylim=c(-5,0), xlab="Time (days)", ylab="Re (gC m-2 day-1)")
 points(-data.compare2$Re~data.compare2$Time, col="blue", pch=16, cex=0.6)
 abline(h=0)
 plot(data.compare_Re$Re, out.compare_Re$Re, ylim=c(-1, 4), xlim=c(-1,4), ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
-plot(out$GPP~out$time, col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="Time (days)", type="l")
+plot(out$GPP~out$time, col="azure4", pch=18, ylab="GPP (gC m-2 day-1)", xlab="Time (days)")
 points(data.compare2$GPP~data.compare2$Time, col="blue", pch=18, cex=0.8)
 plot(data.compare_GPP$GPP, out.compare_GPP$GPP, ylim=c(-1, 10), xlim=c(-1,8), ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
 plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", ylim=c(0,1))
 points((data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
-#arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
 plot(data.compare_NDVI$NDVI, out.compare_NDVI$NDVI, ylab="Model", xlab="Data", ylim=c(0, 1), xlim=c(0,1) )
 abline(0,1, col="red")
 
@@ -388,7 +371,7 @@ summary(reg_Re)
 summary(reg_GPP)
 summary(reg_NDVI)
 
-#linear regressions for 2009-2013
+#linear regressions for 2009-2012
 par(mfrow=c(4,2), mar=c(4,4,2,2))
 
 reg_NEE = lm(out.compare_NEE$NEE[out.compare_NEE$year!=2013]~data.compare_NEE$NEE[data.compare_NEE$Year!=2013])
@@ -506,12 +489,13 @@ rmse.NEE;rmse.Re;rmse.GPP;rmse.NDVI
 ##look at relationship between spring NEE RMSE and DOY.minGDD
 #first, filter data for spring only
 head(resid_NEE)
+rmse.NEE = tapply(resid_NEE$resid.NEE, resid_NEE$Year, rmse)
 RMSE.spring=NULL
 years = unique(data$year) #tells you which years we have data for 
 for (i in 1: length(years)){
   year.i = years[i] #select year
   data.year = subset(resid_NEE, resid_NEE$Year==year.i) #subset for that year
-  resid_NEE.spring = data.year[data.year$DOY<=avg.day[i],] #subset for spring
+  resid_NEE.spring = data.year[data.year$DOY<=mid.day[i],] #subset for spring
   RMSE.spring[i] = rmse(resid_NEE.spring$resid.NEE) #calculate rmse
 }
 RMSE.spring #show yearly values
@@ -519,23 +503,22 @@ melt.day #show day of melt
 frost.day #show day of frost
 length.season = frost.day-melt.day
 length.season
-rmse.NEE=rmse(resid.NEE)
 NEE_springRMSE = data.frame(RMSEspring = RMSE.spring, RMSEall = rmse.NEE, melt.day = melt.day, frost.day=frost.day, length=length.season)#create data frame
 NEE_springRMSE #view
 
 par(mfrow=c(3,1))
-reg.melt = lm(NEE_springRMSE$RMSE~NEE_springRMSE$melt.day) #run linear model
-plot(NEE_springRMSE$RMSE~NEE_springRMSE$melt.day) #plot data
+reg.melt = lm(NEE_springRMSE$RMSEall~NEE_springRMSE$melt.day) #run linear model
+plot(NEE_springRMSE$RMSEall~NEE_springRMSE$melt.day) #plot data
 abline(reg.melt, col="red") #add model line
 summary(reg.melt) #view model stats
 
-reg.frost = lm(NEE_springRMSE$RMSE~NEE_springRMSE$frost.day) #run linear model
-plot(NEE_springRMSE$RMSE~NEE_springRMSE$frost.day) #plot data
+reg.frost = lm(NEE_springRMSE$RMSEall~NEE_springRMSE$frost.day) #run linear model
+plot(NEE_springRMSE$RMSEall~NEE_springRMSE$frost.day) #plot data
 abline(reg.frost, col="red") #add model line
 summary(reg.frost) #view model stats
 
-reg.length = lm(NEE_springRMSE$RMSE~NEE_springRMSE$length) #run linear model
-plot(NEE_springRMSE$RMSE~NEE_springRMSE$length) #plot data
+reg.length = lm(NEE_springRMSE$RMSEall~NEE_springRMSE$length) #run linear model
+plot(NEE_springRMSE$RMSEall~NEE_springRMSE$length) #plot data
 abline(reg.length, col="red") #add model line
 summary(reg.length) #view model stats
 
@@ -586,7 +569,9 @@ axis(4, ylim=c(0,0.7), col="red",col.axis="red",las=1)
 
 
 #CHECK RELATIONSHIPS WITH FORCINGS
+par(mfrow=c(2,1))
 data.check = data[match(out.compare_NEE$time, data$time),]
 plot(data.compare_NEE$NEE~data.check$PAR_ARF, pch=16)
 points(out.compare_NEE$NEE~data.check$PAR_ARF, col="red")
-
+plot(data.compare_NEE$NEE~data.check$Temp_ARF, pch=16)
+points(out.compare_NEE$NEE~data.check$Temp_ARF, col="red")
