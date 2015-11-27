@@ -135,6 +135,6 @@ repeat { #repeat until desired number of parameter sets are accepted
 #beep(5)
 
 head(param.keep)
-head(data.compare1)
+tail(param.keep)
 
 save.image(file="Step2_NEE_NDVI_UNBdata.Rdata")
