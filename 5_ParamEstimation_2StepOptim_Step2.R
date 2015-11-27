@@ -137,4 +137,4 @@ repeat { #repeat until desired number of parameter sets are accepted
 head(param.keep)
 head(data.compare1)
 
-save.image(file="Step2_NEE_NDVI_UNBdata_MELstarting.Rdata")
+save.image(file="Step2_NEE_NDVI_UNBdata.Rdata")

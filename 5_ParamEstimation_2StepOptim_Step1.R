@@ -91,8 +91,10 @@ head(sigma.obs1)
 ############################################
 
 ###LOAD REAL DATA###
-data.assim = read.csv("Assimilation_data.csv")
-data.sigma = read.csv("Assimilation_sigma.csv")
+data.assim = read.csv("Assimilation_data_all.csv")
+data.sigma = read.csv("Assimilation_sigma_all.csv")
+data.assim = data.assim[data.assim$Year != 2013,]
+data.sigma = data.sigma[data.sigma$Year != 2013,]
 head(data.assim)
 head(data.sigma)
 tail(data.assim)
@@ -110,7 +112,7 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = length(params) #number of parameters to estimate
-M = 150000 #number of iterations
+M = 200000 #number of iterations
 D = 2 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -120,8 +122,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0009,0.0022,0.98,0.012,0.9,0.015,3.3, 0.04,    820,15,22000,950,3)
-param.min=c(0.07,0.0001,0.0009,0.26,0.002,0.1,0.002,1.4, 0.001,   550,10,16500,750,0.5)
+param.max=c(0.34,0.0024,0.0024,0.012,0.9,0.015,0.04,0.8,0.08,    820,15,22000,950,3)
+param.min=c(0.07,0.0001,0.0001,0.002,0.1,0.002,0.001,0.4,0.04,  550,10,16500,750,0.5)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output
@@ -170,26 +172,25 @@ for (i in 2:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
-      param.est[i,p] = param.est[i-1,p]+rnorm(1, 0, t*(param.max[p]-param.min[p]))
+      param.est[i,p] = param.est[i-1,p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
       all.draws[i,p] = param.est[i,p]
     } #end of parameter loop
-    if(all(!is.na(param.est[i,]))){
-      if(all(param.est[i,]>=param.min) & all(param.est[i,]<=param.max)){
-        break
-      } #end of if loop
+  if(all(!is.na(param.est[i,]))){
+    if(all(param.est[i,]>=param.min) & all(param.est[i,]<=param.max)){
+      break
     } #end of if loop
+  } #end of if loop
   } #end of repeat
   
   parms = as.numeric(param.est[i,]) #parameters for model run
   names(parms) = names(params) #fix names
   out = data.frame(solvemodel(parms, state)) #run model  
   
-  if(any(is.na(out)) | any(out[,2:6]<0) | abs(out[1826,2]-out[1,2])>200 ){ #if there are any NAs or negative stocks in the output
+  if(any(is.na(out)) | any(out[,2:6]<0) | abs(out[1826,2]-out[1,2])>300 ){ #if there are any NAs or negative stocks in the output
     reject = reject+1 #reject parameter set
     param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
-    J[i] = J[i-1] #set current J to previous J (the minimum J so far)
-    t=1.01*t
-  } else { #if there are no NAs or negative stocks
+    J[i] = J[i-1] #set current J to previous J
+  } else { #if there are no NAs or negative stocks & biomass pool doesn't crash
     
     #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
     
@@ -222,35 +223,30 @@ for (i in 2:M) {
         reject = reject+1 #reject parameter set
         param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
         J[i] = J[i-1] #set current J to previous J (the minimum J so far)
-        t=1.01*t
       } #end of if loop
-      else{
-        t=0.99*t
-      } #end of else loop
     } #end of if loop
     
   } #end of else loop
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
   
+  if(acceptance>0.65){
+    t = 1.01*t
+  }
+  
+  if(acceptance<0.45){
+    t = 0.99*t
+  }
+  
   anneal.temp=anneal.temp-1 #decrease temperature
   
   
-  iter=iter+1 #increase number of iterations counter
   
-  if(anneal.temp<1){ #if temperature drops to less than 100
+  if(anneal.temp<5){ #if temperature drops to less than 1
     anneal.temp=anneal.temp0 #jump back up to initial
-    t=0.5
-    iter=1 #reset iteration counter
-  }
-  
-
-  if(t<0.05){
-    t=0.05
   }
   
 } #end of exploration
-
 
 #beep(5)
 #make plots to check for mixing and make sure parameter space is thuroughly explored
@@ -268,5 +264,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_NDVI_UNBdata2.Rdata")
+save.image(file="Step1_NEE_NDVI_UNBdata.Rdata")
 

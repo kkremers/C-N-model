@@ -18,12 +18,26 @@ sen.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  sen.day[i] = min(data.year$DOY[which(data.year$estTemp_min<=0 & data.year$DOY>180)])
+  sen.day[i] = min(data.year$DOY[which(data.year$estTemp_min<=5 & data.year$DOY>200)])
 }
 sen.day
 num.days = c(365, 365, 365, 366, 365)
 senDOY = rep(c(sen.day), c(num.days))
 data = data.frame(data, senDOY = senDOY)
+head(data)
+
+#need to calculate DOY of spring
+years = unique(data$year) #tells you which years we have data for 
+spring.day = NA
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data, data$year==year.i)
+  spring.day[i] = min(data.year$DOY[which(data.year$estTemp_min>=0)])
+}
+spring.day
+num.days = c(365, 365, 365, 366, 365)
+springDOY = rep(c(spring.day), c(num.days))
+data = data.frame(data, springDOY = springDOY)
 head(data)
 
 #create a temperature scalar
@@ -54,12 +68,10 @@ plot(scal.temp, type="l")
 
 
 #create a smoothed temperature scalar
-#average of current sample, 10 future samples, and 10 past samples
-filt=rep(1/21,21)
-Temp.sm = filter(scal.temp, filt, sides=2)
-is.na(Temp.sm) #shows that last few are NAs
-Temp.sm[is.na(Temp.sm)]=0 #set these to zero
-plot(scal.temp, type="l")
+#average of current sample, 5 future samples, and 5 past samples
+filt=rep(1/11,11)
+Temp.sm = filter(data$estTemp_avg, filt, sides=2, circular=TRUE)
+plot(data$estTemp_avg, type="l")
 lines(Temp.sm, col="red", lwd="3")
 data=data.frame(data, Temp_sm=Temp.sm)
 
@@ -80,19 +92,84 @@ for (i in 1:length(Temp.sm)){
   scal.temp.sm[i] = (Temp.sm[i] - Tminsm.mean)/(Tmaxsm.mean-Tminsm.mean) 
 }
 
-#rescale to 1
-minscal = min(scal.temp.sm)
-maxscal = max(scal.temp.sm)
-for (i in 1:length(scal.temp.sm)){
-  scal.temp.sm[i] = (scal.temp.sm[i] - minscal)/(maxscal-minscal)
-}
-
 plot(scal.temp.sm, type="l")
 
+#need to calculate slope for each 7 day period
+start = seq(1, length(Temp.sm), 8) #create a sequence of start iterations for slope calculations
+end = seq(8, length(Temp.sm), 8) #create a sequence of end iterations for slope calculations
+start
+end
 
-#create GPP scalar to assist with shoulder seasons
-par(mfrow=c(1,1))
-plot(data$Albedo)
+#need to look at slope to determine end of season
+slope=rep(NA, length(Temp.sm))
+for(i in 1:length(start)){
+  slope.i = (Temp.sm[end[i]]-Temp.sm[start[i]])/7
+  start.i = start[i]
+  end.i = end[i]
+  slope[start.i:end.i]=rep(slope.i, 8)
+}
+slope
+slope[1825]=slope[1824] #these two points don't really matter, but I don't want them to be NAs
+slope[1826]=slope[1825]
+slope
+data=data.frame(data, slope=slope)
+head(data)
+
+
+spring.test = rep(0, length(slope))
+for(i in 9:length(data$slope)-8){
+  if(slope[i]>0 & slope[i+8]>0){
+    spring.test[i]=1
+  }
+}
+spring.test
+
+fall.test = rep(0, length(slope))
+for(i in 9:length(data$slope)-8){
+  if(slope[i]<0 & slope[i+8]<0){
+    fall.test[i]=1
+  }
+}
+fall.test
+
+
+par(mfrow=c(2,1))
+plot(Temp.sm)
+lines(spring.test*10, col="red")
+plot(Temp.sm)
+lines(fall.test*10, col="red")
+
+
+
+data=data.frame(data, springtest=spring.test, falltest=fall.test)
+head(data)
+
+years = unique(data$year) #tells you which years we have data for 
+start.day = NA
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data, data$year==year.i)
+  start.day[i] = min(data.year$DOY[which(data.year$DOY>120 & data.year$estTemp_avg>=-5 & data.year$springtest==1)])
+}
+start.day
+num.days = c(365, 365, 365, 366, 365)
+startDOY = rep(c(start.day), c(num.days))
+data = data.frame(data, startDOY = startDOY)
+head(data)
+
+end.day = NA
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data, data$year==year.i)
+  end.day[i] = min(data.year$DOY[which(data.year$DOY>240 & data.year$estTemp_min<=-5 & data.year$falltest==1)])
+}
+end.day
+num.days = c(365, 365, 365, 366, 365)
+endDOY = rep(c(end.day), c(num.days))
+data = data.frame(data, endDOY = endDOY)
+head(data)
+
+
 #need to figure out which DOY was the day when snow began to melt
 years = unique(data$year) #tells you which years we have data for 
 melt.day = NA
@@ -107,19 +184,6 @@ meltDOY = rep(c(melt.day), c(num.days))
 data = data.frame(data, meltDOY = meltDOY)
 head(data)
 
-#now determine day of first frost
-years = unique(data$year) #tells you which years we have data for 
-frost.day = NA
-for (i in 1: length(years)){
-  year.i = years[i]
-  data.year = subset(data, data$year==year.i)
-  frost.day[i] = min(data.year$DOY[which(data.year$estTemp_avg<=0 & data.year$DOY>180)])
-}
-frost.day
-num.days = c(365, 365, 365, 366, 365)
-frostDOY = rep(c(frost.day), c(num.days))
-data = data.frame(data, frostDOY = frostDOY)
-head(data)
 
 #need to figure out which DOY was the day when snow fell
 years = unique(data$year) #tells you which years we have data for 
@@ -136,152 +200,32 @@ data = data.frame(data, snowDOY = snowDOY)
 head(data)
 
 
-#now determine peak season day
-#figure out which corresponds to peak in GPP
+
 data.compare2=read.csv("Assimilation_data_ALL.csv")
 
-years = unique(data$year) #tells you which years we have data for 
-peakGPP.day = NA
-for (i in 1: length(years)){
-  year.i = years[i]
-  data.year = subset(data.compare2, data.compare2$Year==year.i)
-  maxGPP.year = max(data.year$GPP,na.rm=TRUE)
-  peakGPP.day[i] = data.year$DOY[which(data.year$GPP==maxGPP.year)]
-}
-peakGPP.day
-
-peakTemp.day = NA
-for (i in 1: length(years)){
-  year.i = years[i]
-  data.year = subset(data, data$year==year.i)
-  maxTemp.year = max(data.year$Temp_ARF)
-  peakTemp.day[i] = data.year$DOY[which(data.year$Temp_ARF==maxTemp.year)]
-}
-peakTemp.day
-
-peakPAR.day = NA
-for (i in 1: length(years)){
-  year.i = years[i]
-  data.year = subset(data, data$year==year.i)
-  maxPAR.year = max(data.year$PAR_ARF)
-  peakPAR.day[i] = data.year$DOY[which(data.year$PAR_ARF==maxPAR.year)]
-}
-peakPAR.day
-
-mid.day=round((frost.day+melt.day)/2)
-mid.day
-
-#figure out which is best
-mean(abs(peakTemp.day-peakGPP.day))
-mean(abs(peakPAR.day-peakGPP.day))
-mean(abs(mid.day-peakGPP.day)) 
-
-
+par(mfrow=c(1,1))
 plot(data.compare2$GPP~data.compare2$Time, col="forestgreen", xlim=c(1,1826))
-abline(v=c(snow.day+c(0,365,365+365,365+365+366, 365+365+366+365)))
-num.days = c(365, 365, 365, 366, 365)
-peakDOY = rep(mid.day, c(num.days))
-data = data.frame(data, peakDOY = peakDOY)
-head(data)
-
-#now determine slope of GPP increase after melt
-plot(data.compare2$GPP~data.compare2$Time, col="forestgreen", xlim=c(1,1826))
-head(data.compare2) #view data
-data.compare2 = data.compare2[!is.na(data.compare2$GPP),]
-head(data.compare2) #view data
-
-#determine data to calculate slope
-years = unique(data$year) #tells you which years we have data for 
-startGPP.day = NA #day which GPP starts
-startGPP = NA #GPP at starting day
-endGPP.day = NA #day which GPP ends
-endGPP = NA #GPP at end day
-peakGPP = NA #GPP at peak day
-for (i in 1: length(years)){
-  year.i = years[i]
-  data.year = subset(data.compare2, data.compare2$Year==year.i)
-  startGPP.day[i] = min(data.year$DOY)
-  startGPP[i] = data.year$GPP[which(data.year$DOY==startGPP.day[i])]
-  endGPP.day[i] = max(data.year$DOY)
-  endGPP[i] = data.year$GPP[which(data.year$DOY==endGPP.day[i])]
-  peakGPP[i] = data.year$GPP[which(data.year$DOY==peakGPP.day[i])]
-}
-startGPP.day
-startGPP
-endGPP.day
-endGPP
-peakGPP.day
-peakGPP
-slope.GPP.i = (peakGPP-startGPP)/(peakGPP.day-startGPP.day) #calculate initial slope for each year
-slope.GPP.f = (peakGPP-endGPP)/abs((peakGPP.day-endGPP.day)) #calculate final slope for each year
-slope.GPP.i 
-slope.GPP.f
-mean(slope.GPP.i)
-mean(slope.GPP.f)
-
-#see how slope relates to other variables
-Tmax = tapply(data$estTemp_avg, data$year, max)
-Pmax = tapply(data$PAR_ARF, data$year, max)
-plot(slope.GPP, Tmax) #no relationship
-plot(slope.GPP, Pmax) #no relationship
-slope.GPP
-
-
-#now, create a scalar
-scal.GPP.i = NA
-for(i in 1:length(data$time)){
-  if(data$DOY[i]<=data$meltDOY[i]){
-    scal.GPP.i[i] = 0 
-  }
-  if(data$DOY[i]>data$meltDOY[i]){
-    scal.GPP.i[i] = 0 + mean(slope.GPP.i)*(data$DOY[i]-data$meltDOY[i])
-  }
-  if(scal.GPP.i[i]>1){
-    scal.GPP.i[i] = 1
-  }
-}
-
-plot(scal.GPP.i)
-
-scal.GPP.f = NA
-for(i in 1:length(data$time)){  
-  if(data$DOY[i]<data$frostDOY[i]){
-    scal.GPP.f[i] = 0 + mean(slope.GPP.f)*(data$frostDOY[i]-data$DOY[i])
-  }
-  if(data$DOY[i]>=data$frostDOY[i]){
-    scal.GPP.f[i] = 0
-  }
-  
-  if(scal.GPP.f[i]>1){
-    scal.GPP.f[i] = 1
-  }
-}
-
-plot(scal.GPP.f)
-
-scal.GPP=scal.GPP.i*scal.GPP.f
-plot(scal.GPP)
+abline(v=c(start.day+c(0,365,365+365,365+365+366, 365+365+366+365)), col="red")
+abline(v=c(sen.day+c(0,365,365+365,365+365+366, 365+365+366+365)))
+abline(v=c(end.day+c(0,365,365+365,365+365+366, 365+365+366+365)), col="blue")
 
 ###############seasonal scalar##############
 
-peakPAR_DOY = rep(peakPAR.day, c(365, 365, 365, 366, 365))
-peakTemp_DOY = rep(peakTemp.day, c(365, 365, 365, 366, 365))
-
 scal.seas=rep(1, length(data$DOY))
 for (i in 1:length(data$DOY)){
-  if(data$DOY[i]<data$meltDOY[i]){ #prior to snow melt
+  if(data$DOY[i]<data$startDOY[i]){ #prior to snow melt
     scal.seas[i]=0
   }
-  if(data$DOY[i]>=data$meltDOY[i]){ #after melt
+  if(data$DOY[i]>=data$startDOY[i]){ #after melt
     if(data$DOY[i]<=data$senDOY[i]){ #prior to peak
-      slope = 1/(data$senDOY[i]-data$meltDOY[i])
-      scal.seas[i] = 0+(slope*(data$DOY[i]-data$meltDOY[i]))
+      slope = 1/(data$senDOY[i]-data$startDOY[i])
+      scal.seas[i] = 0+(slope*(data$DOY[i]-data$startDOY[i]))
     }
-    if(data$DOY[i]>data$senDOY[i] & data$DOY[i]<data$snowDOY[i]){ #after peak but before frost
-      slope = 1/(data$snowDOY[i]-data$senDOY[i])
-      scal.seas[i] = 0+(slope*(data$snowDOY[i]-data$DOY[i]))
+    if(data$DOY[i]>data$senDOY[i] & data$DOY[i]<data$endDOY[i]){ #after peak but before frost
+      slope = 1/(data$endDOY[i]-data$senDOY[i])
+      scal.seas[i] = 0+(slope*(data$endDOY[i]-data$DOY[i]))
     }
-    if(data$DOY[i]>=data$snowDOY[i]){ #after frost
+    if(data$DOY[i]>=data$endDOY[i]){ #after frost
       scal.seas[i]=0
     }
   }

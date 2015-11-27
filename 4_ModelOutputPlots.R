@@ -448,7 +448,7 @@ resid.Re.mean = tapply(resid_Re$resid.Re, resid_Re$DOY, mean, na.rm=TRUE)
 resid.NDVI.mean = tapply(resid_NDVI$resid.NDVI, resid_NDVI$DOY, mean, na.rm=TRUE)
 time=seq(140,250,1)
 resid.meansflux=data.frame(DOY=time, resid.GPP.mean, resid.NEE.mean, resid.Re.mean)
-time=seq(144,250,1)
+time=seq(149,250,1)
 resid.meansNDVI=data.frame(DOY=time, resid.NDVI.mean)
 
 par(mfrow=c(4,1), mar=c(4,4,2,2))

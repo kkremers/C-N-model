@@ -2,13 +2,14 @@ require(deSolve)
 require(FME)
 
 params <- c(kplant = 0.2, #0.07-0.34
-            LitterRateC = 0.0005, #0.0001-0.0024
+            LitterRateC = 0.0007, #0.0001-0.0024
             LitterRateN = 0.0008, #0.0001-0.0024
             UptakeRate = 0.008, #0.002-0.012
             propN_fol = 0.1, #0.1-0.9
             propN_roots = 0.015, #0.002-0.015
             netNrate = 0.015, #0.001-0.04
-            cue=0.6, #0.42-0.8
+            cue=0.7, #0.4-0.8
+            beta=0.05, #0.04-0.08
             Biomass_C = 684.5, 
             Biomass_N = 12.9, 
             SOM_C = 19358.7, 
@@ -43,7 +44,6 @@ solvemodel <- function(params, times) {
       E0 = 0.03
       q10=1.9
       R0 = 0.06 
-      beta = 0.04 
       Rx = 0.02 
       SOM_CN = 36
       
@@ -96,7 +96,7 @@ solvemodel <- function(params, times) {
   } #end of model
   
   
-  return(ode(y=params[9:13],times=time,func=model,parms = params[1:8], method="rk4")) #integrate using runge-kutta 4 method
+  return(ode(y=params[10:14],times=time,func=model,parms = params[1:9], method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 
