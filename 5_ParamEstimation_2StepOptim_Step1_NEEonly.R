@@ -154,9 +154,13 @@ for (d in 1:D) { #for each data type
 
 J[1] = sum(j[1,])/D #calculate aggregate cost function
 head(J)
+tail(J)
 head(j)
+tail(j)
 head(param.est)
-
+tail(param.est)
+head(all.draws)
+tail(all.draws)
 
 #set initial values
 anneal.temp0=100 #starting temperature
@@ -264,4 +268,4 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_UNBdata.Rdata")
+save.image(file="Step1_NEE_UNBdata_MELstarting.Rdata")

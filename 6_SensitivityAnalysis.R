@@ -38,29 +38,40 @@ sensvars = c("Biomass_C",
              "SOM_N",
              "Available_N",
              "NEE",
-             "NDVI",
-             "LAI")
+             "NDVI")
 
 #local sensitivity analysis
-s.local <- sensFun(func=solvemodel, parms=params, state=state, sensvar = sensvars, varscale=1)
+s.local <- sensFun(func=solvemodel, parms=param.best, sensvar = sensvars)
 
 head(s.local); tail(s.local)
-s.local.summ = summary(s.local, var=T)
-s.loc.summ.ordered = s.local.summ[order(s.local.summ$var, abs(s.local.summ$Mean)),] 
-write.csv(s.loc.summ.ordered, "LocalSensitivityAnalysis.csv") #univariate sensitivity
+s.local.summ = data.frame(summary(s.local, var=T))
+head(s.local.summ); tail(s.local.summ)
+s.loc.summ.ordered = data.frame(s.local.summ[order(s.local.summ$var, abs(s.local.summ$Mean)),] )
+write.csv(s.loc.summ.ordered, "LocalSensitivityAnalysis_NEENDVI.csv") #univariate sensitivity
+#make a bar graph 
+
+
+#NEE
+sub = subset(s.local.summ, var=="NEE")
+barplot(abs(sub$Mean), names.arg=names(params), cex.names=0.5, 
+        col="forestgreen", horiz=TRUE, main="NEE") #plot the data
+
+
+#NDVI
+sub = subset(s.local.summ, var=="NDVI")
+barplot(abs(sub$Mean), names.arg=names(params), cex.names=0.5, 
+        col="forestgreen", horiz=TRUE, main="NDVI") #plot the data
+abline(v=0)
+
+
 param.cor = data.frame(cor(s.local[,c(-1,-2)]))#table of parameter correlations
 param.cor
-write.csv(param.cor, "c:/Users/Rocha Lab/Desktop/Kelsey/ParamCorr.csv") #bivariate sensitivity
+write.csv(param.cor, "ParamCorr_NEENDVI.csv") #bivariate sensitivity
 pairs(s.local)
 
 #global sensitivity analysis
 
-require(MBESS)
-sdevs=apply(param.keep,2,sd)
-params.cov=cor2cov(as.matrix(param.cor),sdevs)
-params.mean=apply(param.keep,2,mean)
-
-s.global <- sensRange(func=solvemodel, parms=param.best, state=state, sensvar = sensvars, dist="norm", parMean=params.mean, parCovar=params.cov, num=100)
+s.global <- sensRange(func=solvemodel, parms=param.best, sensvar = sensvars, parInput=param.keep, num=100)
 
 s.global.summ = summary(s.global)
 head(s.global.summ)

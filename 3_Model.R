@@ -9,8 +9,9 @@ params <- c(kplant = 0.2, #0.07-0.34
             propN_roots = 0.015, #0.002-0.015
             netNrate = 0.015, #0.001-0.04
             cue=0.7, #0.4-0.8
-            beta=0.05, #0.04-0.08
-            Biomass_C = 684.5, 
+            beta=0.05)#0.04-0.08
+
+state <- c( Biomass_C = 684.5, 
             Biomass_N = 12.9, 
             SOM_C = 19358.7, 
             SOM_N = 854.1,
@@ -20,7 +21,7 @@ time = seq(1, 1826, 1)
 
 ####################MODEL#################################
 
-solvemodel <- function(params, times) {
+solvemodel <- function(params, state, times) {
   
   model<-function(t,state,params)
   { 
@@ -96,12 +97,11 @@ solvemodel <- function(params, times) {
   } #end of model
   
   
-  return(ode(y=params[10:14],times=time,func=model,parms = params[1:9], method="rk4")) #integrate using runge-kutta 4 method
+  return(ode(y=state,times=time,func=model,parms = params, method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 
 #####################################################################
 
-out= data.frame(solvemodel(params)) #creates table of model output
+out= data.frame(solvemodel(params, state)) #creates table of model output
 
-sum(out$Ra)/sum(out$Re)

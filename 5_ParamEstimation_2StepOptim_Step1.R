@@ -158,6 +158,10 @@ J[1] = sum(j[1,])/D #calculate aggregate cost function
 head(J)
 head(j)
 head(param.est)
+tail(J)
+tail(j)
+tail(param.est)
+
 
 #set initial values
 anneal.temp0=100 #starting temperature
@@ -264,5 +268,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_NDVI_UNBdata.Rdata")
+save.image(file="Step1_NEE_NDVI_UNBdata_MELstarting.Rdata")
 
