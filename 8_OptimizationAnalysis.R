@@ -609,5 +609,5 @@ barplot(perc.all_1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  
 barplot(perc.all.dat$NEE, names.arg=names(params[1:9]), cex.names=0.5, 
         col="forestgreen", horiz=TRUE, main="NEE") #plot the data
 
-save.image(file="Variance_09252015.Rdata")
+save.image(file="Variance_120215.Rdata")
 
