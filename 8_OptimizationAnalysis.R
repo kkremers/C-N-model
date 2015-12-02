@@ -148,7 +148,16 @@ MVar_cue = data.frame(matrix(1,1,11))
 colnames(MVar_cue)=c("Month", colnames(out[,2:11]))
 MVar_beta = data.frame(matrix(1,1,11))
 colnames(MVar_beta)=c("Month", colnames(out[,2:11]))
-
+MVar_BiomassC = data.frame(matrix(1,1,11))
+colnames(MVar_BiomassC)=c("Month", colnames(out[,2:11]))
+MVar_BiomassN = data.frame(matrix(1,1,11))
+colnames(MVar_BiomassN)=c("Month", colnames(out[,2:11]))
+MVar_SOMC = data.frame(matrix(1,1,11))
+colnames(MVar_SOMC)=c("Month", colnames(out[,2:11]))
+MVar_SOMN = data.frame(matrix(1,1,11))
+colnames(MVar_SOMN)=c("Month", colnames(out[,2:11]))
+MVar_AvailN = data.frame(matrix(1,1,11))
+colnames(MVar_AvailN)=c("Month", colnames(out[,2:11]))
 
 #need to create a vector of months to append to model output
 months = rep(c(seq(1:12)),
@@ -255,6 +264,61 @@ for(i in 1:1000){
   monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
   names(monthly.avg) = names(MVar_beta)
   MVar_beta = rbind(MVar_beta, monthly.avg)
+}
+
+#Biomass_C
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[10] = unlist(c(param.keep[i,10]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  out.i = cbind(out.i, Month = months) #add month vector
+  monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
+  names(monthly.avg) = names(MVar_BiomassC)
+  MVar_BiomassC = rbind(MVar_BiomassC, monthly.avg)
+}
+
+#Biomass_N
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[11] = unlist(c(param.keep[i,11]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  out.i = cbind(out.i, Month = months) #add month vector
+  monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
+  names(monthly.avg) = names(MVar_BiomassN)
+  MVar_BiomassN = rbind(MVar_BiomassN, monthly.avg)
+}
+
+#SOM_C
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[12] = unlist(c(param.keep[i,12]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  out.i = cbind(out.i, Month = months) #add month vector
+  monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
+  names(monthly.avg) = names(MVar_SOMC)
+  MVar_SOMC = rbind(MVar_SOMC, monthly.avg)
+}
+
+#SOM_N
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[13] = unlist(c(param.keep[i,13]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  out.i = cbind(out.i, Month = months) #add month vector
+  monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
+  names(monthly.avg) = names(MVar_SOMN)
+  MVar_SOMN = rbind(MVar_SOMN, monthly.avg)
+}
+
+#AvailableN
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[14] = unlist(c(param.keep[i,14]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  out.i = cbind(out.i, Month = months) #add month vector
+  monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
+  names(monthly.avg) = names(MVar_AvailN)
+  MVar_AvailN = rbind(MVar_AvailN, monthly.avg)
 }
 
 
