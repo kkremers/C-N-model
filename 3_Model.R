@@ -15,7 +15,7 @@ state <- c( Biomass_C = 684.5,
             Biomass_N = 12.9, 
             SOM_C = 19358.7, 
             SOM_N = 854.1,
-            Available_N = 0.1)
+            Available_N = 1.6)
 
 time = seq(1, 1826, 1)
 

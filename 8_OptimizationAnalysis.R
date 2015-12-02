@@ -15,8 +15,8 @@ param.keep_NEE_NDVI_UNBdata = param.keep #save the table of accepted parameters 
 write.csv(param.keep_NEE_NDVI_UNBdata, "Params_NEE_NDVI_UNBdata.csv")
 
 ###comparison using data that was assimilated
-data.compare1 = data.frame(data.compare1)
-out=data.frame(solvemodel(param.best)) #with columns to match data.assim
+data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,9]))
+out=data.frame(solvemodel(param.best, state)) #with columns to match data.assim
 out.compare1 = out[match(data.compare1$time, out$time),]
 out.compare1=out.compare1[,c(1,7,11)]
 head(out.compare1)
@@ -331,7 +331,11 @@ MVar_propN_roots = MVar_propN_roots[-1,]
 MVar_netNrate = MVar_netNrate[-1,]
 MVar_cue = MVar_cue[-1,]
 MVar_beta = MVar_beta[-1,]
-
+MVar_BiomassC = MVar_BiomassC[-1,]
+MVar_BiomassN = MVar_BiomassN[-1,]
+MVar_SOMC = MVar_SOMC[-1,]
+MVar_SOMN = MVar_SOMN[-1,]
+MVar_AvailN = MVar_AvailN[-1,]
 
 var.kplant = aggregate(MVar_kplant[,2:11], list(MVar_kplant$Month), var)
 var.LitterRateC = aggregate(MVar_LitterRateC[,2:11], list(MVar_LitterRateC$Month), var)
@@ -342,12 +346,17 @@ var.propN_roots = aggregate(MVar_propN_roots[,2:11], list(MVar_propN_roots$Month
 var.netNrate = aggregate(MVar_netNrate[,2:11], list(MVar_netNrate$Month), var)
 var.cue = aggregate(MVar_cue[,2:11], list(MVar_cue$Month), var)
 var.beta = aggregate(MVar_beta[,2:11], list(MVar_beta$Month), var)
+var.BiomassC = aggregate(MVar_BiomassC[,2:11], list(MVar_BiomassC$Month), var)
+var.BiomassN = aggregate(MVar_BiomassN[,2:11], list(MVar_BiomassN$Month), var)
+var.SOMC = aggregate(MVar_SOMC[,2:11], list(MVar_SOMC$Month), var)
+var.SOMN = aggregate(MVar_SOMN[,2:11], list(MVar_SOMN$Month), var)
+var.AvailN = aggregate(MVar_AvailN[,2:11], list(MVar_AvailN$Month), var)
 
-
-parameters = rep(names(params[1:9]), c(12,12,12,12,12,12,12,12,12))
+parameters = rep(names(params), c(12,12,12,12,12,12,12,12,12,12,12,12,12,12))
 
 all = rbind(var.kplant, var.LitterRateC, var.LitterRateN, var.UptakeRate, var.propN_fol, 
-            var.propN_roots, var.netNrate, var.cue, var.beta)
+            var.propN_roots, var.netNrate, var.cue, var.beta, var.BiomassC, var.BiomassN,
+            var.SOMC, var.SOMN, var.AvailN)
 
 all=cbind(Parameters = parameters, all)
 
@@ -382,18 +391,34 @@ perc.cue = cbind(Parameter = rep("cue", 12), Month=var.total$Group.1, perc.cue)
 perc.beta = (var.beta[,2:11]/var.total[,2:11])*100
 perc.beta = cbind(Parameter = rep("beta", 12), Month=var.total$Group.1, perc.beta)
 
+perc.BiomassC = (var.BiomassC[,2:11]/var.total[,2:11])*100
+perc.BiomassC = cbind(Parameter = rep("BiomassC", 12), Month=var.total$Group.1, perc.BiomassC)
+
+perc.BiomassN = (var.BiomassN[,2:11]/var.total[,2:11])*100
+perc.BiomassN = cbind(Parameter = rep("BiomassN", 12), Month=var.total$Group.1, perc.BiomassN)
+
+perc.SOMC = (var.SOMC[,2:11]/var.total[,2:11])*100
+perc.SOMC = cbind(Parameter = rep("SOMC", 12), Month=var.total$Group.1, perc.SOMC)
+
+perc.SOMN = (var.SOMN[,2:11]/var.total[,2:11])*100
+perc.SOMN = cbind(Parameter = rep("SOMN", 12), Month=var.total$Group.1, perc.SOMN)
+
+perc.AvailN = (var.AvailN[,2:11]/var.total[,2:11])*100
+perc.AvailN = cbind(Parameter = rep("AvailN", 12), Month=var.total$Group.1, perc.AvailN)
+
 
 #create a table binding all together
 
 perc.all = rbind(perc.kplant, perc.LitterRateC, perc.LitterRateN, perc.UptakeRate, 
-                 perc.propN_fol, perc.propN_roots, perc.netNrate, perc.cue, perc.beta)
+                 perc.propN_fol, perc.propN_roots, perc.netNrate, perc.cue, perc.beta,
+                 perc.BiomassC, perc.BiomassN, perc.SOMC, perc.SOMN, perc.AvailN)
 perc.all = perc.all[,-11]
 head(perc.all)
 tail(perc.all)
 
 ####barplots####
 
-par(mfrow=c(1,1), mar=c(4,4,2,2))
+par(mfrow=c(3,3), mar=c(4,4,2,2))
 
 for (n in 3:11) { #for each output
   sub = perc.all[,c(1,2,n)]
@@ -407,13 +432,20 @@ for (n in 3:11) { #for each output
   sub1[7,] = sub[73:84,3]
   sub1[8,] = sub[85:96,3]
   sub1[9,] = sub[97:108,3]
-  barplot(sub1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "purple", 
-                      "deepskyblue", "dodgerblue3", "forestgreen", "darkgray"),            
+  sub1[10,] = sub[109:120,3]
+  sub1[11,] = sub[121:132,3]
+  sub1[12,] = sub[133:144,3]
+  sub1[13,] = sub[145:156,3]
+  sub1[14,] = sub[157:168,3]
+  barplot(sub1, col=c("darkolivegreen3", "dodgerblue", "aquamarine", "darkgreen", "mediumseagreen",
+                      "palegreen", "darkblue", "lightskyblue", "maroon4", "gray87", "azure2", 
+                      "gray29", "gray57", "darkslategray"),             
           main=names(perc.all[n]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100)) #plot the data
 } #end of for loop
 
 
 #NDVI
+par(mfrow=c(1,1))
 sub = perc.all[,c(1,2,11)]
 sub1 = table(sub$Parameter, sub$Month)
 sub1[1,] = sub[1:12,3]
@@ -425,8 +457,14 @@ sub1[6,] = sub[61:72,3]
 sub1[7,] = sub[73:84,3]
 sub1[8,] = sub[85:96,3]
 sub1[9,] = sub[97:108,3]
-barplot(sub1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "purple", 
-                    "deepskyblue", "dodgerblue3", "forestgreen", "darkgray"),            
+sub1[10,] = sub[109:120,3]
+sub1[11,] = sub[121:132,3]
+sub1[12,] = sub[133:144,3]
+sub1[13,] = sub[145:156,3]
+sub1[14,] = sub[157:168,3]
+barplot(sub1, col=c("darkolivegreen3", "dodgerblue", "aquamarine", "darkgreen", "mediumseagreen",
+                    "palegreen", "darkblue", "lightskyblue", "maroon4", "gray87", "azure2", 
+                    "gray29", "gray57", "darkslategray"),           
         main=names(perc.all[11]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100), legend=TRUE) #plot the data
 
 

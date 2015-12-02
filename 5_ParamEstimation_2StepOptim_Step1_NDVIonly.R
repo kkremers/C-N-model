@@ -3,7 +3,7 @@
 #require(beepr)
 #beep(5) #test sounds; there are 9 options; don't need to run this every time, just to choose a sound
 
-######################Synthetic data experiments#######################
+######Synthetic data experiments######
 
 #Get data ready
 head(out) #this is the output from the model run
@@ -88,7 +88,7 @@ colnames(sigma.obs1) = colnames(data.compare1)
 #sigma.obs1: columns need to be in SAME ORDER as data.compare1
 head(data.compare1)
 head(sigma.obs1)
-############################################
+###################################
 
 ###LOAD REAL DATA###
 data.assim = read.csv("Assimilation_data_all.csv")
@@ -97,14 +97,12 @@ data.assim = data.assim[data.assim$Year != 2013,]
 data.sigma = data.sigma[data.sigma$Year != 2013,]
 head(data.assim)
 head(data.sigma)
-tail(data.assim)
-tail(data.sigma)
 head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
 head(out1)
 time.assim = out1[match(data.assim$Year_DOY, out1$year_DOY), 1]
-data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,9]))
-sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,9]))
+data.compare1=data.frame(cbind(time=time.assim, NDVI=data.assim[,9]))
+sigma.obs1 = data.frame(cbind(time=time.assim, NDVI=data.sigma[,9]))
 head(data.compare1)
 head(sigma.obs1)
 
@@ -112,8 +110,8 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = length(params) #number of parameters to estimate
-M = 200000 #number of iterations
-D = 2 #number of data types being assimilated 
+M = 50000 #number of iterations
+D = 1 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
   n.time[d]=sum(!is.na(data.compare1[,d+1])) #calculate the number of time points that DO NOT have NA's
@@ -138,7 +136,7 @@ head(all.draws)
 
 #replace 1st row with values for current parameters
 out=data.frame(solvemodel(params))
-out.compare1 = out[match(data.compare1$time, out$time),c(1,7,11)] #these columns need to match the ones that were pulled out before
+out.compare1 = out[match(data.compare1$time, out$time),c(1,11)] #these columns need to match the ones that were pulled out before
 
 error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
 for (d in 1:D) { #for each data type
@@ -153,10 +151,13 @@ for (d in 1:D) { #for each data type
   
 } #end of data type loop
 
+
 head(j)
+tail(j)
 head(param.est)
-
-
+tail(param.est)
+head(all.draws)
+tail(all.draws)
 
 #set initial values
 anneal.temp0=100 #starting temperature
@@ -164,6 +165,7 @@ anneal.temp=100 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 t=0.5
+param.best #from NEE optimization
 
 #start exploration
 
@@ -171,14 +173,14 @@ for (i in 2:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
-      param.est[i,p] = param.est[i-1,p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
+      param.est[i,p] = param.best[p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
       all.draws[i,p] = param.est[i,p]
     } #end of parameter loop
-  if(all(!is.na(param.est[i,]))){
-    if(all(param.est[i,]>=param.min) & all(param.est[i,]<=param.max)){
-      break
+    if(all(!is.na(param.est[i,]))){
+      if(all(param.est[i,]>=param.min) & all(param.est[i,]<=param.max)){
+        break
+      } #end of if loop
     } #end of if loop
-  } #end of if loop
   } #end of repeat
   
   parms = as.numeric(param.est[i,]) #parameters for model run
@@ -188,12 +190,12 @@ for (i in 2:M) {
   if(any(is.na(out)) | any(out[,2:6]<0) | abs(out[1826,2]-out[1,2])>300 ){ #if there are any NAs or negative stocks in the output
     reject = reject+1 #reject parameter set
     param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
-    j[i,] = j[i-1,] #set current j to previous j
+    j[i,] = j[i-1,] #set current J to previous J
   } else { #if there are no NAs or negative stocks & biomass pool doesn't crash
     
     #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
     
-    out.compare1 = out[match(data.compare1$time, out$time),c(1,7,11)] #these columns need to match the ones that were pulled out before
+    out.compare1 = out[match(data.compare1$time, out$time),c(1,11)] #these columns need to match the ones that were pulled out before
     
     error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
     for (d in 1:D) { #for each data type
@@ -206,16 +208,17 @@ for (i in 2:M) {
       
       j[i,d] = sum(error.time[,d])/n.time[d] #calculate cost function for each data stream
       
-    } #end of data type loop    
+    } #end of data type loop
     
-    diff=j[i,]-j[i-1,] #calculate difference between current j and previous j for each data type
     
-    if(any(diff>0)){ #if either difference is > 0 (or if the current j is greater than the previous j)
+    diff=j[i,]-j[i-1,] #calculate difference between current J and previous J
+    
+    if(diff>0){ #if difference is > 0 (or if the current J is greater than the previous J)
       
-      u=runif(D, 0, 1) #draw random numbers between 0 and 1
+      u=runif(1, 0, 1) #draw random number between 0 and 1
       prob=exp((-1*diff)/anneal.temp) #simulated annealing - determines probability that a parameter set is accepted
       
-      if(any(u>=prob)){    
+      if(u>=prob){    
         reject = reject+1 #reject parameter set
         param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
         j[i,] = j[i-1,] #set current J to previous J (the minimum J so far)
@@ -243,20 +246,15 @@ for (i in 2:M) {
   }
   
 } #end of exploration
-#started at 9:07am
+
 
 #beep(5)
 #make plots to check for mixing and make sure parameter space is thuroughly explored
 plot(all.draws[1:i,2])
 lines(param.est[1:i,2], col="red", lwd="2")
 
-step.best = which.min(j) #determine which step has the minimum value of j and store as "step.best"
-param.est[step.best,] #show the parameter set that resulted in the best J
-param.best = as.numeric(param.est[step.best,]) #store that parameter set as param.best
-names(param.best) = names(params) #change the names to match params
 j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_NDVI_UNBdata_fixed.Rdata")
-
+save.image(file="Step1_NEE_NDVI_part2_UNBdata.Rdata")

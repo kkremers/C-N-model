@@ -110,7 +110,7 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = length(params) #number of parameters to estimate
-M = 200000 #number of iterations
+M = 50000 #number of iterations
 D = 1 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -124,7 +124,6 @@ param.max=c(0.34,0.0024,0.0024,0.012,0.9,0.015,0.04,0.8,0.08,    820,15,22000,95
 param.min=c(0.07,0.0001,0.0001,0.002,0.1,0.002,0.001,0.4,0.04,  550,10,16500,750,0.5)
 
 #storage matrices
-J = rep(1E100, M) #storage vector for cost function output
 j = matrix(1E100, M, D) #to store error calculations for this iteration
 all.draws = data.frame(matrix(1, M, n.param)) #storage for all parameter estimate iterations;
 colnames(all.draws) = c(names(params))
@@ -136,7 +135,7 @@ head(param.est) #check to make sure this is correct
 head(all.draws)
 
 #replace 1st row with values for current parameters
-out=data.frame(solvemodel(params, state))
+out=data.frame(solvemodel(params))
 out.compare1 = out[match(data.compare1$time, out$time),c(1,7)] #these columns need to match the ones that were pulled out before
 
 error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
@@ -152,9 +151,7 @@ for (d in 1:D) { #for each data type
   
 } #end of data type loop
 
-J[1] = sum(j[1,])/D #calculate aggregate cost function
-head(J)
-tail(J)
+
 head(j)
 tail(j)
 head(param.est)
@@ -168,14 +165,15 @@ anneal.temp=100 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 t=0.5
+param.best = params
 
 #start exploration
 
-for (i in 128333:M) {
+for (i in 2:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
-      param.est[i,p] = param.est[i-1,p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
+      param.est[i,p] = param.best[p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
       all.draws[i,p] = param.est[i,p]
     } #end of parameter loop
     if(all(!is.na(param.est[i,]))){
@@ -192,7 +190,7 @@ for (i in 128333:M) {
   if(any(is.na(out)) | any(out[,2:6]<0) | abs(out[1826,2]-out[1,2])>300 ){ #if there are any NAs or negative stocks in the output
     reject = reject+1 #reject parameter set
     param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
-    J[i] = J[i-1] #set current J to previous J
+    j[i,] = j[i-1,] #set current J to previous J
   } else { #if there are no NAs or negative stocks & biomass pool doesn't crash
     
     #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
@@ -212,10 +210,8 @@ for (i in 128333:M) {
       
     } #end of data type loop
     
-    J[i] = sum(j[i,])/D #calculate aggregate cost function
-    
-    
-    diff=J[i]-J[i-1] #calculate difference between current J and previous J
+
+    diff=j[i,]-j[i-1,] #calculate difference between current J and previous J
     
     if(diff>0){ #if difference is > 0 (or if the current J is greater than the previous J)
       
@@ -225,7 +221,7 @@ for (i in 128333:M) {
       if(u>=prob){    
         reject = reject+1 #reject parameter set
         param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
-        J[i] = J[i-1] #set current J to previous J (the minimum J so far)
+        j[i,] = j[i-1,] #set current J to previous J (the minimum J so far)
       } #end of if loop
     } #end of if loop
     
@@ -249,6 +245,10 @@ for (i in 128333:M) {
     anneal.temp=anneal.temp0 #jump back up to initial
   }
   
+  param.best = as.numeric(param.est[which.min(j),]) #store the parameter set that has the smallest j as param.best
+  names(param.best) = colnames(param.est)  
+  
+  
 } #end of exploration
 
 
@@ -257,15 +257,8 @@ for (i in 128333:M) {
 plot(all.draws[1:i,2])
 lines(param.est[1:i,2], col="red", lwd="2")
 
-steps=seq(1:i) #create a vector that represents the number of steps or iterations run
-J1=data.frame(steps, J[1:i]) #create a dataframe that has "steps" as the first column and "J" as the second column
-head(J1); tail(J1) #check the table
-step.best = J1[which.min(J1[,2]),1] #determine which step has the minimum value of J and store as "step.best"
-param.est[step.best,] #show the parameter set that resulted in the best J
-param.best = as.numeric(param.est[step.best,]) #store that parameter set as param.best
-names(param.best) = names(params) #change the names to match params
 j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_UNBdata_MELstarting.Rdata")
+save.image(file="Step1_NEE_NDVI_part2_UNBdata.Rdata")
