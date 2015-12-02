@@ -171,7 +171,7 @@ t=0.5
 
 #start exploration
 
-for (i in 2:M) {
+for (i in 128333:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
