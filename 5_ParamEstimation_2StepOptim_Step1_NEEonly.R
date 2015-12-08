@@ -128,14 +128,14 @@ j = matrix(1E100, M, D) #to store error calculations for this iteration
 all.draws = data.frame(matrix(1, M, n.param)) #storage for all parameter estimate iterations;
 colnames(all.draws) = c(names(params))
 param.est = data.frame(matrix(1, M, n.param)) #storage for accepted parameter estimate iterations;
-param.est[1,]=params #change first row to current guess
-all.draws[1,]=params #change first row to current guess
+param.est[1,]=param.best #change first row to current guess
+all.draws[1,]=param.best #change first row to current guess
 colnames(param.est) = c(names(params))
 head(param.est) #check to make sure this is correct
 head(all.draws)
 
 #replace 1st row with values for current parameters
-out=data.frame(solvemodel(params))
+out=data.frame(solvemodel(param.best))
 out.compare1 = out[match(data.compare1$time, out$time),c(1,7)] #these columns need to match the ones that were pulled out before
 
 error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
@@ -165,11 +165,11 @@ anneal.temp=100 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 t=0.5
-param.best = params
+param.best = param.best
 
 #start exploration
 
-for (i in 2:M) {
+for (i in 6363:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
@@ -233,7 +233,7 @@ for (i in 2:M) {
     t = 1.01*t
   }
   
-  if(acceptance<0.45){
+  if(acceptance<0.35){
     t = 0.99*t
   }
   
@@ -245,8 +245,9 @@ for (i in 2:M) {
     anneal.temp=anneal.temp0 #jump back up to initial
   }
   
-  param.best = as.numeric(param.est[which.min(j),]) #store the parameter set that has the smallest j as param.best
-  names(param.best) = colnames(param.est)  
+  #step.best = which.min(j)
+  #param.best = as.numeric(param.est[step.best,]) #store the parameter set that has the smallest j as param.best
+  #names(param.best) = colnames(param.est)  
   
   
 } #end of exploration
@@ -256,7 +257,9 @@ for (i in 2:M) {
 #make plots to check for mixing and make sure parameter space is thuroughly explored
 plot(all.draws[1:i,2])
 lines(param.est[1:i,2], col="red", lwd="2")
-
+step.best = which.min(j)
+param.best = as.numeric(param.est[step.best,]) #store the parameter set that has the smallest j as param.best
+names(param.best) = colnames(param.est)  
 j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J

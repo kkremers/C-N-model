@@ -147,7 +147,7 @@ for (d in 1:D) { #for each data type
     #if there was no data at that timestep, the error will remain "0" so that it will not impact the sum calculation in the next step
   } #end of time step loop
   
-  j[1,d] = sum(error.time[,d])/n.time[d] #calculate cost function for each data stream
+  j[1,d] = sum(error.time[,d]) #calculate cost function for each data stream
   
 } #end of data type loop
 
@@ -160,12 +160,11 @@ head(all.draws)
 tail(all.draws)
 
 #set initial values
-anneal.temp0=100 #starting temperature
-anneal.temp=100 #starting temperature
+anneal.temp0=1000 #starting temperature
+anneal.temp=1000 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 t=0.5
-param.best #from NEE optimization
 
 #start exploration
 
@@ -173,7 +172,7 @@ for (i in 2:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
-      param.est[i,p] = param.best[p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
+      param.est[i,p] = param.est[i-1,p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
       all.draws[i,p] = param.est[i,p]
     } #end of parameter loop
     if(all(!is.na(param.est[i,]))){
@@ -185,7 +184,7 @@ for (i in 2:M) {
   
   parms = as.numeric(param.est[i,]) #parameters for model run
   names(parms) = names(params) #fix names
-  out = data.frame(solvemodel(parms, state)) #run model  
+  out = data.frame(solvemodel(parms)) #run model  
   
   if(any(is.na(out)) | any(out[,2:6]<0) | abs(out[1826,2]-out[1,2])>300 ){ #if there are any NAs or negative stocks in the output
     reject = reject+1 #reject parameter set
@@ -206,7 +205,7 @@ for (i in 2:M) {
         #if there was no data at that timestep, the error will remain "0" so that it will not impact the sum calculation in the next step
       } #end of time step loop
       
-      j[i,d] = sum(error.time[,d])/n.time[d] #calculate cost function for each data stream
+      j[i,d] = sum(error.time[,d]) #calculate cost function for each data stream
       
     } #end of data type loop
     
@@ -229,17 +228,18 @@ for (i in 2:M) {
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
   
-  if(acceptance>0.65){
+  if(acceptance>0.30){
     t = 1.01*t
   }
   
-  if(acceptance<0.45){
+  if(acceptance<0.20){
     t = 0.99*t
   }
   
+  if(t<0.1){
+    t = 0.1
+  }
   anneal.temp=anneal.temp-1 #decrease temperature
-  
-  
   
   if(anneal.temp<5){ #if temperature drops to less than 1
     anneal.temp=anneal.temp0 #jump back up to initial
@@ -253,8 +253,11 @@ for (i in 2:M) {
 plot(all.draws[1:i,2])
 lines(param.est[1:i,2], col="red", lwd="2")
 
+step.best=which.min(j)
 j.best = j[step.best,] #pull out the minimum j
-param.best #view the best parameter set
+param.best=as.numeric(param.est[step.best,]) #view the best parameter set
+names(param.best)=names(params)
 j.best #view the minimum J
+param.best
 
-save.image(file="Step1_NEE_NDVI_part2_UNBdata.Rdata")
+save.image(file="Step1_NEE_NDVI_part1NDVI_UNBdata.Rdata")

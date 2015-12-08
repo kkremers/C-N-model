@@ -112,7 +112,7 @@ head(sigma.obs1)
 
 #other necessary knowns
 n.param = length(params) #number of parameters to estimate
-M = 200000 #number of iterations
+M = 100000 #number of iterations
 D = 2 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -131,8 +131,8 @@ j = matrix(1E100, M, D) #to store error calculations for this iteration
 all.draws = data.frame(matrix(1, M, n.param)) #storage for all parameter estimate iterations;
 colnames(all.draws) = c(names(params))
 param.est = data.frame(matrix(1, M, n.param)) #storage for accepted parameter estimate iterations;
-param.est[1,]=params #change first row to current guess
-all.draws[1,]=params #change first row to current guess
+param.est[1,]=param.best #change first row to current guess
+all.draws[1,]=param.best #change first row to current guess
 colnames(param.est) = c(names(params))
 head(param.est) #check to make sure this is correct
 head(all.draws)
@@ -150,11 +150,11 @@ for (d in 1:D) { #for each data type
     #if there was no data at that timestep, the error will remain "0" so that it will not impact the sum calculation in the next step
   } #end of time step loop
   
-  j[1,d] = sum(error.time[,d])/n.time[d] #calculate cost function for each data stream
+  j[1,d] = sum(error.time[,d]) #calculate cost function for each data stream
   
 } #end of data type loop
 
-J[1] = sum(j[1,])/D #calculate aggregate cost function
+J[1] = prod(j[1,]) #calculate aggregate cost function
 head(J)
 head(j)
 head(param.est)
@@ -164,11 +164,12 @@ tail(param.est)
 
 
 #set initial values
-anneal.temp0=100 #starting temperature
-anneal.temp=100 #starting temperature
+anneal.temp0=50000 #starting temperature
+anneal.temp=50000 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 t=0.5
+param.best=params
 
 #start exploration
 
@@ -188,7 +189,7 @@ for (i in 2:M) {
   
   parms = as.numeric(param.est[i,]) #parameters for model run
   names(parms) = names(params) #fix names
-  out = data.frame(solvemodel(parms, state)) #run model  
+  out = data.frame(solvemodel(parms)) #run model  
   
   if(any(is.na(out)) | any(out[,2:6]<0) | abs(out[1826,2]-out[1,2])>300 ){ #if there are any NAs or negative stocks in the output
     reject = reject+1 #reject parameter set
@@ -209,11 +210,11 @@ for (i in 2:M) {
         #if there was no data at that timestep, the error will remain "0" so that it will not impact the sum calculation in the next step
       } #end of time step loop
       
-      j[i,d] = sum(error.time[,d])/n.time[d] #calculate cost function for each data stream
+      j[i,d] = sum(error.time[,d]) #calculate cost function for each data stream
       
     } #end of data type loop
     
-    J[i] = sum(j[i,])/D #calculate aggregate cost function
+    J[i] = prod(j[i,]) #calculate aggregate cost function
     
     
     diff=J[i]-J[i-1] #calculate difference between current J and previous J
@@ -246,9 +247,14 @@ for (i in 2:M) {
   
   
   
-  if(anneal.temp<5){ #if temperature drops to less than 1
+  if(anneal.temp<3000){ #if temperature drops to less than 1
     anneal.temp=anneal.temp0 #jump back up to initial
   }
+  
+  if(t<0.1){ #if temperature drops to less than 1
+    t=0.1 #jump back up to initial
+  }
+  
   
 } #end of exploration
 
@@ -268,5 +274,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_NDVI_UNBdata_MELstarting.Rdata")
+save.image(file="Step1_NEE_GPP_UNBdata.Rdata")
 

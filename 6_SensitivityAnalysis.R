@@ -1,7 +1,7 @@
 #############PLOTS OF DISTRIBUTIONS###############
 
 par(mfrow=c(3,5), mar=c(4,4,2,2))
-plot(density(param.keep[,1]), main=names(params[1]))
+plot(density(param.keep[,1]), main=names(params[1]), cex.axis=2)
 abline(v=param.best[1], col="red", lwd=3)
 plot(density(param.keep[,2]), main=names(params[2]))
 abline(v=param.best[2], col="red", lwd=3)
@@ -9,7 +9,7 @@ plot(density(param.keep[,3]), main=names(params[3]))
 abline(v=param.best[3], col="red", lwd=3)
 plot(density(param.keep[,4]), main=names(params[4]))
 abline(v=param.best[4], col="red", lwd=3)
-plot(density(param.keep[,5]), main=names(params[5]))
+plot(density(param.keep[,5]), main=names(params[5]), cex.axis=2)
 abline(v=param.best[5], col="red", lwd=3)
 plot(density(param.keep[,6]), main=names(params[6]))
 abline(v=param.best[6], col="red", lwd=3)
@@ -70,8 +70,11 @@ write.csv(param.cor, "ParamCorr_NEENDVI.csv") #bivariate sensitivity
 pairs(s.local)
 
 #global sensitivity analysis
-
-s.global <- sensRange(func=solvemodel, parms=param.best, sensvar = sensvars, parInput=param.keep, num=100)
+summarytable
+range = data.frame(min=summarytable$q05, max=summarytable$q95)
+rownames(range)=rownames(summarytable)
+s.global_90 <- sensRange(func=solvemodel, parms=param.best, sensvar = sensvars, 
+                         parRange=range, num=100)
 
 s.global.summ = summary(s.global)
 head(s.global.summ)

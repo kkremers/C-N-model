@@ -4,15 +4,29 @@ require(deSolve)
 #######STEP 2: ESTIMATE PARAMETER UNCERTAINTY
 
 #need to calculate the variance of the errors for the minimum j's
-
-out = data.frame(solvemodel(param.best, state)) #run model
+head(data.assim)
+head(data.sigma)
+out = data.frame(solvemodel(param.best)) #creates table of model output
+head(out)
+out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
+head(out1)
+time.assim = out1[match(data.assim$Year_DOY, out1$year_DOY), 1]
+data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,9]))
+sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,9]))
 #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
-out.compare1 = out[match(data.compare1$time, out$time),c(1,7,11)] #these columns need to match the ones that were pulled out before
+out.compare1 = out1[match(data.compare1$time, out1$time),c(1,7,11)] #these columns need to match the ones that were pulled out before
 head(out.compare1)
 head(data.compare1)
 head(sigma.obs1)
 
 #create storage matrices for error and variance
+n.param = length(params) #number of parameters to estimate
+D = 2 #number of data types being assimilated 
+n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
+for(d in 1:D) { #for each data type
+  n.time[d]=sum(!is.na(data.compare1[,d+1])) #calculate the number of time points that DO NOT have NA's
+} #end of for loop
+n.time #check 
 var.jbest = rep(0, D)
 error.jbest=matrix(NA, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
 for (d in 1:D) { #for each data type
@@ -49,7 +63,7 @@ param.est = param.best #set initial values for parameters
 reject=0 #reset reject counter
 num.accepted = 0 #counter for number of accepted parameters - when this gets to 1000, loop will stop
 num.reps = 0 #counter for number of repititions - calculates acceptance rate
-
+t=t 
 #start loop
 repeat { #repeat until desired number of parameter sets are accepted
   
@@ -57,7 +71,7 @@ repeat { #repeat until desired number of parameter sets are accepted
   
   repeat{
     for(p in 1:n.param){ #for each parameter
-      step.size = 0.5*(param.max[p]-param.min[p])
+      step.size = t*(param.max[p]-param.min[p])
       param.est[p] = param.best[p]+rnorm(1, 0, step.size) #draw new parameter set
     } #end of parameter loop 
     if(all(param.est>param.min) & all(param.est<param.max)){    
@@ -94,7 +108,7 @@ repeat { #repeat until desired number of parameter sets are accepted
         error[m,d] = (error[m,d]*sqrt(var.jbest[d]))/sqrt(var.error[d]) #variance normalization
       } #end of time step loop  
       
-      j[d] = sum(error[!is.na(data.comp[,d]),d])/n.time[d] #calculate cost function for each data stream after variance normalizaiton
+      j[d] = sum(error[!is.na(data.comp[,d]),d]) #calculate cost function for each data stream after variance normalizaiton
     } #end of data type loop
     
     #chi-square test
@@ -119,6 +133,21 @@ repeat { #repeat until desired number of parameter sets are accepted
   
   acceptance = 1 - (reject / num.reps) #calculate proportion of accepted iterations
   
+  if(acceptance>0.65){
+    t = 1.01*t
+  }
+  
+  if(acceptance<0.35){
+    t = 0.99*t
+  }
+  
+  if(t<0.01){
+    t=0.01
+  }
+  if(t>0.5){
+    t=0.5
+  }
+  
   #print number of accepted parameters every 10 parameters
   if(num.accepted > 10){
     if((num.accepted/10 - floor(num.accepted/10)) == 0){
@@ -137,4 +166,4 @@ repeat { #repeat until desired number of parameter sets are accepted
 head(param.keep)
 tail(param.keep)
 
-save.image(file="Step2_NEE_NDVI_UNBdata.Rdata")
+save.image(file="Step2_NEE_NDVI_UNBdata_new.Rdata")

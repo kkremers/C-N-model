@@ -5,18 +5,22 @@
 #Load workspace and save the summary statistics to summary table
 load("Step2_NEE_NDVI_UNBdata.Rdata") #load workspace
 q05=apply(param.keep, 2, quantile, 0.05) #calculate 5% quantile
+q15=apply(param.keep, 2, quantile, 0.15) #calculate 15% quantile
 q25=apply(param.keep, 2, quantile, 0.25) #calculate 25% quantile
+q40=apply(param.keep, 2, quantile, 0.40) #calculate 40% quantile
 means=apply(param.keep, 2, mean)
+q60=apply(param.keep, 2, quantile, 0.60) #calculate 60% quantile
 q75=apply(param.keep, 2, quantile, 0.75) #calculate 75% quantile
+q85=apply(param.keep, 2, quantile, 0.85) #calculate 85% quantile
 q95=apply(param.keep, 2, quantile, 0.95) #calculate 95%
-summarytable=data.frame(q05 = q05, q25 = q25, mean = means, 
-                        q75 = q75, q95 = q95) #bind all of the information together in the proper order (same order as summarytable columns)
+summarytable=data.frame(q05 = q05, q15=q15, q25 = q25, q40=q40, mean = means, 
+                        q60=q60, q75 = q75, q85=q85, q95 = q95) #bind all of the information together in the proper order (same order as summarytable columns)
 param.keep_NEE_NDVI_UNBdata = param.keep #save the table of accepted parameters under a new name
 write.csv(param.keep_NEE_NDVI_UNBdata, "Params_NEE_NDVI_UNBdata.csv")
 
 ###comparison using data that was assimilated
 data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,9]))
-out=data.frame(solvemodel(param.best, state)) #with columns to match data.assim
+out=data.frame(solvemodel(param.best)) #with columns to match data.assim
 out.compare1 = out[match(data.compare1$time, out$time),]
 out.compare1=out.compare1[,c(1,7,11)]
 head(out.compare1)
@@ -49,12 +53,13 @@ plot(data.compare1$NDVI, out.compare1$NDVI, xlab= "Actual", ylab="Modelled", mai
 abline(0,1,col="red")
 plot(density(resid(reg_NDVI)), main="Density of Residuals")
 
-par(mfrow=c(2,1), mar=c(4,4,2,2))
-plot(out.compare1$NEE~out.compare1$time, pch=16, ylim=c(-5,2))
-points(data.compare1$NEE~data.compare1$time, col="red")
+par(mfrow=c(2,1), mar=c(3,2,2,2))
+plot(out.compare1$NEE~out.compare1$time, pch=16, ylim=c(-5,2), col="gray57")
+points(data.compare1$NEE~data.compare1$time, col="blue")
+abline(h=0)
 
-plot(out.compare1$NDVI~out.compare1$time, pch=16, ylim=c(0,0.8))
-points(data.compare1$NDVI~data.compare1$time, col="red")
+plot(out.compare1$NDVI~out.compare1$time, pch=16, ylim=c(0,0.8), col="gray57")
+points(data.compare1$NDVI~data.compare1$time, col="blue")
 
 
 ###comparison using data that was NOT assimilated
@@ -116,7 +121,9 @@ points(data.compare1$NDVI~data.compare1$time, col="red")
 
 load("Step2_NEE_NDVI.Rdata") #load best experiment (experiment 4)
 head(param.keep) #view table of accepted parameters
-means=apply(param.keep, 2, mean) #calculate parameter means
+summarytable
+means
+
 
 #to perform the variance decomposition analysis, you need to:
 # 1) alter each parameter individually holding all other parameters constant at their means
@@ -168,7 +175,8 @@ months.leap = rep(c(seq(1:12)),
 months = c(months, months, months, months.leap, months)
 
 #kplant
-for(i in 1:1000){
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[1,3] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[1,7],]
+for(i in 1:length(param.keep)){
   params.i = means #set parmeters to mean values
   params.i[1] = unlist(c(param.keep[i,1]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -489,20 +497,68 @@ AVar_cue = data.frame(matrix(1,1,3))
 colnames(AVar_cue)=colnames(out[,7:9])
 AVar_beta = data.frame(matrix(1,1,3))
 colnames(AVar_beta)=colnames(out[,7:9])
+AVar_BiomassC = data.frame(matrix(1,1,3))
+colnames(AVar_BiomassC)=colnames(out[,7:9])
+AVar_BiomassN = data.frame(matrix(1,1,3))
+colnames(AVar_BiomassN)=colnames(out[,7:9])
+AVar_SOMC = data.frame(matrix(1,1,3))
+colnames(AVar_SOMC)=colnames(out[,7:9])
+AVar_SOMN = data.frame(matrix(1,1,3))
+colnames(AVar_SOMN)=colnames(out[,7:9])
+AVar_AvailN = data.frame(matrix(1,1,3))
+colnames(AVar_AvailN)=colnames(out[,7:9])
+
+AVar_kplant_NDVI = data.frame(matrix(1,1,1))
+colnames(AVar_kplant_NDVI)=c("NDVI")
+AVar_LitterRateC_NDVI = data.frame(matrix(1,1,1))
+colnames(AVar_LitterRateC_NDVI)=c("NDVI")
+AVar_LitterRateN_NDVI = data.frame(matrix(1,1,1))
+colnames(AVar_LitterRateN_NDVI)=c("NDVI")
+AVar_UptakeRate_NDVI = data.frame(matrix(1,1,1))
+colnames(AVar_UptakeRate_NDVI)=c("NDVI")
+AVar_propN_fol_NDVI = data.frame(matrix(1,1,1))
+colnames(AVar_propN_fol_NDVI)=c("NDVI")
+AVar_propN_roots_NDVI = data.frame(matrix(1,1,1))
+colnames(AVar_propN_roots_NDVI)=c("NDVI")
+AVar_netNrate_NDVI = data.frame(matrix(1,1,1))
+colnames(AVar_netNrate_NDVI)=c("NDVI")
+AVar_cue_NDVI = data.frame(matrix(1,1,1))
+colnames(AVar_cue_NDVI)=c("NDVI")
+AVar_beta_NDVI = data.frame(matrix(1,1,1))
+colnames(AVar_beta_NDVI)=c("NDVI")
+AVar_BiomassC_NDVI = data.frame(matrix(1,1,1))
+colnames(AVar_BiomassC_NDVI)=c("NDVI")
+AVar_BiomassN_NDVI = data.frame(matrix(1,1,1))
+colnames(AVar_BiomassN_NDVI)=c("NDVI")
+AVar_SOMC_NDVI = data.frame(matrix(1,1,1))
+colnames(AVar_SOMC_NDVI)=c("NDVI")
+AVar_SOMN_NDVI = data.frame(matrix(1,1,1))
+colnames(AVar_SOMN_NDVI)=c("NDVI")
+AVar_AvailN_NDVI = data.frame(matrix(1,1,1))
+colnames(AVar_AvailN_NDVI)=c("NDVI")
+
+first=1
+second=9
 
 #kplant
-for(i in 1:1000){
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[1,first] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[1,second],]
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
   params.i[1] = unlist(c(param.keep[i,1]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
   annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
-  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate avg sum across all years
   names(annual.avg) = names(AVar_kplant) #change names
   AVar_kplant = rbind(AVar_kplant, annual.avg) #add row to table
+  annual.max=aggregate(out.i[,11], list(out.i$year), max) #calculate annual max
+  annual.avgNDVI=mean(annual.max[,2]) #calculate avg sum across all years
+  names(annual.avgNDVI) = names(AVar_kplant_NDVI) #change names
+  AVar_kplant_NDVI = rbind(AVar_kplant_NDVI, annual.avgNDVI) #add row to table
 }  
 
 #LitterRateC
-for(i in 1:1000){
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[2,first] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[2,second],]
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
   params.i[2] = unlist(c(param.keep[i,2]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -510,10 +566,15 @@ for(i in 1:1000){
   annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
   names(annual.avg) = names(AVar_LitterRateC) #change names
   AVar_LitterRateC = rbind(AVar_LitterRateC, annual.avg) #add row to table
+  annual.max=aggregate(out.i[,11], list(out.i$year), max) #calculate annual max
+  annual.avgNDVI=mean(annual.max[,2]) #calculate avg sum across all years
+  names(annual.avgNDVI) = names(AVar_LitterRateC_NDVI) #change names
+  AVar_LitterRateC_NDVI = rbind(AVar_LitterRateC_NDVI, annual.avgNDVI) #add row to table
 }  
 
 #LitterRateN
-for(i in 1:1000){
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[3,first] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[3,second],]
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
   params.i[3] = unlist(c(param.keep[i,3]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -521,10 +582,15 @@ for(i in 1:1000){
   annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
   names(annual.avg) = names(AVar_LitterRateN) #change names
   AVar_LitterRateN = rbind(AVar_LitterRateN, annual.avg) #add row to table
+  annual.max=aggregate(out.i[,11], list(out.i$year), max) #calculate annual max
+  annual.avgNDVI=mean(annual.max[,2]) #calculate avg sum across all years
+  names(annual.avgNDVI) = names(AVar_LitterRateN_NDVI) #change names
+  AVar_LitterRateN_NDVI = rbind(AVar_LitterRateN_NDVI, annual.avgNDVI) #add row to table
 }  
 
 #UptakeRate
-for(i in 1:1000){
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[4,first] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[4,second],]
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
   params.i[4] = unlist(c(param.keep[i,4]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -532,10 +598,16 @@ for(i in 1:1000){
   annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
   names(annual.avg) = names(AVar_UptakeRate) #change names
   AVar_UptakeRate = rbind(AVar_UptakeRate, annual.avg) #add row to table
+  annual.max=aggregate(out.i[,11], list(out.i$year), max) #calculate annual max
+  annual.avgNDVI=mean(annual.max[,2]) #calculate avg sum across all years
+  names(annual.avgNDVI) = names(AVar_UptakeRate_NDVI) #change names
+  AVar_UptakeRate_NDVI = rbind(AVar_UptakeRate_NDVI, annual.avgNDVI) #add row to table
 }  
 
+
 #propN_fol
-for(i in 1:1000){
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[5,first] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[5,second],]
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
   params.i[5] = unlist(c(param.keep[i,5]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -543,10 +615,15 @@ for(i in 1:1000){
   annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
   names(annual.avg) = names(AVar_propN_fol) #change names
   AVar_propN_fol = rbind(AVar_propN_fol, annual.avg) #add row to table
+  annual.max=aggregate(out.i[,11], list(out.i$year), max) #calculate annual max
+  annual.avgNDVI=mean(annual.max[,2]) #calculate avg sum across all years
+  names(annual.avgNDVI) = names(AVar_propN_fol_NDVI) #change names
+  AVar_propN_fol_NDVI = rbind(AVar_propN_fol_NDVI, annual.avgNDVI) #add row to table
 }  
 
 #propN_roots
-for(i in 1:1000){
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[6,first] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[6,second],]
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
   params.i[6] = unlist(c(param.keep[i,6]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -554,10 +631,15 @@ for(i in 1:1000){
   annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
   names(annual.avg) = names(AVar_propN_roots) #change names
   AVar_propN_roots = rbind(AVar_propN_roots, annual.avg) #add row to table
+  annual.max=aggregate(out.i[,11], list(out.i$year), max) #calculate annual max
+  annual.avgNDVI=mean(annual.max[,2]) #calculate avg sum across all years
+  names(annual.avgNDVI) = names(AVar_propN_roots_NDVI) #change names
+  AVar_propN_roots_NDVI = rbind(AVar_propN_roots_NDVI, annual.avgNDVI) #add row to table
 }  
 
 #netNrate
-for(i in 1:1000){
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[7,first] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[7,second],]
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
   params.i[7] = unlist(c(param.keep[i,7]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -565,10 +647,15 @@ for(i in 1:1000){
   annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
   names(annual.avg) = names(AVar_netNrate) #change names
   AVar_netNrate = rbind(AVar_netNrate, annual.avg) #add row to table
+  annual.max=aggregate(out.i[,11], list(out.i$year), max) #calculate annual max
+  annual.avgNDVI=mean(annual.max[,2]) #calculate avg sum across all years
+  names(annual.avgNDVI) = names(AVar_netNrate_NDVI) #change names
+  AVar_netNrate_NDVI = rbind(AVar_netNrate_NDVI, annual.avgNDVI) #add row to table
 }  
 
 #cue
-for(i in 1:1000){
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[8,first] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[8,second],]
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
   params.i[8] = unlist(c(param.keep[i,8]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -576,10 +663,15 @@ for(i in 1:1000){
   annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
   names(annual.avg) = names(AVar_cue) #change names
   AVar_cue = rbind(AVar_cue, annual.avg) #add row to table
+  annual.max=aggregate(out.i[,11], list(out.i$year), max) #calculate annual max
+  annual.avgNDVI=mean(annual.max[,2]) #calculate avg sum across all years
+  names(annual.avgNDVI) = names(AVar_cue_NDVI) #change names
+  AVar_cue_NDVI = rbind(AVar_cue_NDVI, annual.avgNDVI) #add row to table
 }  
 
 #beta
-for(i in 1:1000){
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[9,first] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[9,second],]
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
   params.i[9] = unlist(c(param.keep[i,9]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i, state)) #run model
@@ -587,9 +679,91 @@ for(i in 1:1000){
   annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
   names(annual.avg) = names(AVar_beta) #change names
   AVar_beta = rbind(AVar_beta, annual.avg) #add row to table
+  annual.max=aggregate(out.i[,11], list(out.i$year), max) #calculate annual max
+  annual.avgNDVI=mean(annual.max[,2]) #calculate avg sum across all years
+  names(annual.avgNDVI) = names(AVar_beta_NDVI) #change names
+  AVar_beta_NDVI = rbind(AVar_beta_NDVI, annual.avgNDVI) #add row to table
 } 
 
+#BiomassC
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[10,first] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[10,second],]
+for(i in 1:length(param.keep[,1])){
+  params.i = means #set parmeters to mean values
+  params.i[10] = unlist(c(param.keep[i,10]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_BiomassC) #change names
+  AVar_BiomassC = rbind(AVar_BiomassC, annual.avg) #add row to table
+  annual.max=aggregate(out.i[,11], list(out.i$year), max) #calculate annual max
+  annual.avgNDVI=mean(annual.max[,2]) #calculate avg sum across all years
+  names(annual.avgNDVI) = names(AVar_BiomassC_NDVI) #change names
+  AVar_BiomassC_NDVI = rbind(AVar_BiomassC_NDVI, annual.avgNDVI) #add row to table
+} 
 
+#BiomassN
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[11,first] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[11,second],]
+for(i in 1:length(param.keep[,1])){
+  params.i = means #set parmeters to mean values
+  params.i[11] = unlist(c(param.keep[i,11]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_BiomassN) #change names
+  AVar_BiomassN = rbind(AVar_BiomassN, annual.avg) #add row to table
+  annual.max=aggregate(out.i[,11], list(out.i$year), max) #calculate annual max
+  annual.avgNDVI=mean(annual.max[,2]) #calculate avg sum across all years
+  names(annual.avgNDVI) = names(AVar_BiomassN_NDVI) #change names
+  AVar_BiomassN_NDVI = rbind(AVar_BiomassN_NDVI, annual.avgNDVI) #add row to table
+} 
+
+#SOMC
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[12,first] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[12,second],]
+for(i in 1:length(param.keep[,1])){
+  params.i = means #set parmeters to mean values
+  params.i[12] = unlist(c(param.keep[i,12]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_SOMC) #change names
+  AVar_SOMC = rbind(AVar_SOMC, annual.avg) #add row to table
+  annual.max=aggregate(out.i[,11], list(out.i$year), max) #calculate annual max
+  annual.avgNDVI=mean(annual.max[,2]) #calculate avg sum across all years
+  names(annual.avgNDVI) = names(AVar_SOMC_NDVI) #change names
+  AVar_SOMC_NDVI = rbind(AVar_SOMC_NDVI, annual.avgNDVI) #add row to table
+} 
+
+#SOMN
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[13,first] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[13,second],]
+for(i in 1:length(param.keep[,1])){
+  params.i = means #set parmeters to mean values
+  params.i[13] = unlist(c(param.keep[i,13]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_SOMN) #change names
+  AVar_SOMN = rbind(AVar_SOMN, annual.avg) #add row to table
+  annual.max=aggregate(out.i[,11], list(out.i$year), max) #calculate annual max
+  annual.avgNDVI=mean(annual.max[,2]) #calculate avg sum across all years
+  names(annual.avgNDVI) = names(AVar_SOMN_NDVI) #change names
+  AVar_SOMN_NDVI = rbind(AVar_SOMN_NDVI, annual.avgNDVI) #add row to table
+} 
+
+#AvailN
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[14,first] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[14,second],]
+for(i in 1:length(param.keep[,1])){
+  params.i = means #set parmeters to mean values
+  params.i[14] = unlist(c(param.keep[i,14]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i, state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_AvailN) #change names
+  AVar_AvailN = rbind(AVar_AvailN, annual.avg) #add row to table
+  annual.max=aggregate(out.i[,11], list(out.i$year), max) #calculate annual max
+  annual.avgNDVI=mean(annual.max[,2]) #calculate avg sum across all years
+  names(annual.avgNDVI) = names(AVar_AvailN_NDVI) #change names
+  AVar_AvailN_NDVI = rbind(AVar_AvailN_NDVI, annual.avgNDVI) #add row to table
+} 
 
 
 AVar_kplant = AVar_kplant[-1,]
@@ -601,7 +775,11 @@ AVar_propN_roots = AVar_propN_roots[-1,]
 AVar_netNrate = AVar_netNrate[-1,]
 AVar_cue = AVar_cue[-1,]
 AVar_beta = AVar_beta[-1,]
-
+AVar_BiomassC = AVar_BiomassC[-1,]
+AVar_BiomassN = AVar_BiomassN[-1,]
+AVar_SOMC = AVar_SOMC[-1,]
+AVar_SOMN = AVar_SOMN[-1,]
+AVar_AvailN = AVar_AvailN[-1,]
 
 var.kplant = apply(AVar_kplant, 2, var)
 var.LitterRateC = apply(AVar_LitterRateC, 2, var)
@@ -612,14 +790,58 @@ var.propN_roots = apply(AVar_propN_roots, 2, var)
 var.netNrate = apply(AVar_netNrate, 2, var)
 var.cue = apply(AVar_cue, 2, var)
 var.beta = apply(AVar_beta, 2, var)
+var.BiomassC = apply(AVar_BiomassC, 2, var)
+var.BiomassN = apply(AVar_BiomassN, 2, var)
+var.SOMC = apply(AVar_SOMC, 2, var)
+var.SOMN = apply(AVar_SOMN, 2, var)
+var.AvailN = apply(AVar_AvailN, 2, var)
 
-all_1 = rbind(var.kplant, var.LitterRateC, var.LitterRateN, var.UptakeRate, var.propN_fol, 
-            var.propN_roots, var.netNrate, var.cue, var.beta)
 
-rownames(all_1)=names(params[1:9])
+
+AVar_kplant_NDVI = AVar_kplant_NDVI[-1,]
+AVar_LitterRateC_NDVI  = AVar_LitterRateC_NDVI[-1,]
+AVar_LitterRateN_NDVI  = AVar_LitterRateN_NDVI[-1,]
+AVar_UptakeRate_NDVI  = AVar_UptakeRate_NDVI[-1,]
+AVar_propN_fol_NDVI  = AVar_propN_fol_NDVI[-1,]
+AVar_propN_roots_NDVI  = AVar_propN_roots_NDVI[-1,]
+AVar_netNrate_NDVI  = AVar_netNrate_NDVI[-1,]
+AVar_cue_NDVI  = AVar_cue_NDVI[-1,]
+AVar_beta_NDVI  = AVar_beta_NDVI[-1,]
+AVar_BiomassC_NDVI  = AVar_BiomassC_NDVI[-1,]
+AVar_BiomassN_NDVI  = AVar_BiomassN_NDVI[-1,]
+AVar_SOMC_NDVI  = AVar_SOMC_NDVI[-1,]
+AVar_SOMN_NDVI  = AVar_SOMN_NDVI[-1,]
+AVar_AvailN_NDVI  = AVar_AvailN_NDVI[-1,]
+
+var.kplant_NDVI = var(AVar_kplant_NDVI)
+var.LitterRateC_NDVI = var(AVar_LitterRateC_NDVI)
+var.LitterRateN_NDVI = var(AVar_LitterRateN_NDVI)
+var.UptakeRate_NDVI = var(AVar_UptakeRate_NDVI)
+var.propN_fol_NDVI = var(AVar_propN_fol_NDVI)
+var.propN_roots_NDVI = var(AVar_propN_roots_NDVI)
+var.netNrate_NDVI = var(AVar_netNrate_NDVI)
+var.cue_NDVI = var(AVar_cue_NDVI)
+var.beta_NDVI = var(AVar_beta_NDVI)
+var.BiomassC_NDVI = var(AVar_BiomassC_NDVI)
+var.BiomassN_NDVI = var(AVar_BiomassN_NDVI)
+var.SOMC_NDVI = var(AVar_SOMC_NDVI)
+var.SOMN_NDVI = var(AVar_SOMN_NDVI)
+var.AvailN_NDVI = var(AVar_AvailN_NDVI)
+
+
+all_NEE = rbind(var.kplant, var.LitterRateC, var.LitterRateN, var.UptakeRate, var.propN_fol, 
+            var.propN_roots, var.netNrate, var.cue, var.beta, var.BiomassC, var.BiomassN, 
+            var.SOMC, var.SOMN, var.AvailN)
+all_NDVI = rbind(var.kplant_NDVI, var.LitterRateC_NDVI, var.LitterRateN_NDVI, var.UptakeRate_NDVI, var.propN_fol_NDVI, 
+                var.propN_roots_NDVI, var.netNrate_NDVI, var.cue_NDVI, var.beta_NDVI, var.BiomassC_NDVI, var.BiomassN_NDVI, 
+                var.SOMC_NDVI, var.SOMN_NDVI, var.AvailN_NDVI)
+
+rownames(all_NEE)=names(params)
+rownames(all_NDVI)=names(params)
 
 #calculate total variance
-var.total = apply(all_1, 2, sum)
+var.total = apply(all_NEE, 2, sum)
+var.total_NDVI = apply(all_NDVI, 2, sum)
 
 #now calculate percent variance
 perc.kplant = (var.kplant/var.total)*100
@@ -632,20 +854,43 @@ perc.netNrate = (var.netNrate/var.total)*100
 perc.cue = (var.cue/var.total)*100
 perc.beta = (var.beta/var.total)*100
 
+perc.kplant_NDVI = (var.kplant_NDVI/var.total_NDVI)*100
+perc.LitterRateC_NDVI = (var.LitterRateC_NDVI/var.total_NDVI)*100
+perc.LitterRateN_NDVI = (var.LitterRateN_NDVI/var.total_NDVI)*100
+perc.UptakeRate_NDVI = (var.UptakeRate_NDVI/var.total_NDVI)*100
+perc.propN_fol_NDVI = (var.propN_fol_NDVI/var.total_NDVI)*100
+perc.propN_roots_NDVI = (var.propN_roots_NDVI/var.total_NDVI)*100
+perc.netNrate_NDVI = (var.netNrate_NDVI/var.total_NDVI)*100
+perc.cue_NDVI = (var.cue_NDVI/var.total_NDVI)*100
+perc.beta_NDVI = (var.beta_NDVI/var.total_NDVI)*100
+
 #create a table binding all together
 
-perc.all_1 = rbind(perc.kplant, perc.LitterRateC, perc.LitterRateN, perc.UptakeRate, 
-                   perc.propN_fol, perc.propN_roots, perc.netNrate, perc.cue, perc.beta)
+perc.all_NEE = rbind(perc.kplant, perc.LitterRateC, perc.LitterRateN, perc.UptakeRate, 
+                   perc.propN_fol, perc.propN_roots, perc.netNrate, perc.cue, perc.beta, var.total)
 
-rownames(perc.all_1)=names(params[1:9])
-perc.all.dat = data.frame(perc.all_1)
+rownames(perc.all_NEE)=names(params[1:9])
+
+perc.all_NDVI = rbind(perc.kplant_NDVI, perc.LitterRateC_NDVI, perc.LitterRateN_NDVI, perc.UptakeRate_NDVI, 
+                     perc.propN_fol_NDVI, perc.propN_roots_NDVI, perc.netNrate_NDVI, perc.cue_NDVI, perc.beta_NDVI, var.total_NDVI)
+
+rownames(perc.all_NDVI)=names(params[1:9])
+colnames(perc.all.NDVI)=c("NDVI")
+
+
+
+#store for this subset
+perc.all.NEE_90 = data.frame(perc.all_NEE)
+perc.all.NDVI_90 = data.frame(perc.all_NDVI)
 
 ####barplots####
-barplot(perc.all_1, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "purple", 
+barplot(perc.all_NEE, col=c("chartreuse", "cadetblue", "aquamarine", "darkblue",  "purple", 
                           "deepskyblue", "dodgerblue3", "forestgreen", "darkgray"),  legend=TRUE )
-
-barplot(perc.all.dat$NEE, names.arg=names(params[1:9]), cex.names=0.5, 
+barplot(perc.all.NEE$NEE, names.arg=names(params[1:9]), cex.names=0.5, 
         col="forestgreen", horiz=TRUE, main="NEE") #plot the data
 
-save.image(file="Variance_120215.Rdata")
+barplot(perc.all.NDVI$NDVI, names.arg=names(params[1:9]), cex.names=0.5, 
+        col="forestgreen", horiz=TRUE, main="NDVI") #plot the data
+
+save.image(file="Variance_120315_3.Rdata")
 
