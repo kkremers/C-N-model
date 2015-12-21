@@ -93,8 +93,8 @@ head(sigma.obs1)
 ###LOAD REAL DATA###
 data.assim = read.csv("Assimilation_data_all.csv")
 data.sigma = read.csv("Assimilation_sigma_all.csv")
-data.assim = data.assim[data.assim$Year != 2013,]
-data.sigma = data.sigma[data.sigma$Year != 2013,]
+data.assim = data.assim[data.assim$Year==c(2009,2010),]
+data.sigma = data.sigma[data.sigma$Year==c(2009,2010),]
 head(data.assim)
 head(data.sigma)
 head(out)
@@ -120,8 +120,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.0024,0.012,0.9,0.015,0.04,0.8,0.08,    820,15,22000,950,3)
-param.min=c(0.07,0.0001,0.0001,0.002,0.1,0.002,0.001,0.4,0.04,  550,10,16500,750,0.5)
+param.max=c(0.34,0.0024,0.012,0.9,0.015,0.04,0.8,0.08,    820,15,22000,950,3)
+param.min=c(0.07,0.0001,0.002,0.1,0.002,0.001,0.4,0.04,  550,10,16500,750,0.5)
 
 #storage matrices
 j = matrix(1E100, M, D) #to store error calculations for this iteration
@@ -147,7 +147,7 @@ for (d in 1:D) { #for each data type
     #if there was no data at that timestep, the error will remain "0" so that it will not impact the sum calculation in the next step
   } #end of time step loop
   
-  j[1,d] = sum(error.time[,d])/n.time[d] #calculate cost function for each data stream
+  j[1,d] = sum(error.time[,d]) #calculate cost function for each data stream
   
 } #end of data type loop
 
@@ -160,16 +160,16 @@ head(all.draws)
 tail(all.draws)
 
 #set initial values
-anneal.temp0=100 #starting temperature
-anneal.temp=100 #starting temperature
+anneal.temp0=1000 #starting temperature
+anneal.temp=1000 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 t=0.5
-param.best = param.best
+
 
 #start exploration
 
-for (i in 6363:M) {
+for (i in 26965:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
@@ -185,9 +185,9 @@ for (i in 6363:M) {
   
   parms = as.numeric(param.est[i,]) #parameters for model run
   names(parms) = names(params) #fix names
-  out = data.frame(solvemodel(parms, state)) #run model  
+  out = data.frame(solvemodel(parms)) #run model  
   
-  if(any(is.na(out)) | any(out[,2:6]<0) | abs(out[1826,2]-out[1,2])>300 ){ #if there are any NAs or negative stocks in the output
+  if(any(is.na(out)) | any(out[,2:6]<0)| abs(out[1,2]-out[length(out[,2]),2])>100){ #if there are any NAs or negative stocks in the output
     reject = reject+1 #reject parameter set
     param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
     j[i,] = j[i-1,] #set current J to previous J
@@ -206,7 +206,7 @@ for (i in 6363:M) {
         #if there was no data at that timestep, the error will remain "0" so that it will not impact the sum calculation in the next step
       } #end of time step loop
       
-      j[i,d] = sum(error.time[,d])/n.time[d] #calculate cost function for each data stream
+      j[i,d] = sum(error.time[,d]) #calculate cost function for each data stream
       
     } #end of data type loop
     
@@ -229,19 +229,19 @@ for (i in 6363:M) {
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
   
-  if(acceptance>0.65){
+  if(acceptance>0.30){
     t = 1.01*t
   }
   
-  if(acceptance<0.35){
+  if(acceptance<0.20){
     t = 0.99*t
   }
   
-  anneal.temp=anneal.temp-1 #decrease temperature
+  anneal.temp=anneal.temp*0.9 #decrease temperature
   
   
   
-  if(anneal.temp<5){ #if temperature drops to less than 1
+  if(anneal.temp<(0.1*anneal.temp0)){ #if temperature drops to less than 1
     anneal.temp=anneal.temp0 #jump back up to initial
   }
   
@@ -264,4 +264,4 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_NDVI_part2_UNBdata.Rdata")
+save.image(file="Step1_NEE_NDVI_part2NEE_UNBdata.Rdata")

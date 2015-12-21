@@ -2,8 +2,7 @@ require(deSolve)
 require(FME)
 
 params <- c(kplant = 0.2, #0.07-0.34
-            LitterRateC = 0.0007, #0.0001-0.0024
-            LitterRateN = 0.0008, #0.0001-0.0024
+            LitterRate = 0.0007, #0.0001-0.0024
             UptakeRate = 0.008, #0.002-0.012
             propN_fol = 0.1, #0.1-0.9
             propN_roots = 0.015, #0.002-0.015
@@ -16,7 +15,7 @@ params <- c(kplant = 0.2, #0.07-0.34
             SOM_N = 854.1,
             Available_N = 1.6)
 
-time = seq(1, 1826, 1)
+time = seq(1, 1461, 1)
 
 ####################MODEL#################################
 
@@ -67,8 +66,8 @@ solvemodel <- function(params, times) {
       Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 10 ) )
       N_dep = Ndep_rate
       N_fix=Nfix_rate*scaltemp
-      Litterfall_C =  LitterRateC * Biomass_C
-      Litterfall_N  =  LitterRateN * Biomass_N
+      Litterfall_C =  LitterRate * Biomass_C
+      Litterfall_N  =  LitterRate * Biomass_N
       
       #calculated variables to use for model fitting and analysis
       NEE = Re - GPP
@@ -96,7 +95,7 @@ solvemodel <- function(params, times) {
   } #end of model
   
   
-  return(ode(y=params[10:14],times=time,func=model,parms = params[1:9], method="rk4")) #integrate using runge-kutta 4 method
+  return(ode(y=params[9:13],times=time,func=model,parms = params[1:8], method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 

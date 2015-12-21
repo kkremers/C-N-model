@@ -73,8 +73,8 @@ pairs(s.local)
 summarytable
 range = data.frame(min=summarytable$q05, max=summarytable$q95)
 rownames(range)=rownames(summarytable)
-s.global_90 <- sensRange(func=solvemodel, parms=param.best, sensvar = sensvars, 
-                         parRange=range, num=100)
+s.global <- sensRange(func=solvemodel, parms=param.best, sensvar = sensvars, 
+                         parInput=param.keep, num=100)
 
 s.global.summ = summary(s.global)
 head(s.global.summ)

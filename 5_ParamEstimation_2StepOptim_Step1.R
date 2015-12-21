@@ -93,8 +93,8 @@ head(sigma.obs1)
 ###LOAD REAL DATA###
 data.assim = read.csv("Assimilation_data_all.csv")
 data.sigma = read.csv("Assimilation_sigma_all.csv")
-data.assim = data.assim[data.assim$Year != 2013,]
-data.sigma = data.sigma[data.sigma$Year != 2013,]
+data.assim = data.assim[data.assim$Year==c(2009,2010),]
+data.sigma = data.sigma[data.sigma$Year==c(2009,2010),]
 head(data.assim)
 head(data.sigma)
 tail(data.assim)
@@ -122,8 +122,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.0024,0.012,0.9,0.015,0.04,0.8,0.08,    820,15,22000,950,3)
-param.min=c(0.07,0.0001,0.0001,0.002,0.1,0.002,0.001,0.4,0.04,  550,10,16500,750,0.5)
+param.max=c(0.34,0.0024,0.012,0.9,0.015,0.04,0.8,0.08,    820,15,22000,950,3)
+param.min=c(0.07,0.0001,0.002,0.1,0.002,0.001,0.4,0.04,  550,10,16500,750,0.5)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output
@@ -138,7 +138,7 @@ head(param.est) #check to make sure this is correct
 head(all.draws)
 
 #replace 1st row with values for current parameters
-out=data.frame(solvemodel(params))
+out=data.frame(solvemodel(param.best))
 out.compare1 = out[match(data.compare1$time, out$time),c(1,7,11)] #these columns need to match the ones that were pulled out before
 
 error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
@@ -169,11 +169,10 @@ anneal.temp=50000 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 t=0.5
-param.best=params
 
 #start exploration
 
-for (i in 2:M) {
+for (i in 52303:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
@@ -191,7 +190,7 @@ for (i in 2:M) {
   names(parms) = names(params) #fix names
   out = data.frame(solvemodel(parms)) #run model  
   
-  if(any(is.na(out)) | any(out[,2:6]<0) | abs(out[1826,2]-out[1,2])>300 ){ #if there are any NAs or negative stocks in the output
+  if(any(is.na(out)) | any(out[,2:6]<0) | abs(out[1,2]-out[length(out[,2]),2])>100){ #if there are any NAs or negative stocks in the output
     reject = reject+1 #reject parameter set
     param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
     J[i] = J[i-1] #set current J to previous J
@@ -235,24 +234,20 @@ for (i in 2:M) {
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
   
-  if(acceptance>0.65){
+  if(acceptance>0.30){
     t = 1.01*t
   }
   
-  if(acceptance<0.45){
+  if(acceptance<0.20){
     t = 0.99*t
   }
   
-  anneal.temp=anneal.temp-1 #decrease temperature
+  anneal.temp=anneal.temp*0.9 #decrease temperature
   
   
   
-  if(anneal.temp<3000){ #if temperature drops to less than 1
+  if(anneal.temp<(0.1*anneal.temp0)){ #if temperature drops to less than 10% of initial
     anneal.temp=anneal.temp0 #jump back up to initial
-  }
-  
-  if(t<0.1){ #if temperature drops to less than 1
-    t=0.1 #jump back up to initial
   }
   
   
@@ -274,5 +269,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_GPP_UNBdata.Rdata")
+save.image(file="Step1_NEE_NDVI_UNBdata_newcost.Rdata")
 

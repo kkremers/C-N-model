@@ -82,26 +82,21 @@ head(s.global.summ) #view first 6 rows
 tail(s.global.summ)
 
 #get model output & confidence intervals organized
-out=data.frame(solvemodel(param.best)) #use mean parameter values
-NEE_summ = data.frame(Time=s.global.summ[1:1826,1], NEE=out$NEE, sd=s.global.summ[1:1826,3], q05=s.global.summ[1:1826,6], q95=s.global.summ[1:1826,10], q25=s.global.summ[1:1826,7], q75=s.global.summ[1:1826,9])
-head(NEE_summ)
-low=NEE_summ$NEE-NEE_summ$sd
-high=NEE_summ$NEE+NEE_summ$sd
-NEE_summ=data.frame(cbind(NEE_summ, low, high))
+out=data.frame(solvemodel(param.best))
+NEE_summ = data.frame(Time=s.global.summ[1:1461,1], NEE=out$NEE, sd=s.global.summ[1:1461,3], q05=s.global.summ[1:1461,6], q95=s.global.summ[1:1461,10], q25=s.global.summ[1:1461,7], q75=s.global.summ[1:1461,9])
 head(NEE_summ)
 #Re_summ = data.frame(Time=s.global.summ[1827:3652,1],Re=out$Re, sd=s.global.summ[1827:3652,3], q05=s.global.summ[1827:3652,6], q95=s.global.summ[1827:3652,10])
 #head(Re_summ)
 #GPP_summ = data.frame(Time=s.global.summ[3653:5478,1], GPP=out$GPP, sd=s.global.summ[3653:5478,3], q05=s.global.summ[3653:5478,6], q95=s.global.summ[3653:5478,10])
 #head(GPP_summ)
-NDVI_summ = data.frame(Time=s.global.summ[5479:7304,1], NDVI=out$NDVI, sd=s.global.summ[5479:7304,3], q05=s.global.summ[5479:7304,6], q95=s.global.summ[5479:7304,10], q25=s.global.summ[5479:7304,7], q75=s.global.summ[5479:7304,9])
+NDVI_summ = data.frame(Time=s.global.summ[4384:5844,1], NDVI=out$NDVI, sd=s.global.summ[4384:5844,3], q05=s.global.summ[4384:5844,6], q95=s.global.summ[4384:5844,10], q25=s.global.summ[4384:5844,7], q75=s.global.summ[4384:5844,9])
 head(NDVI_summ)
-low=NDVI_summ$NDVI-NDVI_summ$sd
-high=NDVI_summ$NDVI+NDVI_summ$sd
 NDVI_summ=data.frame(cbind(NDVI_summ, low, high))
 head(NDVI_summ)
 
 #get data ready
 data.compare2=read.csv("Assimilation_data_ALL.csv")
+data.compare2=data.compare2[data.compare2$Year!=2013,]
 data.compare_NEE=data.compare2[complete.cases(data.compare2[,6]),c(1:5,6)]
 head(data.compare_NEE)
 data.compare_Re=data.compare2[complete.cases(data.compare2[,7]),c(1:5,7)]
@@ -115,6 +110,7 @@ out.compare_Re = out[match(data.compare_Re$Time, out$time),]
 out.compare_GPP = out[match(data.compare_GPP$Time, out$time),]
 out.compare_NDVI = out[match(data.compare_NDVI$Time, out$time),]
 
+
 #preview a plot
 plot(NEE~Time,data=NEE_summ,ylim=range(c(NEE_summ$q05,NEE_summ$q95)), type="p", pch=16, cex=0.5)
 #make polygon where coordinates start with lower limit and then upper limit in reverse order
@@ -125,10 +121,10 @@ points(NEE~Time, data=data.compare_NEE, pch=16, col="blue", cex=0.5)
 
 
 #linear regressions for all years
-reg_NEE = lm(out.compare_NEE$NEE~data.compare_NEE$NEE)
+reg_NEE = lm(out.compare_NEE$NEE[out.compare_NEE$year==2011 | out.compare_NEE$year==2012]~data.compare_NEE$NEE[data.compare_NEE$Year==2011 | data.compare_NEE$Year==2012])
 reg_Re = lm(out.compare_Re$Re~data.compare_Re$Re)
 reg_GPP = lm(out.compare_GPP$GPP~data.compare_GPP$GPP)
-reg_NDVI = lm(out.compare_NDVI$NDVI~data.compare_NDVI$NDVI)
+reg_NDVI = lm(out.compare_NDVI$NDVI[out.compare_NDVI$year==2011 | out.compare_NDVI$year==2012]~data.compare_NDVI$NDVI[data.compare_NDVI$Year==2011 | data.compare_NDVI$Year==2012])
 
 #preview a plot
 par(mfrow=c(1,1))
@@ -172,22 +168,22 @@ layout(matrix(c(1,2,3,4,5,6), 2, 3, byrow = TRUE), widths=c(3,1,1))
 
 plot(NEE~Time,data=NEE_summ,ylim=c(-4, 2), type="p", pch=16, cex=0.5, cex.axis=1.5, col="azure4")
 #make polygon where coordinates start with lower limit and then upper limit in reverse order
-#with(NEE_summ,polygon(c(Time,rev(Time)),c(q25,rev(q75)),col = "grey75", border = FALSE))
+with(NEE_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = "lightblue", border = FALSE))
 abline(h=0)
-points(NEE~Time, data=NEE_summ, pch=16, cex=0.75, col="azure4")
-points(NEE~Time, data=data.compare_NEE, pch=16, col="blue", cex=0.75)
-barplot(NEE_yrRMSE, ylim=c(0,max(NEE_yrRMSE)+0.5), cex.axis=1.5)
-plot(out.compare_NEE$NEE~data.compare_NEE$NEE, pch=16, xlab="", ylab="", cex=0.75, cex.axis=1.5, xlim=c(-4, 2), ylim=c(-4, 2))
+points(NEE~Time, data=NEE_summ, pch=16, cex=0.75, col="gray40")
+points(NEE~Time, data=data.compare_NEE, pch=16, col="darkblue", cex=0.75)
+barplot(NEE_yrRMSE, ylim=c(0,max(NEE_yrRMSE)+0.5), cex.axis=1.5, col=c("gray50", "gray50", "gray80", "gray80"))
+plot(out.compare_NEE$NEE[out.compare_NEE$year==2011 | out.compare_NEE$year==2012]~data.compare_NEE$NEE[data.compare_NEE$Year==2011 | data.compare_NEE$Year==2012], pch=16, xlab="", ylab="", cex=0.75, cex.axis=1.5, xlim=c(-4, 2), ylim=c(-4, 2))
 #abline(reg_NEE, col="blue", lwd=2)
 abline(0,1, col="red", lty=2, lwd=2)
 
 plot(NDVI~Time,data=NDVI_summ,ylim=c(0,1), type="p", pch=16, cex=0.5, cex.axis=1.5, cex.lab=1.5, col="azure4")
 #make polygon where coordinates start with lower limit and then upper limit in reverse order
-#with(NDVI_summ,polygon(c(Time,rev(Time)),c(low,rev(high)),col = "grey75", border = FALSE))
-points(NDVI~Time, data=NDVI_summ, pch=16, cex=0.75, col="azure4")
-points(NDVI~Time, data=data.compare_NDVI, pch=16, col="blue", cex=0.75)
-barplot(NDVI_yrRMSE, ylim=c(0,max(NDVI_yrRMSE)+0.02), cex.axis=1.5, cex.lab=1.5)
-plot(out.compare_NDVI$NDVI~data.compare_NDVI$NDVI, xlab="", ylab="", pch=16, cex=0.75, cex.axis=1.5, xlim=c(0.3, 0.9), ylim=c(0.3, 0.9), cex.lab=1.5,)
+with(NDVI_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = "lightblue", border = FALSE))
+points(NDVI~Time, data=NDVI_summ, pch=16, cex=0.75, col="gray40")
+points(NDVI~Time, data=data.compare_NDVI, pch=16, col="darkblue", cex=0.75)
+barplot(NDVI_yrRMSE, ylim=c(0,max(NDVI_yrRMSE)+0.02), cex.axis=1.5, cex.lab=1.5, col=c("gray50", "gray50", "gray80", "gray80"))
+plot(out.compare_NDVI$NDVI[out.compare_NDVI$year==2011 | out.compare_NDVI$year==2012]~data.compare_NDVI$NDVI[data.compare_NDVI$Year==2011 | data.compare_NDVI$Year==2012], xlab="", ylab="", pch=16, cex=0.75, cex.axis=1.5, xlim=c(0.3, 0.9), ylim=c(0.3, 0.9), cex.lab=1.5,)
 #abline(reg_NDVI, col="blue", lwd=2)
 abline(0,1, col="red", lty=2, lwd=2)
 
@@ -215,8 +211,7 @@ for (n in c(8,11)) { #for each output
   sub1[11,] = sub[121:132,3]
   sub1[12,] = sub[133:144,3]
   sub1[13,] = sub[145:156,3]
-  sub1[14,] = sub[157:168,3]
-  barplot(sub1, col=c("darkolivegreen3", "dodgerblue", "aquamarine", "darkgreen", "mediumseagreen",
+  barplot(sub1, col=c("darkolivegreen3", "aquamarine", "darkgreen", "mediumseagreen",
                       "palegreen", "darkblue", "lightskyblue", "maroon4", "gray87", "azure2", 
                       "gray29", "gray57", "darkslategray"),             
           main=names(perc.all[n]), names.arg=c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"),
@@ -224,76 +219,110 @@ for (n in c(8,11)) { #for each output
           xlab="Month", cex.lab=1.5, cex.main=2) #plot the data
 } #end of for loop
 legend("topright", legend=names(params),cex=1.5, ncol=1,
-       fill=c("darkolivegreen3", "dodgerblue", "aquamarine", "darkgreen", "mediumseagreen",
+       fill=c("darkolivegreen3", "aquamarine", "darkgreen", "mediumseagreen",
               "palegreen", "darkblue", "lightskyblue", "maroon4", "gray87", "azure2", 
-               "gray29", "gray57", "darkslategray"),)
+              "gray29", "gray57", "darkslategray"),)
 
 
 
 
-########SENSITIVITY & ANNUAL VARIANCE########
+########ANNUAL VARIANCE########
 #need to run variance decomposition in "8_OptimizationAnalysis.R" first
+par(mfrow=c(1,2), mar=c(2,2,2,2))
+barplot(perc.all.NEE_all$NEE[1:8], names.arg=names(params[1:8]), cex.names=0.75, xlim=c(0,70),
+        col=c("darkolivegreen3", "aquamarine", "darkgreen", "mediumseagreen",
+              "palegreen", "darkblue", "lightskyblue", "maroon4"), horiz=TRUE, main="") #plot the data
 
-s.local <- sensFun(func=solvemodel, parms=param.best, sensvar = sensvars)
+barplot(perc.all.NDVI_all$NDVI[1:8], names.arg=names(params[1:8]), cex.names=0.75, xlim=c(0,70),
+        col=c("darkolivegreen3", "aquamarine", "darkgreen", "mediumseagreen",
+              "palegreen", "darkblue", "lightskyblue", "maroon4"), horiz=TRUE, main="") #plot the data
 
+
+#get sensitivity values
+s.local <- sensFun(func=solvemodel, parms=param.best, sensvar = sensvars) 
 head(s.local); tail(s.local)
 s.local.summ = data.frame(summary(s.local, var=T))
 head(s.local.summ); tail(s.local.summ)
 s.loc.summ.ordered = data.frame(s.local.summ[order(s.local.summ$var, abs(s.local.summ$Mean)),] )
 
 
-par(mfrow=c(1,2), mar=c(2,2,2,2))
-#NEE
-sub = subset(s.local.summ, var=="NEE")
-barplot(abs(sub$Mean)[1:9], names.arg=names(params[1:9]), cex.names=0.75, 
-        col=c("darkolivegreen3", "dodgerblue", "aquamarine", "darkgreen", "mediumseagreen",
-              "palegreen", "darkblue", "lightskyblue", "maroon4"), horiz=TRUE, main="") #plot the data
-
-
-barplot(perc.all.NEE$NEE, names.arg=names(params[1:9]), cex.names=0.75, xlim=c(0,70),
-        col=c("darkolivegreen3", "dodgerblue", "aquamarine", "darkgreen", "mediumseagreen",
-              "palegreen", "darkblue", "lightskyblue", "maroon4"), horiz=TRUE, main="") #plot the data
-
-
-#NDVI
-sub = subset(s.local.summ, var=="NDVI")
-barplot(abs(sub$Mean)[1:9], names.arg=names(params[1:9]), cex.names=0.75, 
-        col=c("darkolivegreen3", "dodgerblue", "aquamarine", "darkgreen", "mediumseagreen",
-              "palegreen", "darkblue", "lightskyblue", "maroon4"), horiz=TRUE, main="") #plot the data
-
-
-barplot(perc.all.NDVI$NDVI, names.arg=names(params[1:9]), cex.names=0.75, xlim=c(0,70),
-        col=c("darkolivegreen3", "dodgerblue", "aquamarine", "darkgreen", "mediumseagreen",
-              "palegreen", "darkblue", "lightskyblue", "maroon4"), horiz=TRUE, main="") #plot the data
-
-
-
 
 
 ######PLOT VARIANCE VS. UNCERTAINTY#########
 
-range = c(100,90,70,50,20)
-NDVI_tot = c(0.01, 0.0088, 0.0064, 0.0046, 0.0033)
-NEE_tot = c(34099.2, 30766.23, 24559.6, 18869.5, 14239.1)
+#bind all together
+varNDVI_all = (perc.all.NDVI_all$NDVI[2:5]/100)*perc.all.NDVI_all$NDVI[9]
+varNEE_all = (perc.all.NEE_all$NEE[2:5]/100)*perc.all.NEE_all$NEE[9]
+varNDVI_90 = (perc.all.NDVI_90$NDVI[2:5]/100)*perc.all.NDVI_90$NDVI[9]
+varNEE_90 = (perc.all.NEE_90$NEE[2:5]/100)*perc.all.NEE_90$NEE[9]
+varNDVI_70 = (perc.all.NDVI_70$NDVI[2:5]/100)*perc.all.NDVI_70$NDVI[9]
+varNEE_70 = (perc.all.NEE_70$NEE[2:5]/100)*perc.all.NEE_70$NEE[9]
+varNDVI_50 = (perc.all.NDVI_50$NDVI[2:5]/100)*perc.all.NDVI_50$NDVI[9]
+varNEE_50 = (perc.all.NEE_50$NEE[2:5]/100)*perc.all.NEE_50$NEE[9]
+varNDVI_20 = (perc.all.NDVI_20$NDVI[2:5]/100)*perc.all.NDVI_20$NDVI[9]
+varNEE_20 = (perc.all.NEE_20$NEE[2:5]/100)*perc.all.NEE_20$NEE[9]
 
+NDVI_var = c(varNDVI_all, varNDVI_90, varNDVI_70, varNDVI_50, varNDVI_20)
+NEE_var = c(varNEE_all, varNEE_90, varNEE_70, varNEE_50, varNEE_20)
+parameter = rep(rownames(perc.all.NEE_all)[2:5], 5)
+range = rep(c(100,90,70,50,20), c(4,4,4,4,4))
 
-regNDVI = lm(range~NDVI_tot)
-regNEE = lm(range~NEE_tot)
+var_all = data.frame(parameter=parameter, range=range, NEE=NEE_var, NDVI=NDVI_var)
+head(var_all)
+
+regNDVI_LitterRate = lm(log(NDVI)~range,data=var_all[var_all$parameter=="LitterRate",])
+regNEE_LitterRate = lm(log(NEE)~range,data=var_all[var_all$parameter=="LitterRate",])
+
+regNDVI_UptakeRate = lm(log(NDVI)~range, data=var_all[var_all$parameter=="UptakeRate",])
+regNEE_UptakeRate = lm(log(NEE)~range, data=var_all[var_all$parameter=="UptakeRate",])
+
+regNDVI_propN_fol = lm(log(NDVI)~range, data=var_all[var_all$parameter=="propN_fol",])
+regNEE_propN_fol = lm(log(NEE)~range, data=var_all[var_all$parameter=="propN_fol",])
+
+regNDVI_propN_roots = lm(log(NDVI)~range, data=var_all[var_all$parameter=="propN_roots",])
+regNEE_propN_roots = lm(log(NEE)~range, data=var_all[var_all$parameter=="propN_roots",])
+
+summary(regNDVI_LitterRate)
+summary(regNEE_LitterRate)
+summary(regNDVI_UptakeRate)
+summary(regNEE_UptakeRate)
+summary(regNDVI_propN_fol)
+summary(regNEE_propN_fol)
+summary(regNDVI_propN_roots)
+summary(regNEE_propN_roots)
+
 
 par(mfrow=c(1,2), mar=c(4,4,2,2))
-plot(NEE_tot,range, pch=16, col="mediumseagreen", cex=1.5)
-abline(regNEE, lwd=2, col="mediumseagreen")
-plot(NDVI_tot,range, pch=16, col="mediumseagreen", cex=1.5)
-abline(regNDVI, lwd=2, col="mediumseagreen")
+plot(var_all$NEE[var_all$parameter=="LitterRate"]~var_all$range[var_all$parameter=="LitterRate"], pch=16, cex=1, col="aquamarine", ylim=c(min(var_all$NEE)-5, max(var_all$NEE)+5))
+lines(var_all$range[var_all$parameter=="LitterRate"], exp(predict(regNEE_LitterRate,list(range=var_all$range[var_all$parameter=="LitterRate"]))), col="aquamarine", lwd=2)
+points(var_all$NEE[var_all$parameter=="UptakeRate"]~var_all$range[var_all$parameter=="UptakeRate"], pch=16, cex=1, col="darkgreen")
+lines(var_all$range[var_all$parameter=="UptakeRate"], exp(predict(regNEE_UptakeRate,list(range=var_all$range[var_all$parameter=="UptakeRate"]))), col="darkgreen", lwd=2)
+points(var_all$NEE[var_all$parameter=="propN_fol"]~var_all$range[var_all$parameter=="propN_fol"], pch=16, cex=1, col="mediumseagreen")
+lines(var_all$range[var_all$parameter=="propN_fol"], exp(predict(regNEE_propN_fol,list(range=var_all$range[var_all$parameter=="propN_fol"]))), col="mediumseagreen", lwd=2)
+points(var_all$NEE[var_all$parameter=="propN_roots"]~var_all$range[var_all$parameter=="propN_roots"], pch=16, cex=1, col="palegreen")
+lines(var_all$range[var_all$parameter=="propN_roots"], exp(predict(regNEE_propN_roots,list(range=var_all$range[var_all$parameter=="propN_roots"]))), col="palegreen", lwd=2)
+
+plot(var_all$NDVI[var_all$parameter=="LitterRate"]~var_all$range[var_all$parameter=="LitterRate"], pch=16, cex=1, col="aquamarine", ylim=c(min(var_all$NDVI), max(var_all$NDVI)))
+lines(var_all$range[var_all$parameter=="LitterRate"], exp(predict(regNDVI_LitterRate,list(range=var_all$range[var_all$parameter=="LitterRate"]))), col="aquamarine", lwd=2)
+points(var_all$NDVI[var_all$parameter=="UptakeRate"]~var_all$range[var_all$parameter=="UptakeRate"], pch=16, cex=1, col="darkgreen")
+lines(var_all$range[var_all$parameter=="UptakeRate"], exp(predict(regNDVI_UptakeRate,list(range=var_all$range[var_all$parameter=="UptakeRate"]))), col="darkgreen", lwd=2)
+points(var_all$NDVI[var_all$parameter=="propN_fol"]~var_all$range[var_all$parameter=="propN_fol"], pch=16, cex=1, col="mediumseagreen")
+lines(var_all$range[var_all$parameter=="propN_fol"], exp(predict(regNDVI_propN_fol,list(range=var_all$range[var_all$parameter=="propN_fol"]))), col="mediumseagreen", lwd=2)
+points(var_all$NDVI[var_all$parameter=="propN_roots"]~var_all$range[var_all$parameter=="propN_roots"], pch=16, cex=1, col="palegreen")
+lines(var_all$range[var_all$parameter=="propN_roots"], exp(predict(regNDVI_propN_roots,list(range=var_all$range[var_all$parameter=="propN_roots"]))), col="palegreen", lwd=2)
 
 
 ###########RELATIONSHIPS WITH FORCINGS#########
 
 
 #CHECK RELATIONSHIPS WITH FORCINGS
-par(mfrow=c(2,1))
+par(mfrow=c(1,2), mar=c(4,4,2,2))
 data.check = data[match(out.compare_NEE$time, data$time),]
-plot(data.compare_NEE$NEE~data.check$PAR_ARF, pch=16)
-points(out.compare_NEE$NEE~data.check$PAR_ARF, col="red")
-plot(data.compare_NEE$NEE~data.check$Temp_ARF, pch=16)
-points(out.compare_NEE$NEE~data.check$Temp_ARF, col="red")
+plot(data.compare_NEE$NEE~data.check$PAR_ARF, pch=16, col="darkblue")
+points(out.compare_NEE$NEE~data.check$PAR_ARF, col="gray40", pch=16)
+abline(h=0)
+plot(data.compare_NEE$NEE~data.check$Temp_ARF, pch=16, col="darkblue")
+points(out.compare_NEE$NEE~data.check$Temp_ARF, col="gray40", pch=16)
+abline(h=0)
+
+

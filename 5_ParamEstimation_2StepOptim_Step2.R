@@ -27,6 +27,7 @@ for(d in 1:D) { #for each data type
   n.time[d]=sum(!is.na(data.compare1[,d+1])) #calculate the number of time points that DO NOT have NA's
 } #end of for loop
 n.time #check 
+
 var.jbest = rep(0, D)
 error.jbest=matrix(NA, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
 for (d in 1:D) { #for each data type
@@ -81,7 +82,7 @@ repeat { #repeat until desired number of parameter sets are accepted
   
   parms = as.numeric(param.est) #parameters for model run
   names(parms) = names(params) #fix names
-  out = data.frame(solvemodel(parms, state)) #run model
+  out = data.frame(solvemodel(parms)) #run model
   
   if(any(is.na(out)) | any(out[,2:6]<0)){ #if there are NAs or negative stocks in the output
     reject=reject+1
@@ -133,21 +134,7 @@ repeat { #repeat until desired number of parameter sets are accepted
   
   acceptance = 1 - (reject / num.reps) #calculate proportion of accepted iterations
   
-  if(acceptance>0.65){
-    t = 1.01*t
-  }
-  
-  if(acceptance<0.35){
-    t = 0.99*t
-  }
-  
-  if(t<0.01){
-    t=0.01
-  }
-  if(t>0.5){
-    t=0.5
-  }
-  
+
   #print number of accepted parameters every 10 parameters
   if(num.accepted > 10){
     if((num.accepted/10 - floor(num.accepted/10)) == 0){
@@ -166,4 +153,4 @@ repeat { #repeat until desired number of parameter sets are accepted
 head(param.keep)
 tail(param.keep)
 
-save.image(file="Step2_NEE_NDVI_UNBdata_new.Rdata")
+save.image(file="Step2_NEE_NDVI_UNBdata_121015.Rdata")

@@ -93,8 +93,8 @@ head(sigma.obs1)
 ###LOAD REAL DATA###
 data.assim = read.csv("Assimilation_data_all.csv")
 data.sigma = read.csv("Assimilation_sigma_all.csv")
-data.assim = data.assim[data.assim$Year != 2013,]
-data.sigma = data.sigma[data.sigma$Year != 2013,]
+data.assim = data.assim[data.assim$Year==c(2009,2010),]
+data.sigma = data.sigma[data.sigma$Year==c(2009,2010),]
 head(data.assim)
 head(data.sigma)
 head(out)
@@ -120,8 +120,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.0024,0.012,0.9,0.015,0.04,0.8,0.08,    820,15,22000,950,3)
-param.min=c(0.07,0.0001,0.0001,0.002,0.1,0.002,0.001,0.4,0.04,  550,10,16500,750,0.5)
+param.max=c(0.34,0.0024,0.012,0.9,0.015,0.04,0.8,0.08,    820,15,22000,950,3)
+param.min=c(0.07,0.0001,0.002,0.1,0.002,0.001,0.4,0.04,  550,10,16500,750,0.5)
 
 #storage matrices
 j = matrix(1E100, M, D) #to store error calculations for this iteration
@@ -172,7 +172,7 @@ for (i in 2:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
-      param.est[i,p] = param.est[i-1,p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
+      param.est[i,p] = param.best[p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
       all.draws[i,p] = param.est[i,p]
     } #end of parameter loop
     if(all(!is.na(param.est[i,]))){
@@ -186,7 +186,7 @@ for (i in 2:M) {
   names(parms) = names(params) #fix names
   out = data.frame(solvemodel(parms)) #run model  
   
-  if(any(is.na(out)) | any(out[,2:6]<0) | abs(out[1826,2]-out[1,2])>300 ){ #if there are any NAs or negative stocks in the output
+  if(any(is.na(out)) | any(out[,2:6]<0) | abs(out[1,2]-out[length(out[,2]),2])>100){ #if there are any NAs or negative stocks in the output
     reject = reject+1 #reject parameter set
     param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
     j[i,] = j[i-1,] #set current J to previous J
@@ -236,9 +236,6 @@ for (i in 2:M) {
     t = 0.99*t
   }
   
-  if(t<0.1){
-    t = 0.1
-  }
   anneal.temp=anneal.temp-1 #decrease temperature
   
   if(anneal.temp<5){ #if temperature drops to less than 1
@@ -260,4 +257,4 @@ names(param.best)=names(params)
 j.best #view the minimum J
 param.best
 
-save.image(file="Step1_NEE_NDVI_part1NDVI_UNBdata.Rdata")
+save.image(file="Step1_NEE_NDVI_part3NDVI_UNBdata.Rdata")
