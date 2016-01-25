@@ -1,21 +1,21 @@
 require(deSolve)
 require(FME)
 
-params <- c(kplant = 0.2, #0.07-0.34
-            LitterRateC = 0.0007, #0.0001-0.0024
-            LitterRateN = 0.0008, #0.0001-0.0024
-            UptakeRate = 0.008, #0.002-0.012
-            propN_fol = 0.1, #0.1-0.9
-            propN_roots = 0.015, #0.002-0.015
-            netNrate = 0.015, #0.001-0.04
-            cue=0.7, #0.4-0.8
-            beta=0.05)#0.04-0.08
 
-state <- c( Biomass_C = 684.5, 
-            Biomass_N = 12.9, 
-            SOM_C = 19358.7, 
-            SOM_N = 854.1,
-            Available_N = 1.6)
+params <- c(kplant = 0.166, #0.07-0.34
+            LitterRate = 0.000863, #0.0001-0.0024
+            UptakeRate = 0.008, #0.002-0.012
+            propN_fol = 0.115, #0.1-0.9
+            propN_roots = 0.00293, #0.002-0.015
+            netNrate = 0.02, #0.001-0.04
+            cue=0.7, #0.4-0.8
+            beta=0.05)
+
+state  <- c(Biomass_C = 722.51, 
+            Biomass_N = 20, 
+            SOM_C = 18389.02, 
+            SOM_N = 762.70,
+            Available_N = 1.1)
 
 
 ####################MODEL#################################
@@ -64,8 +64,8 @@ solvemodel <- function(params, state, times) {
       Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 10 ) )
       N_dep = Ndep_rate
       N_fix=Nfix_rate*scaltemp
-      Litterfall_C =  LitterRateC * Biomass_C
-      Litterfall_N  =  LitterRateN * Biomass_N
+      Litterfall_C =  LitterRate * Biomass_C
+      Litterfall_N  =  LitterRate * Biomass_N
       
       #calculated variables to use for model fitting and analysis
       NEE = Re - GPP
@@ -100,4 +100,3 @@ solvemodel <- function(params, state, times) {
 #####################################################################
 
 out= data.frame(solvemodel(params, state)) #creates table of model output
-

@@ -140,11 +140,11 @@ DOY.d1 <- approxfun(x=time, y=data$DOY, method="linear", rule=2)
 
 #OPEN 3_Model.R and run once to store function
 #adjust starting values
-state <- c( Biomass_C = summary$Biomass_C[16], 
-            Biomass_N = summary$Biomass_N[16], 
-            SOM_C = summary$SOM_C[16], 
-            SOM_N = summary$SOM_N[16],
-            Available_N = summary$Available_N[16])
+state <- c( Biomass_C = out.spin$Biomass_C[36235], 
+            Biomass_N = out.spin$Biomass_N[36235], 
+            SOM_C = out.spin$SOM_C[36235], 
+            SOM_N = out.spin$SOM_N[36235],
+            Available_N = out.spin$Available_N[36235])
 
 out= data.frame(solvemodel(params, state)) #creates table of model output
 
@@ -171,7 +171,12 @@ MODIS_avg = mean(MODIS_gsNDVI)
 summary = rbind(summary, c(dat[1,1], state, CCaN_max, MODIS_max, CCaN_avg, MODIS_avg)) #bind new row to table
 summary #view table
 
-write.csv(summary, "C:/Users/Rocha Lab/Desktop/CaTT_Summary") #save CSV 
+
+
+
+
+
+write.csv(summary, "CaTT_Summary") #save CSV 
 
 
 diff_max = abs(summary$CCaN_max-summary$MODIS_max)
