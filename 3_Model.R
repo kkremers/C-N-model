@@ -17,7 +17,6 @@ state <- c( Biomass_C = 684.5,
             SOM_N = 854.1,
             Available_N = 1.6)
 
-time = seq(1, 1826, 1)
 
 ####################MODEL#################################
 
@@ -30,12 +29,9 @@ solvemodel <- function(params, state, times) {
       #forcing data
       Temp=Temp.d1(t)
       PAR=PAR.d1(t)
-      albedo = albedo.d1(t)
       DOY = DOY.d1(t)
-      DOYpeak = DOYpeak.d1(t)
       scaltemp=scaltemp.d1(t)
       scalseason=scalseason.d1(t)
-      year = Year.d1(t)
       
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
       Ndep_rate = 0.00007 #calculated from Alaska's changing arctic pg 106
@@ -91,7 +87,7 @@ solvemodel <- function(params, state, times) {
              dAvailable_N), 
            c(NEE=NEE, GPP=GPP, Re=Re, LAI=LAI, NDVI=NDVI, Ra=Ra, Rh=Rh, Uptake = Uptake, 
              Ntrans=Ntrans, N_fix=N_fix, Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, 
-             DOY=DOY, year=year, TFN=TFN, Temp=Temp, scaltemp = scaltemp, scalseason = scalseason))
+             DOY=DOY, TFN=TFN, Temp=Temp, scaltemp = scaltemp, scalseason = scalseason))
       
     })  #end of with(as.list(...
   } #end of model

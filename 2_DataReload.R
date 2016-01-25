@@ -18,7 +18,7 @@ sen.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  sen.day[i] = min(data.year$DOY[which(data.year$estTemp_min<=5 & data.year$DOY>200)])
+  sen.day[i] = min(data.year$DOY[which(data.year$estTemp_avg<=10 & data.year$DOY>200)])
 }
 sen.day
 num.days = c(365, 365, 365, 366, 365)
@@ -161,7 +161,7 @@ end.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  end.day[i] = min(data.year$DOY[which(data.year$DOY>240 & data.year$estTemp_min<=-5 & data.year$falltest==1)])
+  end.day[i] = min(data.year$DOY[which(data.year$DOY>240 & data.year$estTemp_avg<=0 & data.year$falltest==1)])
 }
 end.day
 num.days = c(365, 365, 365, 366, 365)
@@ -233,7 +233,7 @@ for (i in 1:length(data$DOY)){
 
 plot(scal.seas)
 
-
+time = seq(1:length(data$time))
 #make into functions so that it will be continuous in the model
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
 PAR.d1 <- approxfun(x=data$time, y=data$PAR_ARF, method="linear", rule=2)
