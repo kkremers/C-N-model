@@ -14,7 +14,7 @@ LST.filled = LST.filled-273.15 #convert to celcius
 plot(LST.filled)
 
 PAR.filled = approx(time, dat$PAR, time, method = "linear", rule = 2)$y #fill PAR
-PAR.filled = (4.401*PAR.filled)-6.515 #convert to mol m-2 s-1
+PAR.filled = 3.5947*PAR.filled #convert to mol m-2 s-1
 plot(PAR.filled)
 
 NDVI.filled = approx(time, dat$NDVI, time, method = "linear", rule = 2)$y #fill NDVI
@@ -99,38 +99,31 @@ for (i in 1:length(data$LST.avg)){
 plot(scal.temp, type="l")
 
 ###################MODEL SPINUP######################
-#numyears = 100
-#DOY.spin = rep(data$DOY, numyears)
-#LST.spin = rep(data$LST.avg, numyears)
-#PAR.spin = rep(data$PAR.avg, numyears)
-#scal.temp.spin = rep(scal.temp, numyears)
-#scal.seas.spin = rep(scal.seas, numyears)
+numyears = 100
+DOY.spin = rep(data$DOY, numyears)
+LST.spin = rep(data$LST.avg, numyears)
+PAR.spin = rep(data$PAR.avg, numyears)
+scal.temp.spin = rep(scal.temp, numyears)
+scal.seas.spin = rep(scal.seas, numyears)
 
-#time = seq(1:length(DOY.spin))
+time = seq(1:length(DOY.spin))
 
 #Step 4: make into functions so that it will be continuous in the model
-#Temp.d1 <- approxfun(x=time, y=LST.spin, method="linear", rule=2)
-#PAR.d1 <- approxfun(x=time, y=PAR.spin, method="linear", rule=2)
-#scaltemp.d1 <- approxfun(x=time, y=scal.temp.spin, method="linear", rule=2)
-#scalseason.d1 <- approxfun(x=time, y=scal.seas.spin, method="linear", rule=2)
-#DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
+Temp.d1 <- approxfun(x=time, y=LST.spin, method="linear", rule=2)
+PAR.d1 <- approxfun(x=time, y=PAR.spin, method="linear", rule=2)
+scaltemp.d1 <- approxfun(x=time, y=scal.temp.spin, method="linear", rule=2)
+scalseason.d1 <- approxfun(x=time, y=scal.seas.spin, method="linear", rule=2)
+DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
 
 #OPEN 3_Model.R and run it the first time
-#out= data.frame(solvemodel(params, state)) #creates table of model output
+out.spin= data.frame(solvemodel(params, state)) #creates table of model output
 
-#head(out)
-#plot(out$Biomass_C)
-#out$Biomass_C[36235] #starting value of final year
-#plot(out$Biomass_N)
-#out$Biomass_N[36235] #starting value of final year
-#plot(out$SOM_C)
-#out$SOM_C[36235] #starting value of final year
-#plot(out$SOM_N)
-#out$SOM_N[36235] #starting value of final year
-#plot(out$Available_N)
-#out$Available_N[36235] #starting value of final year
+out.spin$Biomass_C[36235] #starting value of final year
+out.spin$Biomass_N[36235] #starting value of final year
+out.spin$SOM_C[36235] #starting value of final year
+out.spin$SOM_N[36235] #starting value of final year
+out.spin$Available_N[36235] #starting value of final year
 
-#record starting values in spreadsheet
 #######################################################
 
 #Run model for each site and record NDVI
@@ -147,20 +140,52 @@ DOY.d1 <- approxfun(x=time, y=data$DOY, method="linear", rule=2)
 
 #OPEN 3_Model.R and run once to store function
 #adjust starting values
-state <- c( Biomass_C = 684.5, 
-            Biomass_N = 12.9, 
-            SOM_C = 19358.7, 
-            SOM_N = 854.1,
-            Available_N = 1.6)
+state <- c( Biomass_C = summary$Biomass_C[16], 
+            Biomass_N = summary$Biomass_N[16], 
+            SOM_C = summary$SOM_C[16], 
+            SOM_N = summary$SOM_N[16],
+            Available_N = summary$Available_N[16])
 
 out= data.frame(solvemodel(params, state)) #creates table of model output
 
+#determine max NDVI & record in spreadsheet
+CCaN_max = max(out$NDVI)
+MODIS_max = max(data$NDVI)
+
+#determine GS average NDVI & record in spreadsheet
+#pull out GS data (DOY > 150 & DOY < 250)
+CCaN_gsNDVI = out$NDVI[out$DOY>=150 & out$DOY <=250]
+MODIS_gsNDVI = data$NDVI.avg[data$DOY>=150 & data$DOY <=250]
+#calculate average
+CCaN_avg = mean(CCaN_gsNDVI)
+MODIS_avg = mean(MODIS_gsNDVI)
 
 
+#put it all into a table
+#######only run these the first time#########
+#summary = data.frame(matrix(1, 0, 10))
+#colnames(summary) = c("Latitude", "Biomass_C", "Biomass_N", "SOM_C", "SOM_N", "Available_N", "CCaN_max", "MODIS_max", "CCaN_avg", "MODIS_avg")
+#head(summary)
+###########################################
+
+summary = rbind(summary, c(dat[1,1], state, CCaN_max, MODIS_max, CCaN_avg, MODIS_avg)) #bind new row to table
+summary #view table
+
+write.csv(summary, "C:/Users/Rocha Lab/Desktop/CaTT_Summary") #save CSV 
 
 
+diff_max = abs(summary$CCaN_max-summary$MODIS_max)
+diff_avg = abs(summary$CCaN_avg-summary$MODIS_avg)
 
+plot(diff_avg~summary$Latitude, pch=16)
+plot(diff_max~summary$Latitude)
 
+plot(summary$CCaN_max~summary$MODIS_max, pch=16, xlim=c(0.3,0.8), ylim=c(0.3,0.8))
+abline(0,1, col="red")
+reg_avg = lm(summary$CCaN_avg~summary$MODIS_avg)
+summary(reg_avg)
 
+reg_max = lm(summary$CCaN_max~summary$MODIS_max)
+summary(reg_max)
 
 
