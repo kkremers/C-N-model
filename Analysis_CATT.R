@@ -116,13 +116,12 @@ scalseason.d1 <- approxfun(x=time, y=scal.seas.spin, method="linear", rule=2)
 DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
 
 #OPEN 3_Model.R and run it the first time
+state  <- c(Biomass_C = 722.51, 
+            Biomass_N = 10.01, 
+            SOM_C = 18389.02, 
+            SOM_N = 762.70,
+            Available_N = 1.1)
 out.spin= data.frame(solvemodel(params, state)) #creates table of model output
-
-out.spin$Biomass_C[36235] #starting value of final year
-out.spin$Biomass_N[36235] #starting value of final year
-out.spin$SOM_C[36235] #starting value of final year
-out.spin$SOM_N[36235] #starting value of final year
-out.spin$Available_N[36235] #starting value of final year
 
 #######################################################
 
@@ -152,7 +151,7 @@ out= data.frame(solvemodel(params, state)) #creates table of model output
 CCaN_max = max(out$NDVI)
 MODIS_max = max(data$NDVI)
 
-#determine GS average NDVI & record in spreadsheet
+#determine GS average NDVI 
 #pull out GS data (DOY > 150 & DOY < 250)
 CCaN_gsNDVI = out$NDVI[out$DOY>=150 & out$DOY <=250]
 MODIS_gsNDVI = data$NDVI.avg[data$DOY>=150 & data$DOY <=250]
@@ -160,32 +159,51 @@ MODIS_gsNDVI = data$NDVI.avg[data$DOY>=150 & data$DOY <=250]
 CCaN_avg = mean(CCaN_gsNDVI)
 MODIS_avg = mean(MODIS_gsNDVI)
 
+#determine GS Avg Temp & PAR 
+#pull out GS data (DOY > 150 & DOY < 250)
+Temp_GS = data$LST.avg[data$DOY>=150 & data$DOY <=250]
+PAR_GS = data$PAR.avg[data$DOY>=150 & data$DOY <=250]
+#calculate average
+Tavg = mean(Temp_GS)
+PARavg = mean(PAR_GS)
 
 #put it all into a table
 #######only run these the first time#########
-#summary = data.frame(matrix(1, 0, 10))
-#colnames(summary) = c("Latitude", "Biomass_C", "Biomass_N", "SOM_C", "SOM_N", "Available_N", "CCaN_max", "MODIS_max", "CCaN_avg", "MODIS_avg")
+#summary = data.frame(matrix(1, 0, 13))
+#colnames(summary) = c("Latitude", "Biomass_C", "Biomass_N", "SOM_C", "SOM_N", "Available_N", "CCaN_max", "MODIS_max", "CCaN_avg", "MODIS_avg", "Tmax", "Tavg", "PARavg")
 #head(summary)
 ###########################################
 
-summary = rbind(summary, c(dat[1,1], state, CCaN_max, MODIS_max, CCaN_avg, MODIS_avg)) #bind new row to table
+summary = rbind(summary, c(dat[1,1], state, CCaN_max, MODIS_max, CCaN_avg, MODIS_avg, Tmax, Tavg, PARavg)) #bind new row to table
 summary #view table
-
-
-
-
-
 
 write.csv(summary, "CaTT_Summary") #save CSV 
 
 
+
+
+
+###########PLOTS#####################
+
 diff_max = abs(summary$CCaN_max-summary$MODIS_max)
 diff_avg = abs(summary$CCaN_avg-summary$MODIS_avg)
 
-plot(diff_avg~summary$Latitude, pch=16)
-plot(diff_max~summary$Latitude)
+plot(diff_avg~summary$Tmax, pch=16)
+plot(diff_max~summary$Tmax, pch=16)
 
-plot(summary$CCaN_max~summary$MODIS_max, pch=16, xlim=c(0.3,0.8), ylim=c(0.3,0.8))
+reg_MODIS = lm(summary$MODIS_max~summary$Tmax)
+reg_CCaN = lm(summary$CCaN_max~summary$Tmax)
+summary(reg_MODIS)
+summary(reg_CCaN)
+
+par(mfrow=c(1,2))
+plot(summary$MODIS_max~summary$Tmax, pch=16)
+abline(reg_MODIS)
+plot(summary$CCaN_max~summary$Tmax, pch=16)
+abline(reg_CCaN)
+
+
+plot(summary$CCaN_avg,summary$MODIS_avg, pch=16, xlim=c(0.3,0.8), ylim=c(0.3,0.8))
 abline(0,1, col="red")
 reg_avg = lm(summary$CCaN_avg~summary$MODIS_avg)
 summary(reg_avg)
@@ -194,3 +212,8 @@ reg_max = lm(summary$CCaN_max~summary$MODIS_max)
 summary(reg_max)
 
 
+
+#Convert to LAI and Compare
+MODIS_LAI = 0.0026*exp(8.0783*summary$MODIS_max)
+CCaN_LAI = 0.0026*exp(8.0783*summary$CCaN_max)
+summary=cbind(summary, CCaN_LAI = CCaN_LAI, MODIS_LAI = MODIS_LAI)

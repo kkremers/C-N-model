@@ -12,7 +12,7 @@ params <- c(kplant = 0.166, #0.07-0.34
             beta=0.05)
 
 state  <- c(Biomass_C = 722.51, 
-            Biomass_N = 20, 
+            Biomass_N = 10.01, 
             SOM_C = 18389.02, 
             SOM_N = 762.70,
             Available_N = 1.1)
