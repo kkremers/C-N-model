@@ -180,40 +180,143 @@ summary #view table
 write.csv(summary, "CaTT_Summary") #save CSV 
 
 
-
-
-
 ###########PLOTS#####################
 
-diff_max = abs(summary$CCaN_max-summary$MODIS_max)
-diff_avg = abs(summary$CCaN_avg-summary$MODIS_avg)
-
-plot(diff_avg~summary$Tmax, pch=16)
-plot(diff_max~summary$Tmax, pch=16)
-
-reg_MODIS = lm(summary$MODIS_max~summary$Tmax)
-reg_CCaN = lm(summary$CCaN_max~summary$Tmax)
-summary(reg_MODIS)
-summary(reg_CCaN)
-
-par(mfrow=c(1,2))
-plot(summary$MODIS_max~summary$Tmax, pch=16)
-abline(reg_MODIS)
-plot(summary$CCaN_max~summary$Tmax, pch=16)
-abline(reg_CCaN)
-
-
-plot(summary$CCaN_avg,summary$MODIS_avg, pch=16, xlim=c(0.3,0.8), ylim=c(0.3,0.8))
-abline(0,1, col="red")
-reg_avg = lm(summary$CCaN_avg~summary$MODIS_avg)
-summary(reg_avg)
-
-reg_max = lm(summary$CCaN_max~summary$MODIS_max)
-summary(reg_max)
-
-
-
-#Convert to LAI and Compare
+#Convert to LAI and TFN to compare
 MODIS_LAI = 0.0026*exp(8.0783*summary$MODIS_max)
 CCaN_LAI = 0.0026*exp(8.0783*summary$CCaN_max)
 summary=cbind(summary, CCaN_LAI = CCaN_LAI, MODIS_LAI = MODIS_LAI)
+
+MODIS_TFN = (MODIS_LAI*1.29)+0.31
+CCaN_TFN = (CCaN_LAI*1.29)+0.31
+summary=cbind(summary, MODIS_TFN=MODIS_TFN, CCaN_TFN=CCaN_TFN)
+head(summary)
+
+
+#regressions with temperature - NDVI
+reg_MODIS.temp = lm(summary$MODIS_avg~summary$Tavg)
+reg_CCaN.temp = lm(summary$CCaN_avg~summary$Tavg)
+
+par(mfrow=c(1,3))
+plot(summary$CCaN_avg~summary$Tavg, pch=16, ylim=c(0.3, 0.8), xlab="GS Avg Temp", ylab="GS Avg NDVI")
+abline(reg_CCaN.temp)
+points(summary$MODIS_avg~summary$Tavg, pch=16, col="forestgreen")
+abline(reg_MODIS.temp, col="forestgreen")
+
+#regressions with temperature - LAI
+reg_MODISLAI.temp = lm(summary$MODIS_LAI~summary$Tavg)
+reg_CCaNLAI.temp = lm(summary$CCaN_LAI~summary$Tavg)
+
+plot(summary$CCaN_LAI~summary$Tavg, pch=16, ylim=c(0, 1.1), xlab="GS Avg Temp", ylab="GS Max LAI")
+abline(reg_CCaNLAI.temp)
+points(summary$MODIS_LAI~summary$Tavg, pch=16, col="forestgreen")
+abline(reg_MODISLAI.temp, col="forestgreen")
+
+
+#regressions with temperature - TFN
+reg_MODISTFN.temp = lm(summary$MODIS_TFN~summary$Tavg)
+reg_CCaNTFN.temp = lm(summary$CCaN_TFN~summary$Tavg)
+
+plot(summary$CCaN_TFN~summary$Tavg, pch=16, ylim=c(0, 2), xlab="GS Avg Temp", ylab="GS Max TFN")
+abline(reg_CCaNTFN.temp)
+points(summary$MODIS_TFN~summary$Tavg, pch=16, col="forestgreen")
+abline(reg_MODISTFN.temp, col="forestgreen")
+
+
+#regression stats
+summary(reg_MODIS.temp)
+summary(reg_CCaN.temp)
+summary(reg_MODISLAI.temp)
+summary(reg_CCaNLAI.temp)
+summary(reg_MODISTFN.temp)
+summary(reg_CCaNTFN.temp)
+
+
+#regressions with latitude - NDVI
+reg_MODIS.lat = lm(summary$MODIS_avg~summary$Latitude)
+reg_CCaN.lat = lm(summary$CCaN_avg~summary$Latitude)
+
+par(mfrow=c(1,3))
+plot(summary$CCaN_avg~summary$Latitude, pch=16, ylim=c(0.3, 0.8), xlab="Latitude", ylab="GS Avg NDVI")
+abline(reg_CCaN.lat)
+points(summary$MODIS_avg~summary$Latitude, pch=16, col="forestgreen")
+abline(reg_MODIS.lat, col="forestgreen")
+
+#regressions with temperature - LAI
+reg_MODISLAI.lat = lm(summary$MODIS_LAI~summary$Latitude)
+reg_CCaNLAI.lat = lm(summary$CCaN_LAI~summary$Latitude)
+
+plot(summary$CCaN_LAI~summary$Latitude, pch=16, ylim=c(0, 1.1), xlab="Latitude", ylab="GS Max LAI")
+abline(reg_CCaNLAI.lat)
+points(summary$MODIS_LAI~summary$Latitude, pch=16, col="forestgreen")
+abline(reg_MODISLAI.lat, col="forestgreen")
+
+
+#regressions with temperature - TFN
+reg_MODISTFN.lat = lm(summary$MODIS_TFN~summary$Latitude)
+reg_CCaNTFN.lat = lm(summary$CCaN_TFN~summary$Latitude)
+
+plot(summary$CCaN_TFN~summary$Latitude, pch=16, ylim=c(0, 2), xlab="Latitude", ylab="GS Max TFN")
+abline(reg_CCaNTFN.lat)
+points(summary$MODIS_TFN~summary$Latitude, pch=16, col="forestgreen")
+abline(reg_MODISTFN.lat, col="forestgreen")
+
+
+#regression stats
+summary(reg_MODIS.lat)
+summary(reg_CCaN.lat)
+summary(reg_MODISLAI.lat)
+summary(reg_CCaNLAI.lat)
+summary(reg_MODISTFN.lat)
+summary(reg_CCaNTFN.lat)
+
+
+
+#Now make the same plots with the residuals
+
+#calculate residuals
+resid_NDVImax = abs(summary$CCaN_max-summary$MODIS_max)
+resid_NDVIavg = abs(summary$CCaN_avg-summary$MODIS_avg)
+resid_LAImax = abs(summary$CCaN_LAI-summary$MODIS_LAI)
+resid_TFNmax = abs(summary$CCaN_TFN-summary$MODIS_TFN)
+
+#regressions with temperature - NDVI
+reg_temp.NDVIresid = lm(resid_NDVIavg~summary$Tavg)
+
+par(mfrow=c(1,2))
+plot(resid_NDVIavg~summary$Tavg, pch=16, col="blue", ylim=c(0, 0.2), xlab="GS Avg Temp", ylab="GS Avg NDVI Residuals (CCaN-MODIS)")
+abline(reg_temp.NDVIresid, col="blue")
+
+
+#regressions with latitude - NDVI
+reg_lat.NDVIresid = lm(resid_NDVIavg~summary$Latitude)
+
+plot(resid_NDVIavg~summary$Latitude, pch=16, col="blue", ylim=c(0, 0.2), xlab="Latitude", ylab="GS Avg NDVI Residuals (CCaN-MODIS)")
+abline(reg_lat.NDVIresid, col="blue")
+
+#regression stats
+summary(reg_temp.NDVIresid)
+summary(reg_lat.NDVIresid)
+
+
+#make sensitivty bar graph
+Sample = c("CCaN", "MODIS", "Goetz", "LTER")
+Sensitivty = c(0.011, 0.031, 0.02, 0.022)
+par(mfrow=c(1,1))
+barplot(Sensitivty, names.arg=Sample, ylab="Temp Sensitivity")
+
+
+
+#Plot modelled vs. measured
+reg_NDVI = lm(summary$CCaN_avg~summary$MODIS_avg)
+reg_LAI = lm(summary$CCaN_LAI~summary$MODIS_LAI)
+par(mfrow=c(1,2))
+plot(summary$CCaN_avg~summary$MODIS_avg, ylim=c(0.4,0.7), xlim=c(0.4,0.7), pch=16, ylab="CCaN GS Avg NDVI", xlab="MODIS GS avg NDVI")
+abline(0,1, col="red")
+abline(reg_NDVI)
+plot(summary$CCaN_LAI~summary$MODIS_LAI, ylim=c(0.2,1.1), xlim=c(0.2,1.1), pch=16, ylab="CCaN GS Max LAI", xlab="MODIS GS Max LAI")
+abline(0,1, col="red")
+abline(reg_LAI)
+
+summary(reg_NDVI)
+summary(reg_LAI)
