@@ -7,10 +7,9 @@ head(data)
 
 #plot the data
 par(mfrow=c(3,1), mar=c(4,4,0.5,2))
-plot(data$estTemp_avg~data$time, type="l", ylab = "Daily Avg Temp (C)", col="red", xlab="")
+plot(data$Temp_ARF~data$time, type="l", ylab = "Daily Avg Temp (C)", col="red", xlab="")
 abline(h=0)
 plot(data$PAR_ARF~data$time, type="l", ylab = "Daily PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
-plot(data$PAR_vis~data$time, type="l", ylab = "Daily Plant Avail. PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
 
 #need to calculate DOY of senescence 
 years = unique(data$year) #tells you which years we have data for 
@@ -18,26 +17,12 @@ sen.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  sen.day[i] = min(data.year$DOY[which(data.year$estTemp_avg<=10 & data.year$DOY>200)])
+  sen.day[i] = min(data.year$DOY[which(data.year$Temp_ARF<=10 & data.year$DOY>200)])
 }
 sen.day
-num.days = c(365, 365, 365, 366, 365)
+num.days = c(365, 365, 365, 366, 365,365)
 senDOY = rep(c(sen.day), c(num.days))
 data = data.frame(data, senDOY = senDOY)
-head(data)
-
-#need to calculate DOY of spring
-years = unique(data$year) #tells you which years we have data for 
-spring.day = NA
-for (i in 1: length(years)){
-  year.i = years[i]
-  data.year = subset(data, data$year==year.i)
-  spring.day[i] = min(data.year$DOY[which(data.year$estTemp_min>=0)])
-}
-spring.day
-num.days = c(365, 365, 365, 366, 365)
-springDOY = rep(c(spring.day), c(num.days))
-data = data.frame(data, springDOY = springDOY)
 head(data)
 
 #create a temperature scalar
@@ -46,16 +31,16 @@ Tmin.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  Tmax.day[i]=max(data.year$estTemp_avg)
-  Tmin.day[i]=min(data.year$estTemp_avg)
+  Tmax.day[i]=max(data.year$Temp_ARF)
+  Tmin.day[i]=min(data.year$Temp_ARF)
 }
 Tmax.day # max temps for each year
 Tmax.mean=mean(Tmax.day)
 Tmin.mean=mean(Tmin.day)
 
 scal.temp=NULL
-for (i in 1:length(data$estTemp_avg)){
-  scal.temp[i] = (data$estTemp_avg[i] - Tmin.mean)/(Tmax.mean-Tmin.mean) 
+for (i in 1:length(data$Temp_ARF)){
+  scal.temp[i] = (data$Temp_ARF[i] - Tmin.mean)/(Tmax.mean-Tmin.mean) 
 }
 
 #rescale to 1
@@ -70,8 +55,8 @@ plot(scal.temp, type="l")
 #create a smoothed temperature scalar
 #average of current sample, 5 future samples, and 5 past samples
 filt=rep(1/11,11)
-Temp.sm = filter(data$estTemp_avg, filt, sides=2, circular=TRUE)
-plot(data$estTemp_avg, type="l")
+Temp.sm = filter(data$Temp_ARF, filt, sides=2, circular=TRUE)
+plot(data$Temp_ARF, type="l")
 lines(Temp.sm, col="red", lwd="3")
 data=data.frame(data, Temp_sm=Temp.sm)
 
@@ -109,8 +94,7 @@ for(i in 1:length(start)){
   slope[start.i:end.i]=rep(slope.i, 8)
 }
 slope
-slope[1825]=slope[1824] #these two points don't really matter, but I don't want them to be NAs
-slope[1826]=slope[1825]
+slope[2185:length(slope)]=slope[2184] #these points don't really matter, but I don't want them to be NAs
 slope
 data=data.frame(data, slope=slope)
 head(data)
@@ -149,10 +133,9 @@ start.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  start.day[i] = min(data.year$DOY[which(data.year$DOY>120 & data.year$estTemp_avg>=-5 & data.year$springtest==1)])
+  start.day[i] = min(data.year$DOY[which(data.year$DOY>120 & data.year$Temp_ARF>=-5 & data.year$springtest==1)])
 }
 start.day
-num.days = c(365, 365, 365, 366, 365)
 startDOY = rep(c(start.day), c(num.days))
 data = data.frame(data, startDOY = startDOY)
 head(data)
@@ -161,53 +144,20 @@ end.day = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  end.day[i] = min(data.year$DOY[which(data.year$DOY>240 & data.year$estTemp_avg<=0 & data.year$falltest==1)])
+  end.day[i] = min(data.year$DOY[which(data.year$DOY>240 & data.year$Temp_ARF<=0 & data.year$falltest==1)])
 }
 end.day
-num.days = c(365, 365, 365, 366, 365)
 endDOY = rep(c(end.day), c(num.days))
 data = data.frame(data, endDOY = endDOY)
 head(data)
 
-
-#need to figure out which DOY was the day when snow began to melt
-years = unique(data$year) #tells you which years we have data for 
-melt.day = NA
-for (i in 1: length(years)){
-  year.i = years[i]
-  data.year = subset(data, data$year==year.i)
-  melt.day[i] = min(data.year$DOY[which(data.year$Albedo<0.2)])
-}
-melt.day
-num.days = c(365, 365, 365, 366, 365)
-meltDOY = rep(c(melt.day), c(num.days))
-data = data.frame(data, meltDOY = meltDOY)
-head(data)
-
-
-#need to figure out which DOY was the day when snow fell
-years = unique(data$year) #tells you which years we have data for 
-snow.day = NA
-for (i in 1: length(years)){
-  year.i = years[i]
-  data.year = subset(data, data$year==year.i)
-  snow.day[i] = min(data.year$DOY[which(data.year$Albedo>0.2 & data.year$DOY>180)])
-}
-snow.day
-num.days = c(365, 365, 365, 366, 365)
-snowDOY = rep(c(snow.day), c(num.days))
-data = data.frame(data, snowDOY = snowDOY)
-head(data)
-
-
-
 data.compare2=read.csv("Assimilation_data_ALL.csv")
 
 par(mfrow=c(1,1))
-plot(data.compare2$GPP~data.compare2$Time, col="forestgreen", xlim=c(1,1826))
-abline(v=c(start.day+c(0,365,365+365,365+365+366, 365+365+366+365)), col="red")
-abline(v=c(sen.day+c(0,365,365+365,365+365+366, 365+365+366+365)))
-abline(v=c(end.day+c(0,365,365+365,365+365+366, 365+365+366+365)), col="blue")
+plot(data.compare2$NEE~data.compare2$Time, col="forestgreen", xlim=c(1,1826))
+abline(v=c(start.day+c(0,365,365+365,365+365+366, 365+365+366+365, 365+365+366+365+365)), col="red")
+abline(v=c(sen.day+c(0,365,365+365,365+365+366, 365+365+366+365, 365+365+366+365+365)))
+abline(v=c(end.day+c(0,365,365+365,365+365+366, 365+365+366+365, 365+365+366+365+365)), col="blue")
 
 ###############seasonal scalar##############
 
@@ -233,13 +183,34 @@ for (i in 1:length(data$DOY)){
 
 plot(scal.seas)
 
+#FINALLY, need to calculate average growing season temperature
+#pull out GS data (DOY > 150 & DOY < 250)
+head(data)
+
+years = unique(data$year) #tells you which years we have data for 
+Temp_avg = NA
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data, data$year==year.i)
+  Temp_GS = data.year$Temp_ARF[data.year$DOY>=data.year$startDOY[1] & data.year$DOY <= data.year$endDOY[1]]
+  Temp_avg[i] = mean(Temp_GS)
+}
+Temp_avg
+Temp_avg = rep(c(Temp_avg), c(num.days))
+data = data.frame(data, Temp_avg = Temp_avg)
+head(data)
+
+
+Tavg.site = mean(Temp_GS)
+Tdiff = Tavg.site - Tavg.Toolik
+
+
 time = seq(1:length(data$time))
 #make into functions so that it will be continuous in the model
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
+TempAvg.d1 <- approxfun(x=data$time, y=data$Temp_avg, method="linear", rule=2)
 PAR.d1 <- approxfun(x=data$time, y=data$PAR_ARF, method="linear", rule=2)
-albedo.d1 <- approxfun(x=data$time, y=data$Albedo, method="linear", rule=2)
 scaltemp.d1 <- approxfun(x=data$time, y=scal.temp.sm, method="linear", rule=2)
 scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
-DOYpeak.d1 <- approxfun(x=data$time, y=data$peakDOY, method="linear", rule=2)
 Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)

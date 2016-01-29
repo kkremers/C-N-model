@@ -106,6 +106,14 @@ PAR.spin = rep(data$PAR.avg, numyears)
 scal.temp.spin = rep(scal.temp, numyears)
 scal.seas.spin = rep(scal.seas, numyears)
 
+summ = data.frame(read.csv("CaTT_Summary"))
+Tavg.Toolik = summ$Tavg[7]
+#pull out GS data (DOY > 150 & DOY < 250)
+Temp_GS = data$LST.avg[data$DOY>=150 & data$DOY <=250]
+Tavg.site = mean(Temp_GS)
+Tdiff = Tavg.site - Tavg.Toolik
+
+
 time = seq(1:length(DOY.spin))
 
 #Step 4: make into functions so that it will be continuous in the model
@@ -116,6 +124,15 @@ scalseason.d1 <- approxfun(x=time, y=scal.seas.spin, method="linear", rule=2)
 DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
 
 #OPEN 3_Model.R and run it the first time
+params <- c(kplant = 0.166, #0.07-0.34
+            LitterRate = 0.000863, #0.0001-0.0024
+            UptakeRate = 0.008, #0.002-0.012
+            propN_fol = (0.115 + (0.0078*Tdiff)), #0.1-0.9
+            propN_roots = 0.00293, #0.002-0.015
+            netNrate = 0.02, #0.001-0.04
+            cue=0.7, #0.4-0.8
+            beta=0.05)
+
 state  <- c(Biomass_C = 722.51, 
             Biomass_N = 10.01, 
             SOM_C = 18389.02, 
@@ -177,7 +194,14 @@ PARavg = mean(PAR_GS)
 summary = rbind(summary, c(dat[1,1], state, CCaN_max, MODIS_max, CCaN_avg, MODIS_avg, Tmax, Tavg, PARavg)) #bind new row to table
 summary #view table
 
-write.csv(summary, "CaTT_Summary") #save CSV 
+write.csv(summary, "CaTT_Summary_temp") #save CSV 
+
+
+
+
+
+
+
 
 
 ###########PLOTS#####################
@@ -301,7 +325,7 @@ summary(reg_lat.NDVIresid)
 
 #make sensitivty bar graph
 Sample = c("CCaN", "MODIS", "Goetz", "LTER")
-Sensitivty = c(0.011, 0.031, 0.02, 0.022)
+Sensitivty = c(0.02, 0.031, 0.02, 0.022)
 par(mfrow=c(1,1))
 barplot(Sensitivty, names.arg=Sample, ylab="Temp Sensitivity")
 
@@ -320,3 +344,4 @@ abline(reg_LAI)
 
 summary(reg_NDVI)
 summary(reg_LAI)
+

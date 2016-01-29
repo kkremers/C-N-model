@@ -1,7 +1,7 @@
 #first upload and viewdata 
 
 data = read.csv("OriginalData_NOTfilled.csv") #choose file from directory
-names(data) = c("time", "year", "DOY", "Albedo", "Temp_T", "PAR_T", "Temp_ARF", "PAR_ARF", "EVI", "NDVI", "LAI", "NEE", "Re", "GPP")
+names(data) = c("time", "year", "DOY","Temp_T", "PAR_T", "Temp_ARF", "PAR_ARF")
 head(data) #view table
 
 #plot data
@@ -56,31 +56,5 @@ abline(h=0)
 points(data$Temp_ARF~data$time, col="red", pch=16)
 plot(data$PAR_T~data$time, type="l", ylab = "Daily Max PAR (mol m-2 s-1)", xlab="Time (days)")
 points(data$PAR_ARF~data$time, col="blue", pch=16)
-
-#Now we want to filter so that we only use the PAR that the plants are exposed to
-#To do this, we will use albedo to create a new vector, PAR_vis, that only includes PAR data for snow-free days
-
-PAR_vis = NULL
-
-for(i in 1:length(data$PAR_ARF)){
-  
-  if(data$Albedo[i] > 0.2 ) { #if albedo is greater than 0.2
-    PAR_vis[i] = 0
-  }
-  else {
-    PAR_vis[i] = data$PAR_ARF[i]
-  }
-  
-}
-
-data = data.frame(data[,1:8], PAR_vis = PAR_vis, data[,9:14])
-head(data)
-
-
-#check output
-par(mfrow=c(2,1))
-plot(data$PAR_ARF~data$time, type="l", ylab = "Daily Max PAR (mol m-2 s-1)", main="All PAR", xlab="Time (days)")
-plot(data$PAR_vis~data$time, type="l", ylab = "Daily Max PAR (mol m-2 s-1)", main="Plant Available PAR", xlab="Time (days)")
-
 
 write.csv(data, "InputData_Processed.csv") #added the updated data to the working directory so that it is easy to access - won't have to do any of the above steps again

@@ -5,7 +5,7 @@ require(FME)
 params <- c(kplant = 0.166, #0.07-0.34
             LitterRate = 0.000863, #0.0001-0.0024
             UptakeRate = 0.008, #0.002-0.012
-            propN_fol = 0.115, #0.1-0.9
+            propN_fol = 0.1, #0.1-0.4
             propN_roots = 0.00293, #0.002-0.015
             netNrate = 0.02, #0.001-0.04
             cue=0.7, #0.4-0.8
@@ -28,10 +28,12 @@ solvemodel <- function(params, state, times) {
       
       #forcing data
       Temp=Temp.d1(t)
+      Temp_avg = TempAvg.d1(t)
       PAR=PAR.d1(t)
       DOY = DOY.d1(t)
       scaltemp=scaltemp.d1(t)
       scalseason=scalseason.d1(t)
+      Year = Year.d1(t)
       
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
       Ndep_rate = 0.00007 #calculated from Alaska's changing arctic pg 106
@@ -44,9 +46,11 @@ solvemodel <- function(params, state, times) {
       Rx = 0.02 
       SOM_CN = 36
       
+      #calculate propN_fol
+      propN_fol.T = propN_fol + (0.0078*Temp_avg)
       
       #FLUXES
-      TFN=propN_fol*Biomass_N
+      TFN=propN_fol.T*Biomass_N
       
       LAI = ((TFN-0.31)/1.29) * scalseason #Williams and Rastetter 1999
       
@@ -87,7 +91,7 @@ solvemodel <- function(params, state, times) {
              dAvailable_N), 
            c(NEE=NEE, GPP=GPP, Re=Re, LAI=LAI, NDVI=NDVI, Ra=Ra, Rh=Rh, Uptake = Uptake, 
              Ntrans=Ntrans, N_fix=N_fix, Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, 
-             DOY=DOY, TFN=TFN, Temp=Temp, scaltemp = scaltemp, scalseason = scalseason))
+             DOY=DOY, TFN=TFN, Temp=Temp, scaltemp = scaltemp, scalseason = scalseason, year=Year, propN_fol = propN_fol.T))
       
     })  #end of with(as.list(...
   } #end of model
