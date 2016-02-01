@@ -93,8 +93,8 @@ head(sigma.obs1)
 ###LOAD REAL DATA###
 data.assim = read.csv("Assimilation_data_all.csv")
 data.sigma = read.csv("Assimilation_sigma_all.csv")
-data.assim = data.assim[data.assim$Year==c(2009,2010,2011),]
-data.sigma = data.sigma[data.sigma$Year==c(2009,2010,2011),]
+data.assim = data.assim[data.assim$Year==c(2009,2011,2013),]
+data.sigma = data.sigma[data.sigma$Year==c(2009,2011,2013),]
 head(data.assim)
 head(data.sigma)
 tail(data.assim)
@@ -122,8 +122,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.012,0.4,0.015,0.04,0.8,0.08,    820,15,22000,950,3)
-param.min=c(0.07,0.0001,0.002,0.1,0.002,0.001,0.4,0.04,  550,10,16500,750,0.5)
+param.max=c(0.34,0.0024,0.0042,0.4,0.015,0.04,0.8,0.08,    820,15,22000,950,3)
+param.min=c(0.07,0.0001,0.0027,0.1,0.002,0.001,0.4,0.04,  550,10,16500,750,0.5)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output
@@ -269,5 +269,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_NDVI_UNBdata_newcost.Rdata")
+save.image(file="Step1_NEE_NDVI_UNBdata_013116.Rdata")
 

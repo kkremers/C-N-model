@@ -1,7 +1,7 @@
 #############PLOTS OF DISTRIBUTIONS###############
 
-par(mfrow=c(3,5), mar=c(4,4,2,2))
-plot(density(param.keep[,1]), main=names(params[1]), cex.axis=2)
+par(mfrow=c(3,2), mar=c(4,4,2,2))
+plot(density(param.keep[,1]), main=names(params[1]))
 abline(v=param.best[1], col="red", lwd=3)
 plot(density(param.keep[,2]), main=names(params[2]))
 abline(v=param.best[2], col="red", lwd=3)
@@ -9,7 +9,7 @@ plot(density(param.keep[,3]), main=names(params[3]))
 abline(v=param.best[3], col="red", lwd=3)
 plot(density(param.keep[,4]), main=names(params[4]))
 abline(v=param.best[4], col="red", lwd=3)
-plot(density(param.keep[,5]), main=names(params[5]), cex.axis=2)
+plot(density(param.keep[,5]), main=names(params[5]))
 abline(v=param.best[5], col="red", lwd=3)
 plot(density(param.keep[,6]), main=names(params[6]))
 abline(v=param.best[6], col="red", lwd=3)
@@ -27,8 +27,7 @@ plot(density(param.keep[,12]), main=names(params[12]))
 abline(v=param.best[12], col="red", lwd=3)
 plot(density(param.keep[,13]), main=names(params[13]))
 abline(v=param.best[13], col="red", lwd=3)
-plot(density(param.keep[,14]), main=names(params[14]))
-abline(v=param.best[14], col="red", lwd=3)
+
 
 ##########Plot effects of estimated parameters on model output###################
 

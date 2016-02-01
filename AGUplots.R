@@ -75,23 +75,28 @@ sensvars = c("NEE",
              "GPP",
              "NDVI")
 
+param.best
+params.sens = param.best[1:8]
+state = param.best[9:13]
+params.sens.all = param.keep[,1:8]
+head(params.sens.all)
 
-s.global <- sensRange(func=solvemodel, parms=means, sensvar = sensvars, parInput=param.keep)
+#run model code that does NOT include starting values as params
+require(FME)
+s.global <- sensRange(func=solvemodel, parms=params.sens, state=state, sensvar = sensvars, parInput=params.sens.all)
 s.global.summ = summary(s.global) #create summary table
 head(s.global.summ) #view first 6 rows
 tail(s.global.summ)
 
 #get model output & confidence intervals organized
-out=data.frame(solvemodel(param.best))
-NEE_summ = data.frame(Time=s.global.summ[1:1461,1], NEE=out$NEE, sd=s.global.summ[1:1461,3], q05=s.global.summ[1:1461,6], q95=s.global.summ[1:1461,10], q25=s.global.summ[1:1461,7], q75=s.global.summ[1:1461,9])
+out=data.frame(solvemodel(params.sens, state))
+NEE_summ = data.frame(Time=s.global.summ[1:2191,1], NEE=out$NEE, sd=s.global.summ[1:2191,3], q05=s.global.summ[1:2191,6], q95=s.global.summ[1:2191,10], q25=s.global.summ[1:2191,7], q75=s.global.summ[1:2191,9])
 head(NEE_summ)
 #Re_summ = data.frame(Time=s.global.summ[1827:3652,1],Re=out$Re, sd=s.global.summ[1827:3652,3], q05=s.global.summ[1827:3652,6], q95=s.global.summ[1827:3652,10])
 #head(Re_summ)
 #GPP_summ = data.frame(Time=s.global.summ[3653:5478,1], GPP=out$GPP, sd=s.global.summ[3653:5478,3], q05=s.global.summ[3653:5478,6], q95=s.global.summ[3653:5478,10])
 #head(GPP_summ)
-NDVI_summ = data.frame(Time=s.global.summ[4384:5844,1], NDVI=out$NDVI, sd=s.global.summ[4384:5844,3], q05=s.global.summ[4384:5844,6], q95=s.global.summ[4384:5844,10], q25=s.global.summ[4384:5844,7], q75=s.global.summ[4384:5844,9])
-head(NDVI_summ)
-NDVI_summ=data.frame(cbind(NDVI_summ, low, high))
+NDVI_summ = data.frame(Time=s.global.summ[6574:8764,1], NDVI=out$NDVI, sd=s.global.summ[6574:8764,3], q05=s.global.summ[6574:8764,6], q95=s.global.summ[6574:8764,10], q25=s.global.summ[6574:8764,7], q75=s.global.summ[6574:8764,9])
 head(NDVI_summ)
 
 #get data ready
@@ -121,10 +126,8 @@ points(NEE~Time, data=data.compare_NEE, pch=16, col="blue", cex=0.5)
 
 
 #linear regressions for all years
-reg_NEE = lm(out.compare_NEE$NEE[out.compare_NEE$year==2011 | out.compare_NEE$year==2012]~data.compare_NEE$NEE[data.compare_NEE$Year==2011 | data.compare_NEE$Year==2012])
-reg_Re = lm(out.compare_Re$Re~data.compare_Re$Re)
-reg_GPP = lm(out.compare_GPP$GPP~data.compare_GPP$GPP)
-reg_NDVI = lm(out.compare_NDVI$NDVI[out.compare_NDVI$year==2011 | out.compare_NDVI$year==2012]~data.compare_NDVI$NDVI[data.compare_NDVI$Year==2011 | data.compare_NDVI$Year==2012])
+reg_NEE = lm(out.compare_NEE$NEE[out.compare_NEE$year==2009 | out.compare_NEE$year==2010 | out.compare_NEE$year==2011]~data.compare_NEE$NEE[data.compare_NEE$Year==2009 | data.compare_NEE$Year==2010 | data.compare_NEE$Year==2011])
+reg_NDVI = lm(out.compare_NDVI$NDVI[out.compare_NDVI$year==2009 | out.compare_NDVI$year==2010 | out.compare_NDVI$year==2011]~data.compare_NDVI$NDVI[data.compare_NDVI$Year==2009 | data.compare_NDVI$Year==2010 | data.compare_NDVI$Year==2011])
 
 #preview a plot
 par(mfrow=c(1,1))
@@ -166,14 +169,14 @@ par(mar=c(4,5,4,2))
 #layout(matrix(c(1,2,3,4,5,6,7,8,9,10,11,12), 4, 3, byrow = TRUE), widths=c(3,1,1))
 layout(matrix(c(1,2,3,4,5,6), 2, 3, byrow = TRUE), widths=c(3,1,1))
 
-plot(NEE~Time,data=NEE_summ,ylim=c(-4, 2), type="p", pch=16, cex=0.5, cex.axis=1.5, col="azure4")
+plot(NEE~Time,data=NEE_summ,ylim=c(-10, 10), type="p", pch=16, cex=0.5, cex.axis=1.5, col="azure4")
 #make polygon where coordinates start with lower limit and then upper limit in reverse order
 with(NEE_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = "lightblue", border = FALSE))
 abline(h=0)
 points(NEE~Time, data=NEE_summ, pch=16, cex=0.75, col="gray40")
 points(NEE~Time, data=data.compare_NEE, pch=16, col="darkblue", cex=0.75)
 barplot(NEE_yrRMSE, ylim=c(0,max(NEE_yrRMSE)+0.5), cex.axis=1.5, col=c("gray50", "gray50", "gray80", "gray80"))
-plot(out.compare_NEE$NEE[out.compare_NEE$year==2011 | out.compare_NEE$year==2012]~data.compare_NEE$NEE[data.compare_NEE$Year==2011 | data.compare_NEE$Year==2012], pch=16, xlab="", ylab="", cex=0.75, cex.axis=1.5, xlim=c(-4, 2), ylim=c(-4, 2))
+plot(out.compare_NEE$NEE[out.compare_NEE$year==2011 | out.compare_NEE$year==2012]~data.compare_NEE$NEE[data.compare_NEE$Year==2011 | data.compare_NEE$Year==2012], pch=16, xlab="", ylab="", cex=0.75, cex.axis=1.5, xlim=c(-10, 5), ylim=c(-10, 5))
 #abline(reg_NEE, col="blue", lwd=2)
 abline(0,1, col="red", lty=2, lwd=2)
 

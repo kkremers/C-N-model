@@ -201,10 +201,6 @@ data = data.frame(data, Temp_avg = Temp_avg)
 head(data)
 
 
-Tavg.site = mean(Temp_GS)
-Tdiff = Tavg.site - Tavg.Toolik
-
-
 time = seq(1:length(data$time))
 #make into functions so that it will be continuous in the model
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
