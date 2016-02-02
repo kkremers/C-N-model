@@ -25,4 +25,5 @@ Unispec_MODIS = lm(data$NDVI_MODIS~data$NDVI_UniSpec)
 summary(Unispec_MODIS)
 plot(data$NDVI_UniSpec,data$NDVI_MODIS, pch=16)
 abline(Unispec_MODIS)
+abline(0,1, col="red")
 

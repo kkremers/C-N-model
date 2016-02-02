@@ -6,7 +6,7 @@ plot(data$Temp_ARF~data$time, type="l", ylab = "Daily Max Temp (C)", col="red", 
 abline(h=0)
 plot(data$PAR_vis~data$time, type="l", ylab = "Daily Plant Avail. PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
 
-out = data.frame(solvemodel(param.best)) #creates table of model output
+out = data.frame(solvemodel(param.best, state)) #creates table of model output
 
 #plot pools
 par(mfrow=c(3,2), mar=c(4,4,1,2))
@@ -31,7 +31,8 @@ data.compare_Re=data.compare2[complete.cases(data.compare2[,7]),c(1:5,7)]
 head(data.compare_Re)
 data.compare_GPP=data.compare2[complete.cases(data.compare2[,8]),c(1:5,8)]
 head(data.compare_GPP)
-data.compare_NDVI=data.compare2[complete.cases(data.compare2[,9]),c(1:5,9)]
+data.compare_NDVI=data.compare2[complete.cases(data.compare2[,10]),c(1:5,10)]
+colnames(data.compare_NDVI)=c("Date", "Year", "Time", "DOY", "Year_DOY", "NDVI")
 head(data.compare_NDVI)
 out.compare_NEE = out[match(data.compare_NEE$Time, out$time),]
 out.compare_Re = out[match(data.compare_Re$Time, out$time),]
@@ -625,3 +626,24 @@ abline(h=0, col="red")
 par(new = TRUE)
 plot(data.compare_GPP$GPP[data.compare_GPP$Year==2013]~data.compare_GPP$DOY[data.compare_GPP$Year==2013], ylim=c(0,6), xlim=c(0,366),type="l", col="blue", axes = FALSE, bty = "n", xlab = "", ylab = "")
 axis(4, ylim=c(0,0.7), col="blue",col.axis="blue",las=1, ylab="GPP")
+
+
+
+
+
+
+
+#looking at NDVI data
+head(data.compare2)
+DOY=140:250
+ASD.avg = tapply(data.compare2[,9], data.compare2$DOY, mean)
+TOW.avg = tapply(data.compare2[,10], data.compare2$DOY, mean)
+
+plot(ASD.avg~DOY, pch=16, ylim=c(0,0.7))
+plot(TOW.avg~DOY, pch=16, ylim=c(0,0.7))
+
+
+
+
+
+

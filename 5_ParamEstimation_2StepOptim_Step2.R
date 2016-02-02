@@ -6,7 +6,42 @@ require(deSolve)
 #need to calculate the variance of the errors for the minimum j's
 head(data.assim)
 head(data.sigma)
-out = data.frame(solvemodel(param.best)) #creates table of model output
+#run spinup
+
+time = seq(1:length(DOY.spin))
+
+#Step 4: make into functions so that it will be continuous in the model
+Temp.d1 <- approxfun(x=time, y=Temp.spin, method="linear", rule=2)
+TempAvg.d1 <- approxfun(x=time, y=TempAvg.spin, method="linear", rule=2)
+PAR.d1 <- approxfun(x=time, y=PAR.spin, method="linear", rule=2)
+scaltemp.d1 <- approxfun(x=time, y=scal.temp.spin1, method="linear", rule=2)
+scalseason.d1 <- approxfun(x=time, y=scal.seas.spin1, method="linear", rule=2)
+DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
+Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
+
+
+#OPEN 3_Model.R and run it the first time
+out.spin= data.frame(solvemodel(params, state)) #creates table of model output
+end.time = length(out.spin[,1])
+#adjust starting values
+state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
+            Biomass_N = out.spin$Biomass_N[end.time], 
+            SOM_C = out.spin$SOM_C[end.time], 
+            SOM_N = out.spin$SOM_N[end.time],
+            Available_N = out.spin$Available_N[end.time])
+
+
+time = seq(1:length(data$time))
+#make into functions so that it will be continuous in the model
+Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
+TempAvg.d1 <- approxfun(x=data$time, y=data$Temp_avg, method="linear", rule=2)
+PAR.d1 <- approxfun(x=data$time, y=data$PAR_ARF, method="linear", rule=2)
+scaltemp.d1 <- approxfun(x=data$time, y=scal.temp.sm, method="linear", rule=2)
+scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
+DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
+Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
+
+out= data.frame(solvemodel(params, state)) #creates table of model output
 head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
 head(out1)
@@ -82,7 +117,7 @@ repeat { #repeat until desired number of parameter sets are accepted
   
   parms = as.numeric(param.est) #parameters for model run
   names(parms) = names(params) #fix names
-  out = data.frame(solvemodel(parms)) #run model
+  out = data.frame(solvemodel(parms, state)) #run model
   
   if(any(is.na(out)) | any(out[,2:6]<0)){ #if there are NAs or negative stocks in the output
     reject=reject+1

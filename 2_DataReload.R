@@ -87,7 +87,7 @@ end
 
 #need to look at slope to determine end of season
 slope=rep(NA, length(Temp.sm))
-for(i in 1:length(start)){
+for(i in 1:length(end)){
   slope.i = (Temp.sm[end[i]]-Temp.sm[start[i]])/7
   start.i = start[i]
   end.i = end[i]

@@ -4,12 +4,12 @@ require(FME)
 
 params <- c(kplant = 0.166, #0.07-0.34
             LitterRate = 0.000863, #0.0001-0.0024
-            UptakeRate = 0.008, #0.002-0.012
-            propN_fol = 0.1, #0.1-0.4
-            propN_roots = 0.00293, #0.002-0.015
+            UptakeRate = 0.003, #0.0027-0.0042
+            propN_fol = 0.05, #0.01-0.5
+            propN_roots = 0.01, #0.009-0.029
             netNrate = 0.02, #0.001-0.04
             cue=0.7, #0.4-0.8
-            beta=0.05)
+            beta=0.07)
 
 state  <- c(Biomass_C = 722.51, 
             Biomass_N = 10.01, 
@@ -74,6 +74,8 @@ solvemodel <- function(params, state, times) {
       #calculated variables to use for model fitting and analysis
       NEE = Re - GPP
       
+      NDVI_MODIS = (1.23846*NDVI)-0.14534
+      
       #differential equations
       dBiomass_C = GPP  - Ra  - Litterfall_C 
       dBiomass_N = Uptake  - Litterfall_N 
@@ -91,7 +93,7 @@ solvemodel <- function(params, state, times) {
              dAvailable_N), 
            c(NEE=NEE, GPP=GPP, Re=Re, LAI=LAI, NDVI=NDVI, Ra=Ra, Rh=Rh, Uptake = Uptake, 
              Ntrans=Ntrans, N_fix=N_fix, Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, 
-             DOY=DOY, TFN=TFN, Temp=Temp, scaltemp = scaltemp, scalseason = scalseason, year=Year, propN_fol = propN_fol.T))
+             DOY=DOY, TFN=TFN, Temp=Temp, scaltemp = scaltemp, scalseason = scalseason, year=Year, propN_fol = propN_fol.T, NDVI_MODIS=NDVI_MODIS))
       
     })  #end of with(as.list(...
   } #end of model

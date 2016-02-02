@@ -93,8 +93,8 @@ head(sigma.obs1)
 ###LOAD REAL DATA###
 data.assim = read.csv("Assimilation_data_all.csv")
 data.sigma = read.csv("Assimilation_sigma_all.csv")
-data.assim = data.assim[data.assim$Year==c(2009,2011,2013),]
-data.sigma = data.sigma[data.sigma$Year==c(2009,2011,2013),]
+data.assim = subset(data.assim, Year==2009 | Year==2011 | Year==2013)
+data.sigma = subset(data.sigma, Year==2009 | Year==2011 | Year==2013)
 head(data.assim)
 head(data.sigma)
 tail(data.assim)
@@ -103,10 +103,121 @@ head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
 head(out1)
 time.assim = out1[match(data.assim$Year_DOY, out1$year_DOY), 1]
-data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,9]))
-sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,9]))
+data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,10]))
+sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,10]))
 head(data.compare1)
 head(sigma.obs1)
+
+
+#create dataframe for model spinup
+
+#Step 2: calculate decadal averages
+Temp.spin= tapply(data$Temp_ARF, data$DOY, mean)
+plot(Temp.spin)
+Temp_GS = data$Temp_ARF[data$DOY>=data$startDOY[1] & data$DOY <= data$endDOY[1]]
+AvgTempGS = mean(Temp_GS)
+TempAvg.spin = rep(AvgTempGS, 366)
+PAR.spin = tapply(data$PAR_ARF, data$DOY, mean)
+plot(PAR.spin)
+DOY.spin=seq(1:366)
+Year.spin=rep(2000,366)
+data.spin=data.frame(Year=Year.spin, DOY=DOY.spin, Temp=Temp.spin, Temp_avg=TempAvg.spin, PAR=PAR.spin)
+head(data.spin)
+
+#seasonality scalar
+sen.day=min(data.spin$DOY[which(data.spin$Temp<=10 & data.spin$DOY>200)])
+sen.day #DOY of senescence 
+num.days = 366
+senDOY = rep(sen.day, num.days)
+data.spin = data.frame(data.spin, senDOY = senDOY)
+start.day=min(data.spin$DOY[which(data.spin$Temp>=-5 & data.spin$DOY>120)])
+start.day #start day
+startDOY = rep(start.day, num.days)
+data.spin = data.frame(data.spin, startDOY = startDOY)
+end.day=min(data.spin$DOY[which(data.spin$Temp<=0 & data.spin$DOY>240)])
+end.day #end day
+endDOY = rep(end.day, num.days)
+data.spin = data.frame(data.spin, endDOY = endDOY)
+head(data.spin)
+
+
+#create scalar
+scal.seas.spin=rep(1, length(data.spin$DOY))
+for (i in 1:length(data.spin$DOY)){
+  if(data.spin$DOY[i]<data.spin$startDOY[i]){ #prior to snow melt
+    scal.seas.spin[i]=0
+  }
+  if(data.spin$DOY[i]>=data.spin$startDOY[i]){ #after melt
+    if(data.spin$DOY[i]<=data.spin$senDOY[i]){ #prior to peak
+      slope = 1/(data.spin$senDOY[i]-data.spin$startDOY[i])
+      scal.seas.spin[i] = 0+(slope*(data.spin$DOY[i]-data.spin$startDOY[i]))
+    }
+    if(data.spin$DOY[i]>data.spin$senDOY[i] & data.spin$DOY[i]<data.spin$endDOY[i]){ #after peak but before frost
+      slope = 1/(data.spin$endDOY[i]-data.spin$senDOY[i])
+      scal.seas.spin[i] = 0+(slope*(data.spin$endDOY[i]-data.spin$DOY[i]))
+    }
+    if(data.spin$DOY[i]>=data.spin$endDOY[i]){ #after frost
+      scal.seas.spin[i]=0
+    }
+  }
+}
+
+plot(scal.seas.spin)
+
+#temperature scalar
+Tmax = max(data.spin$Temp)
+Tmin = min(data.spin$Temp)
+scal.temp.spin=NULL
+for (i in 1:length(data.spin$Temp)){
+  scal.temp.spin[i] = (data.spin$Temp[i] - Tmin)/(Tmax-Tmin) 
+}
+
+plot(scal.temp.spin, type="l")
+
+#run model spin up for current parameter set
+numyears = 25
+Year.spin = rep(data.spin$Year, numyears)
+DOY.spin = rep(data.spin$DOY, numyears)
+Temp.spin = rep(data.spin$Temp, numyears)
+TempAvg.spin = rep(data.spin$Temp_avg, numyears)
+PAR.spin = rep(data.spin$PAR, numyears)
+scal.temp.spin1 = rep(scal.temp.spin, numyears)
+scal.seas.spin1 = rep(scal.seas.spin, numyears)
+
+time = seq(1:length(DOY.spin))
+
+#Step 4: make into functions so that it will be continuous in the model
+Temp.d1 <- approxfun(x=time, y=Temp.spin, method="linear", rule=2)
+TempAvg.d1 <- approxfun(x=time, y=TempAvg.spin, method="linear", rule=2)
+PAR.d1 <- approxfun(x=time, y=PAR.spin, method="linear", rule=2)
+scaltemp.d1 <- approxfun(x=time, y=scal.temp.spin1, method="linear", rule=2)
+scalseason.d1 <- approxfun(x=time, y=scal.seas.spin1, method="linear", rule=2)
+DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
+Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
+
+
+#OPEN 3_Model.R and run it the first time
+out.spin= data.frame(solvemodel(params, state)) #creates table of model output
+end.time = length(out.spin[,1])
+#adjust starting values
+state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
+            Biomass_N = out.spin$Biomass_N[end.time], 
+            SOM_C = out.spin$SOM_C[end.time], 
+            SOM_N = out.spin$SOM_N[end.time],
+            Available_N = out.spin$Available_N[end.time])
+
+
+time = seq(1:length(data$time))
+#make into functions so that it will be continuous in the model
+Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
+TempAvg.d1 <- approxfun(x=data$time, y=data$Temp_avg, method="linear", rule=2)
+PAR.d1 <- approxfun(x=data$time, y=data$PAR_ARF, method="linear", rule=2)
+scaltemp.d1 <- approxfun(x=data$time, y=scal.temp.sm, method="linear", rule=2)
+scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
+DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
+Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
+
+out= data.frame(solvemodel(params, state)) #creates table of model output
 
 ###STEP 1: EXPLORE PARAMETER SPACE
 
@@ -122,8 +233,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.0042,0.4,0.015,0.04,0.8,0.08,    820,15,22000,950,3)
-param.min=c(0.07,0.0001,0.0027,0.1,0.002,0.001,0.4,0.04,  550,10,16500,750,0.5)
+param.max=c(0.34,0.0024,0.0042,0.5,0.029,0.04,0.8,0.08)
+param.min=c(0.07,0.0001,0.0027,0.01,0.009,0.001,0.4,0.04)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output
@@ -131,14 +242,14 @@ j = matrix(1E100, M, D) #to store error calculations for this iteration
 all.draws = data.frame(matrix(1, M, n.param)) #storage for all parameter estimate iterations;
 colnames(all.draws) = c(names(params))
 param.est = data.frame(matrix(1, M, n.param)) #storage for accepted parameter estimate iterations;
-param.est[1,]=param.best #change first row to current guess
-all.draws[1,]=param.best #change first row to current guess
+param.est[1,]=params #change first row to current guess
+all.draws[1,]=params #change first row to current guess
 colnames(param.est) = c(names(params))
 head(param.est) #check to make sure this is correct
 head(all.draws)
 
 #replace 1st row with values for current parameters
-out=data.frame(solvemodel(param.best))
+out=data.frame(solvemodel(params, state))
 out.compare1 = out[match(data.compare1$time, out$time),c(1,7,11)] #these columns need to match the ones that were pulled out before
 
 error.time=matrix(0, length(data.compare1$time), D) #create data frame to store error calculations; want all to be "0" originally because if there is no data it will remain 0
@@ -188,7 +299,45 @@ for (i in 2:M) {
   
   parms = as.numeric(param.est[i,]) #parameters for model run
   names(parms) = names(params) #fix names
-  out = data.frame(solvemodel(parms)) #run model  
+  
+  
+  #RUN MODEL SPINUP
+  time = seq(1:length(DOY.spin))
+  Temp.d1 <- approxfun(x=time, y=Temp.spin, method="linear", rule=2)
+  TempAvg.d1 <- approxfun(x=time, y=TempAvg.spin, method="linear", rule=2)
+  PAR.d1 <- approxfun(x=time, y=PAR.spin, method="linear", rule=2)
+  scaltemp.d1 <- approxfun(x=time, y=scal.temp.spin1, method="linear", rule=2)
+  scalseason.d1 <- approxfun(x=time, y=scal.seas.spin1, method="linear", rule=2)
+  DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
+  Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
+  
+  state  <- c(Biomass_C = 722.51, 
+              Biomass_N = 10.01, 
+              SOM_C = 18389.02, 
+              SOM_N = 762.70,
+              Available_N = 1.1)
+    
+  out.spin= data.frame(solvemodel(params, state)) #creates table of model output
+  #adjust starting values
+  state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
+              Biomass_N = out.spin$Biomass_N[end.time], 
+              SOM_C = out.spin$SOM_C[end.time], 
+              SOM_N = out.spin$SOM_N[end.time],
+              Available_N = out.spin$Available_N[end.time])
+  
+  
+  
+  time = seq(1:length(data$time))
+  Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
+  TempAvg.d1 <- approxfun(x=data$time, y=data$Temp_avg, method="linear", rule=2)
+  PAR.d1 <- approxfun(x=data$time, y=data$PAR_ARF, method="linear", rule=2)
+  scaltemp.d1 <- approxfun(x=data$time, y=scal.temp.sm, method="linear", rule=2)
+  scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
+  DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
+  Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
+  
+
+  out = data.frame(solvemodel(parms, state)) #run model  
   
   if(any(is.na(out)) | any(out[,2:6]<0) | abs(out[1,2]-out[length(out[,2]),2])>100){ #if there are any NAs or negative stocks in the output
     reject = reject+1 #reject parameter set
@@ -269,5 +418,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_NDVI_UNBdata_013116.Rdata")
+save.image(file="Step1_NEE_NDVI_TOWscaled_020216.Rdata")
 

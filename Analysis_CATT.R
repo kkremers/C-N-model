@@ -3,38 +3,40 @@
 
 #Step 1: read in data and linearly interpolate
 
-dat = data.frame(read.csv(file.choose())) #select data file
-plot(dat$LST_avg) #check for outliers
-
+dat = data.frame(read.csv("Summary_AllSites.csv")) #select data file
 head(dat) #fiew first 6 rows
-time=seq(1:length(dat[,1])) #generate a sequence of x values for interpolation
 
-LST.filled = approx(time, dat$LST_avg, time, method = "linear", rule = 2)$y #fill LST
+
+#put it all into a table
+summary = data.frame(matrix(1, 1, 15))
+colnames(summary) = c("Latitude", "Biomass_C", "Biomass_N", "SOM_C", "SOM_N", "Available_N", "CCaN_max", "CCaN.MODIS_max", "MODIS_max", "CCaN_avg", "CCaN.MODIS_avg", "MODIS_avg", "Tmax", "Tavg", "PARavg")
+head(summary)
+
+
+latitudes = unique(dat$Latitude)
+for(i in 1:length(latitudes)){
+lat.i = latitudes[i]  
+dat.i = subset(dat, Latitude==lat.i)
+
+time=seq(1:length(dat.i[,1])) #generate a sequence of x values for interpolation
+LST.filled = approx(time, dat.i$LST_avg, time, method = "linear", rule = 2)$y #fill LST
 LST.filled = LST.filled-273.15 #convert to celcius
-plot(LST.filled)
 
-PAR.filled = approx(time, dat$PAR, time, method = "linear", rule = 2)$y #fill PAR
+PAR.filled = approx(time, dat.i$PAR, time, method = "linear", rule = 2)$y #fill PAR
 PAR.filled = 3.5947*PAR.filled #convert to mol m-2 s-1
-plot(PAR.filled)
 
-NDVI.filled = approx(time, dat$NDVI, time, method = "linear", rule = 2)$y #fill NDVI
-plot(NDVI.filled)
+NDVI.filled = approx(time, dat.i$NDVI, time, method = "linear", rule = 2)$y #fill NDVI
 
 #bind these columns to dat
-dat=cbind(dat, LST.filled, PAR.filled, NDVI.filled)
-head(dat)
+dat.i=cbind(dat.i, LST.filled, PAR.filled, NDVI.filled)
 
 #Step 2: calculate decadal averages
-LST.avg = tapply(dat$LST.filled, dat$DOY, mean)
-plot(LST.avg)
-PAR.avg = tapply(dat$PAR.filled, dat$DOY, mean)
-plot(PAR.avg)
-NDVI.avg = tapply(dat$NDVI.filled, dat$DOY, mean)
-plot(NDVI.avg)
+LST.avg = tapply(dat.i$LST.filled, dat.i$DOY, mean)
+PAR.avg = tapply(dat.i$PAR.filled, dat.i$DOY, mean)
+NDVI.avg = tapply(dat.i$NDVI.filled, dat.i$DOY, mean)
 DOY=seq(1:366)
-data=data.frame(DOY,LST.avg,PAR.avg,NDVI.avg)
-head(data)
-
+Year=rep(2000,length(DOY))
+data=data.frame(Year,DOY,LST.avg,PAR.avg,NDVI.avg)
 
 #Step 3: get ready for model input
 #calculate scalars
@@ -46,21 +48,19 @@ sen.day
 num.days = 366
 senDOY = rep(sen.day, num.days)
 data = data.frame(data, senDOY = senDOY)
-head(data)
 
 #start day
 start.day=min(data$DOY[which(data$LST.avg>=-5 & data$DOY>120)])
 start.day
 startDOY = rep(start.day, num.days)
 data = data.frame(data, startDOY = startDOY)
-head(data)
 
 #end day
 end.day=min(data$DOY[which(data$LST.avg<=0 & data$DOY>240)])
 end.day
 endDOY = rep(end.day, num.days)
 data = data.frame(data, endDOY = endDOY)
-head(data)
+
 
 
 #create scalar
@@ -84,9 +84,6 @@ for (i in 1:length(data$DOY)){
   }
 }
 
-plot(scal.seas)
-
-
 
 #temperature scalar
 Tmax = max(data$LST.avg)
@@ -96,22 +93,20 @@ for (i in 1:length(data$LST.avg)){
   scal.temp[i] = (data$LST.avg[i] - Tmin)/(Tmax-Tmin) 
 }
 
-plot(scal.temp, type="l")
+
+#calculate growing season average temp
+Temp_GS = data$LST.avg[data$DOY>=data$startDOY[1] & data$DOY <= data$endDOY[1]]
+Temp_avg = mean(Temp_GS)
 
 ###################MODEL SPINUP######################
-numyears = 100
+numyears = 25
 DOY.spin = rep(data$DOY, numyears)
+Year.spin = rep(data$Year, numyears)
 LST.spin = rep(data$LST.avg, numyears)
 PAR.spin = rep(data$PAR.avg, numyears)
 scal.temp.spin = rep(scal.temp, numyears)
 scal.seas.spin = rep(scal.seas, numyears)
-
-summ = data.frame(read.csv("CaTT_Summary"))
-Tavg.Toolik = summ$Tavg[7]
-#pull out GS data (DOY > 150 & DOY < 250)
-Temp_GS = data$LST.avg[data$DOY>=150 & data$DOY <=250]
-Tavg.site = mean(Temp_GS)
-Tdiff = Tavg.site - Tavg.Toolik
+TempAvg.spin = rep(Temp_avg, length(DOY.spin))
 
 
 time = seq(1:length(DOY.spin))
@@ -122,22 +117,27 @@ PAR.d1 <- approxfun(x=time, y=PAR.spin, method="linear", rule=2)
 scaltemp.d1 <- approxfun(x=time, y=scal.temp.spin, method="linear", rule=2)
 scalseason.d1 <- approxfun(x=time, y=scal.seas.spin, method="linear", rule=2)
 DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
+Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
+TempAvg.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
+
 
 #OPEN 3_Model.R and run it the first time
+
 params <- c(kplant = 0.166, #0.07-0.34
-            LitterRate = 0.000863, #0.0001-0.0024
-            UptakeRate = 0.008, #0.002-0.012
-            propN_fol = (0.115 + (0.0078*Tdiff)), #0.1-0.9
-            propN_roots = 0.00293, #0.002-0.015
+            LitterRate = 0.002, #0.0001-0.0024
+            UptakeRate = 0.003, #0.0027-0.0042
+            propN_fol = 0.05, #0.01-0.5
+            propN_roots = 0.01, #0.009-0.029
             netNrate = 0.02, #0.001-0.04
             cue=0.7, #0.4-0.8
-            beta=0.05)
+            beta=0.07)
 
 state  <- c(Biomass_C = 722.51, 
             Biomass_N = 10.01, 
             SOM_C = 18389.02, 
             SOM_N = 762.70,
             Available_N = 1.1)
+
 out.spin= data.frame(solvemodel(params, state)) #creates table of model output
 
 #######################################################
@@ -152,56 +152,52 @@ PAR.d1 <- approxfun(x=time, y=data$PAR.avg, method="linear", rule=2)
 scaltemp.d1 <- approxfun(x=time, y=scal.temp, method="linear", rule=2)
 scalseason.d1 <- approxfun(x=time, y=scal.seas, method="linear", rule=2)
 DOY.d1 <- approxfun(x=time, y=data$DOY, method="linear", rule=2)
+Year.d1 <- approxfun(x=time, y=data$Year, method="linear", rule=2)
 
 
 #OPEN 3_Model.R and run once to store function
 #adjust starting values
-state <- c( Biomass_C = out.spin$Biomass_C[36235], 
-            Biomass_N = out.spin$Biomass_N[36235], 
-            SOM_C = out.spin$SOM_C[36235], 
-            SOM_N = out.spin$SOM_N[36235],
-            Available_N = out.spin$Available_N[36235])
+end.time = length(out.spin[,1])
+#adjust starting values
+state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
+            Biomass_N = out.spin$Biomass_N[end.time], 
+            SOM_C = out.spin$SOM_C[end.time], 
+            SOM_N = out.spin$SOM_N[end.time],
+            Available_N = out.spin$Available_N[end.time])
+
 
 out= data.frame(solvemodel(params, state)) #creates table of model output
 
 #determine max NDVI & record in spreadsheet
 CCaN_max = max(out$NDVI)
+CCaN.MODIS_max = max(out$NDVI_MODIS)
 MODIS_max = max(data$NDVI)
 
 #determine GS average NDVI 
-#pull out GS data (DOY > 150 & DOY < 250)
-CCaN_gsNDVI = out$NDVI[out$DOY>=150 & out$DOY <=250]
-MODIS_gsNDVI = data$NDVI.avg[data$DOY>=150 & data$DOY <=250]
+#pull out GS data (DOY > 140 & DOY < 250)
+CCaN_gsNDVI = out$NDVI[out$DOY>=140 & out$DOY <=250]
+CCaN_gsNDVI.MOD = out$NDVI_MODIS[out$DOY>=140 & out$DOY <=250]
+MODIS_gsNDVI = data$NDVI.avg[data$DOY>=140 & data$DOY <=250]
 #calculate average
 CCaN_avg = mean(CCaN_gsNDVI)
+CCaN.MODIS_avg = mean(CCaN_gsNDVI.MOD)
 MODIS_avg = mean(MODIS_gsNDVI)
 
 #determine GS Avg Temp & PAR 
-#pull out GS data (DOY > 150 & DOY < 250)
-Temp_GS = data$LST.avg[data$DOY>=150 & data$DOY <=250]
-PAR_GS = data$PAR.avg[data$DOY>=150 & data$DOY <=250]
+#pull out GS data (DOY > 140 & DOY < 250)
+Temp_GS = data$LST.avg[data$DOY>=140 & data$DOY <=250]
+PAR_GS = data$PAR.avg[data$DOY>=140 & data$DOY <=250]
 #calculate average
 Tavg = mean(Temp_GS)
 PARavg = mean(PAR_GS)
 
-#put it all into a table
-#######only run these the first time#########
-#summary = data.frame(matrix(1, 0, 13))
-#colnames(summary) = c("Latitude", "Biomass_C", "Biomass_N", "SOM_C", "SOM_N", "Available_N", "CCaN_max", "MODIS_max", "CCaN_avg", "MODIS_avg", "Tmax", "Tavg", "PARavg")
-#head(summary)
-###########################################
+summary = rbind(summary, c(lat.i, state, CCaN_max, CCaN.MODIS_max, MODIS_max, CCaN_avg, CCaN.MODIS_avg, MODIS_avg, Tmax, Tavg, PARavg)) #bind new row to table
+}
 
-summary = rbind(summary, c(dat[1,1], state, CCaN_max, MODIS_max, CCaN_avg, MODIS_avg, Tmax, Tavg, PARavg)) #bind new row to table
-summary #view table
 
+
+summary=summary[-1,]
 write.csv(summary, "CaTT_Summary_temp") #save CSV 
-
-
-
-
-
-
-
 
 
 ###########PLOTS#####################
@@ -222,7 +218,7 @@ reg_MODIS.temp = lm(summary$MODIS_avg~summary$Tavg)
 reg_CCaN.temp = lm(summary$CCaN_avg~summary$Tavg)
 
 par(mfrow=c(1,3))
-plot(summary$CCaN_avg~summary$Tavg, pch=16, ylim=c(0.3, 0.8), xlab="GS Avg Temp", ylab="GS Avg NDVI")
+plot(summary$CCaN_avg~summary$Tavg, pch=16, ylim=c(0, 1), xlab="GS Avg Temp", ylab="GS Avg NDVI")
 abline(reg_CCaN.temp)
 points(summary$MODIS_avg~summary$Tavg, pch=16, col="forestgreen")
 abline(reg_MODIS.temp, col="forestgreen")
@@ -231,7 +227,7 @@ abline(reg_MODIS.temp, col="forestgreen")
 reg_MODISLAI.temp = lm(summary$MODIS_LAI~summary$Tavg)
 reg_CCaNLAI.temp = lm(summary$CCaN_LAI~summary$Tavg)
 
-plot(summary$CCaN_LAI~summary$Tavg, pch=16, ylim=c(0, 1.1), xlab="GS Avg Temp", ylab="GS Max LAI")
+plot(summary$CCaN_LAI~summary$Tavg, pch=16, ylim=c(0, 5), xlab="GS Avg Temp", ylab="GS Max LAI")
 abline(reg_CCaNLAI.temp)
 points(summary$MODIS_LAI~summary$Tavg, pch=16, col="forestgreen")
 abline(reg_MODISLAI.temp, col="forestgreen")
