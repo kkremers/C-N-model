@@ -103,8 +103,8 @@ head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
 head(out1)
 time.assim = out1[match(data.assim$Year_DOY, out1$year_DOY), 1]
-data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,10]))
-sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,10]))
+data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,9]))
+sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,9]))
 head(data.compare1)
 head(sigma.obs1)
 
@@ -233,8 +233,8 @@ n.time #check
 
 
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.0042,0.5,0.029,0.04,0.8,0.08)
-param.min=c(0.07,0.0001,0.0027,0.01,0.009,0.001,0.4,0.04)
+param.max=c(0.34,0.0024,0.004,0.8,0.03,0.04,0.8,62)
+param.min=c(0.07,0.0001,0.002,0,0.002,0.001,0.4,28)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output
@@ -283,7 +283,7 @@ t=0.5
 
 #start exploration
 
-for (i in 2:M) {
+for (i in 53002:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
@@ -311,11 +311,11 @@ for (i in 2:M) {
   DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
   Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
   
-  state  <- c(Biomass_C = 722.51, 
-              Biomass_N = 10.01, 
-              SOM_C = 18389.02, 
-              SOM_N = 762.70,
-              Available_N = 1.1)
+  state  <- c(Biomass_C = 400, 
+              Biomass_N = 7.5, 
+              SOM_C = 9000, 
+              SOM_N = 257,
+              Available_N = 1)
     
   out.spin= data.frame(solvemodel(params, state)) #creates table of model output
   #adjust starting values
@@ -404,8 +404,8 @@ for (i in 2:M) {
 
 #beep(5)
 #make plots to check for mixing and make sure parameter space is thuroughly explored
-plot(all.draws[1:i,2])
-lines(param.est[1:i,2], col="red", lwd="2")
+plot(all.draws[1:i,3])
+lines(param.est[1:i,3], col="red", lwd="2")
 
 steps=seq(1:i) #create a vector that represents the number of steps or iterations run
 J1=data.frame(steps, J[1:i]) #create a dataframe that has "steps" as the first column and "J" as the second column
@@ -418,5 +418,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_NDVI_TOWscaled_020216.Rdata")
+save.image(file="Step1_NEE_NDVI_ASDscaled_020516.Rdata")
 

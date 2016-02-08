@@ -2,20 +2,20 @@ require(deSolve)
 require(FME)
 
 
-params <- c(kplant = 0.166, #0.07-0.34
-            LitterRate = 0.000863, #0.0001-0.0024
-            UptakeRate = 0.003, #0.0027-0.0042
-            propN_fol = 0.05, #0.01-0.5
-            propN_roots = 0.01, #0.009-0.029
-            netNrate = 0.02, #0.001-0.04
+params <- c(kplant = 0.15, #0.07-0.34
+            LitterRate = 0.0007, #0.0001-0.0024
+            UptakeRate = 0.002, #0.0020-0.004
+            propN_fol = 0.05, #0-0.8
+            propN_roots = 0.01, #0.002-0.03
+            netNrate = 0.01, #0.001-0.04
             cue=0.7, #0.4-0.8
-            beta=0.07)
+            BiomassCN = 45) #28-62
 
-state  <- c(Biomass_C = 722.51, 
-            Biomass_N = 10.01, 
-            SOM_C = 18389.02, 
-            SOM_N = 762.70,
-            Available_N = 1.1)
+state  <- c(Biomass_C = 400, 
+            Biomass_N = 7.5, 
+            SOM_C = 9000, 
+            SOM_N = 257,
+            Available_N = 1)
 
 
 ####################MODEL#################################
@@ -37,14 +37,13 @@ solvemodel <- function(params, state, times) {
       
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
       Ndep_rate = 0.00007 #calculated from Alaska's changing arctic pg 106
-      Nfix_rate=0.0015 #calculated from Alaska's changing arctic pg 106
-      k=0.5
+      Nfix_rate=0.0015 #calculated from Alaska's changing arctic pg 106      
+      R0=0.07
+      beta=0.07
+      Rx=0.01
       Pmax = 1.16 
-      E0 = 0.03
-      q10=1.9
-      R0 = 0.06 
-      Rx = 0.02 
-      SOM_CN = 36
+      E0 = 0.02
+      q10=1.92 
       
       #calculate propN_fol
       propN_fol.T = propN_fol + (0.0078*Temp_avg)
@@ -60,7 +59,7 @@ solvemodel <- function(params, state, times) {
         NDVI = (log(LAI/0.0026)/8.0783)
       }      
       
-      GPP = ( Pmax / k ) * log ( ( Pmax + E0 * PAR ) / ( Pmax + E0 * PAR * exp ( - k * LAI) ) ) * 12
+      GPP = LAI * ( ( Pmax * E0 * PAR ) / ( Pmax + E0 * PAR ) ) * 12
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) )
       Ra =  ( 1 - cue ) * GPP
       Re = ((R0*LAI)+Rx)*exp(beta*Temp)*12  
@@ -69,7 +68,7 @@ solvemodel <- function(params, state, times) {
       N_dep = Ndep_rate
       N_fix=Nfix_rate*scaltemp
       Litterfall_C =  LitterRate * Biomass_C
-      Litterfall_N  =  LitterRate * Biomass_N
+      Litterfall_N  =  Litterfall_C * (1/BiomassCN)
       
       #calculated variables to use for model fitting and analysis
       NEE = Re - GPP
