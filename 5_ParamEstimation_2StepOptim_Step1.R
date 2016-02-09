@@ -175,7 +175,7 @@ for (i in 1:length(data.spin$Temp)){
 plot(scal.temp.spin, type="l")
 
 #run model spin up for current parameter set
-numyears = 25
+numyears = 50
 Year.spin = rep(data.spin$Year, numyears)
 DOY.spin = rep(data.spin$DOY, numyears)
 Temp.spin = rep(data.spin$Temp, numyears)
@@ -283,7 +283,7 @@ t=0.5
 
 #start exploration
 
-for (i in 53002:M) {
+for (i in 5903:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
@@ -383,13 +383,14 @@ for (i in 53002:M) {
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
   
-  if(acceptance>0.30){
+  if(acceptance>0.40){
     t = 1.01*t
   }
   
   if(acceptance<0.20){
     t = 0.99*t
   }
+  
   
   anneal.temp=anneal.temp*0.9 #decrease temperature
   

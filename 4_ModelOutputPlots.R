@@ -66,7 +66,7 @@ for (i in 1:length(data.spin$Temp)){
 plot(scal.temp.spin, type="l")
 
 #run model spin up for current parameter set
-numyears = 25
+numyears = 50
 Year.spin = rep(data.spin$Year, numyears)
 DOY.spin = rep(data.spin$DOY, numyears)
 Temp.spin = rep(data.spin$Temp, numyears)
@@ -119,12 +119,6 @@ plot(out$Biomass_N~out$time, type="l", col="forestgreen",  main = "Biomass N", x
 plot(out$SOM_C~out$time, type="l", col="brown", main = "SOM C", xlab="", ylab="g C m-2")
 plot(out$SOM_N~out$time, type="l", col="brown", main = "SOM N", xlab="Time (days)", ylab="g N m-2")
 plot(out$Available_N~out$time, type="l", col="blue", main = "Available_ N", xlab="Time (days)", ylab="g N m-2",lty=2)
-
-#plot scalar
-par(mfrow=c(2,1), mar=c(4,4,0.5,2))
-plot(data$Temp_ARF)
-lines(Temp.sm, col="red", lwd=3)
-plot(scal.temp.sm)
 
 #see how well data matches
 #to compare on 1:1 line with data, need to select only points for which data is available

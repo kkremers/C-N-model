@@ -2,14 +2,14 @@ require(deSolve)
 require(FME)
 
 
-params <- c(kplant = 0.15, #0.07-0.34
-            LitterRate = 0.0007, #0.0001-0.0024
+params <- c(kplant = 0.1, #0.07-0.34
+            LitterRate = 0.0005, #0.0001-0.0024
             UptakeRate = 0.002, #0.0020-0.004
             propN_fol = 0.05, #0-0.8
             propN_roots = 0.01, #0.002-0.03
-            netNrate = 0.01, #0.001-0.04
+            netNrate = 0.008, #0.001-0.04
             cue=0.7, #0.4-0.8
-            BiomassCN = 45) #28-62
+            BiomassCN = 48) #28-62
 
 state  <- c(Biomass_C = 400, 
             Biomass_N = 7.5, 
@@ -49,10 +49,9 @@ solvemodel <- function(params, state, times) {
       propN_fol.T = propN_fol + (0.0078*Temp_avg)
       
       #FLUXES
-      TFN=propN_fol.T*Biomass_N
+      TFN=propN_fol.T*Biomass_N 
       
       LAI = ((TFN-0.31)/1.29) * scalseason #Williams and Rastetter 1999
-      
       
       NDVI=0
       if(LAI>0){
