@@ -283,7 +283,7 @@ t=0.5
 
 #start exploration
 
-for (i in 53002:M) {
+for (i in 64628:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
@@ -317,7 +317,7 @@ for (i in 53002:M) {
               SOM_N = 257,
               Available_N = 1)
     
-  out.spin= data.frame(solvemodel(params, state)) #creates table of model output
+  out.spin= data.frame(solvemodel(parms, state)) #creates table of model output
   #adjust starting values
   state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
               Biomass_N = out.spin$Biomass_N[end.time], 
@@ -404,8 +404,8 @@ for (i in 53002:M) {
 
 #beep(5)
 #make plots to check for mixing and make sure parameter space is thuroughly explored
-plot(all.draws[1:i,3])
-lines(param.est[1:i,3], col="red", lwd="2")
+plot(all.draws[1:i,1])
+lines(param.est[1:i,1], col="red", lwd="2")
 
 steps=seq(1:i) #create a vector that represents the number of steps or iterations run
 J1=data.frame(steps, J[1:i]) #create a dataframe that has "steps" as the first column and "J" as the second column
