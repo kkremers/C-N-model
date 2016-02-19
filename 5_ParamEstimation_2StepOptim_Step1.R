@@ -275,8 +275,8 @@ tail(param.est)
 
 
 #set initial values
-anneal.temp0=50000 #starting temperature
-anneal.temp=50000 #starting temperature
+anneal.temp0=500000 #starting temperature
+anneal.temp=500000 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 t=0.5
@@ -343,6 +343,7 @@ for (i in 2:M) {
     reject = reject+1 #reject parameter set
     param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
     J[i] = J[i-1] #set current J to previous J
+    j[i,] = j[i-1,]
   } else { #if there are no NAs or negative stocks & biomass pool doesn't crash
     
     #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
@@ -376,6 +377,7 @@ for (i in 2:M) {
         reject = reject+1 #reject parameter set
         param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
         J[i] = J[i-1] #set current J to previous J (the minimum J so far)
+        j[i,] = j[i-1,]
       } #end of if loop
     } #end of if loop
     
@@ -383,11 +385,11 @@ for (i in 2:M) {
   
   acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
   
-  if(acceptance>0.40){
+  if(acceptance>0.15){
     t = 1.01*t
   }
   
-  if(acceptance<0.20){
+  if(acceptance<0.05){
     t = 0.99*t
   }
   
@@ -396,7 +398,7 @@ for (i in 2:M) {
   
   
   
-  if(anneal.temp<(0.1*anneal.temp0)){ #if temperature drops to less than 10% of initial
+  if(anneal.temp<(0.25*anneal.temp0)){ #if temperature drops to less than 10% of initial
     anneal.temp=anneal.temp0 #jump back up to initial
   }
   
@@ -419,5 +421,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_NDVI_ASDscaled_020516.Rdata")
+save.image(file="Step1_NEE_NDVI_TOWscaled_021916.Rdata")
 
