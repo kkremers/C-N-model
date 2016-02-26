@@ -10,7 +10,7 @@ head(data.sigma)
 
 time = seq(1:length(DOY.spin))
 
-#Step 4: make into functions so that it will be continuous in the model
+#make into functions so that it will be continuous in the model
 Temp.d1 <- approxfun(x=time, y=Temp.spin, method="linear", rule=2)
 TempAvg.d1 <- approxfun(x=time, y=TempAvg.spin, method="linear", rule=2)
 PAR.d1 <- approxfun(x=time, y=PAR.spin, method="linear", rule=2)
@@ -21,7 +21,7 @@ Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
 
 
 #OPEN 3_Model.R and run it the first time
-out.spin= data.frame(solvemodel(params, state)) #creates table of model output
+out.spin= data.frame(solvemodel(param.best, state)) #creates table of model output
 end.time = length(out.spin[,1])
 #adjust starting values
 state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
@@ -29,6 +29,8 @@ state <- c( Biomass_C = out.spin$Biomass_C[end.time],
             SOM_C = out.spin$SOM_C[end.time], 
             SOM_N = out.spin$SOM_N[end.time],
             Available_N = out.spin$Available_N[end.time])
+
+
 
 
 time = seq(1:length(data$time))
@@ -41,7 +43,7 @@ scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
 
-out= data.frame(solvemodel(params, state)) #creates table of model output
+out= data.frame(solvemodel(param.best, state)) #creates table of model output
 head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
 head(out1)
@@ -55,7 +57,7 @@ head(data.compare1)
 head(sigma.obs1)
 
 #create storage matrices for error and variance
-n.param = length(params) #number of parameters to estimate
+n.param = length(param.best) #number of parameters to estimate
 D = 2 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -117,6 +119,44 @@ repeat { #repeat until desired number of parameter sets are accepted
   
   parms = as.numeric(param.est) #parameters for model run
   names(parms) = names(params) #fix names
+  
+  
+  #RUN MODEL SPINUP
+  time = seq(1:length(DOY.spin))
+  Temp.d1 <- approxfun(x=time, y=Temp.spin, method="linear", rule=2)
+  TempAvg.d1 <- approxfun(x=time, y=TempAvg.spin, method="linear", rule=2)
+  PAR.d1 <- approxfun(x=time, y=PAR.spin, method="linear", rule=2)
+  scaltemp.d1 <- approxfun(x=time, y=scal.temp.spin1, method="linear", rule=2)
+  scalseason.d1 <- approxfun(x=time, y=scal.seas.spin1, method="linear", rule=2)
+  DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
+  Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
+  
+  state  <- c(Biomass_C = 400, 
+              Biomass_N = 7.5, 
+              SOM_C = 9000, 
+              SOM_N = 257,
+              Available_N = 1)
+  
+  out.spin= data.frame(solvemodel(parms, state)) #creates table of model output
+  #adjust starting values
+  state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
+              Biomass_N = out.spin$Biomass_N[end.time], 
+              SOM_C = out.spin$SOM_C[end.time], 
+              SOM_N = out.spin$SOM_N[end.time],
+              Available_N = out.spin$Available_N[end.time])
+  
+  
+  
+  time = seq(1:length(data$time))
+  Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
+  TempAvg.d1 <- approxfun(x=data$time, y=data$Temp_avg, method="linear", rule=2)
+  PAR.d1 <- approxfun(x=data$time, y=data$PAR_ARF, method="linear", rule=2)
+  scaltemp.d1 <- approxfun(x=data$time, y=scal.temp.sm, method="linear", rule=2)
+  scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
+  DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
+  Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
+  
+    
   out = data.frame(solvemodel(parms, state)) #run model
   
   if(any(is.na(out)) | any(out[,2:6]<0)){ #if there are NAs or negative stocks in the output
@@ -188,4 +228,4 @@ repeat { #repeat until desired number of parameter sets are accepted
 head(param.keep)
 tail(param.keep)
 
-save.image(file="Step2_NEE_NDVI_UNBdata_121015.Rdata")
+save.image(file="Step2_NEE_NDVI_022616.Rdata")

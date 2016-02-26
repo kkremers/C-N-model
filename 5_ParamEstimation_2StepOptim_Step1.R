@@ -283,7 +283,7 @@ t=0.5
 
 #start exploration
 
-for (i in 21202:M) {
+for (i in 25606:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
@@ -421,5 +421,5 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_NDVI_ASDscaled_022216.Rdata")
+save.image(file="Step1_NEE_NDVI_ASDscaled_022416.Rdata")
 
