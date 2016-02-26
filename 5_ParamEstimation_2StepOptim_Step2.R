@@ -6,43 +6,6 @@ require(deSolve)
 #need to calculate the variance of the errors for the minimum j's
 head(data.assim)
 head(data.sigma)
-#run spinup
-
-time = seq(1:length(DOY.spin))
-
-#make into functions so that it will be continuous in the model
-Temp.d1 <- approxfun(x=time, y=Temp.spin, method="linear", rule=2)
-TempAvg.d1 <- approxfun(x=time, y=TempAvg.spin, method="linear", rule=2)
-PAR.d1 <- approxfun(x=time, y=PAR.spin, method="linear", rule=2)
-scaltemp.d1 <- approxfun(x=time, y=scal.temp.spin1, method="linear", rule=2)
-scalseason.d1 <- approxfun(x=time, y=scal.seas.spin1, method="linear", rule=2)
-DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
-Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
-
-
-#OPEN 3_Model.R and run it the first time
-out.spin= data.frame(solvemodel(param.best, state)) #creates table of model output
-end.time = length(out.spin[,1])
-#adjust starting values
-state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
-            Biomass_N = out.spin$Biomass_N[end.time], 
-            SOM_C = out.spin$SOM_C[end.time], 
-            SOM_N = out.spin$SOM_N[end.time],
-            Available_N = out.spin$Available_N[end.time])
-
-
-
-
-time = seq(1:length(data$time))
-#make into functions so that it will be continuous in the model
-Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
-TempAvg.d1 <- approxfun(x=data$time, y=data$Temp_avg, method="linear", rule=2)
-PAR.d1 <- approxfun(x=data$time, y=data$PAR_ARF, method="linear", rule=2)
-scaltemp.d1 <- approxfun(x=data$time, y=scal.temp.sm, method="linear", rule=2)
-scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
-DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
-Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
-
 out= data.frame(solvemodel(param.best, state)) #creates table of model output
 head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
@@ -89,7 +52,7 @@ head(param.keep)#check to make sure this is correct
 
 
 #also need to know degrees of freedom for chi square test
-n.par = length(params) #number of parameters predicted by each data stream
+n.par = n.param #number of parameters predicted by each data stream
 df = rep(0, D)
 for (d in 1:D) { #for each data type
   df[d] = n.time[d] - n.par
@@ -109,55 +72,19 @@ repeat { #repeat until desired number of parameter sets are accepted
   
   repeat{
     for(p in 1:n.param){ #for each parameter
-      step.size = t*(param.max[p]-param.min[p])
-      param.est[p] = param.best[p]+rnorm(1, 0, step.size) #draw new parameter set
-    } #end of parameter loop 
-    if(all(param.est>param.min) & all(param.est<param.max)){    
-      break
-    } #end of if loop
-  }#end of repeat loop
-  
-  parms = as.numeric(param.est) #parameters for model run
-  names(parms) = names(params) #fix names
-  
-  
-  #RUN MODEL SPINUP
-  time = seq(1:length(DOY.spin))
-  Temp.d1 <- approxfun(x=time, y=Temp.spin, method="linear", rule=2)
-  TempAvg.d1 <- approxfun(x=time, y=TempAvg.spin, method="linear", rule=2)
-  PAR.d1 <- approxfun(x=time, y=PAR.spin, method="linear", rule=2)
-  scaltemp.d1 <- approxfun(x=time, y=scal.temp.spin1, method="linear", rule=2)
-  scalseason.d1 <- approxfun(x=time, y=scal.seas.spin1, method="linear", rule=2)
-  DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
-  Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
-  
-  state  <- c(Biomass_C = 400, 
-              Biomass_N = 7.5, 
-              SOM_C = 9000, 
-              SOM_N = 257,
-              Available_N = 1)
-  
-  out.spin= data.frame(solvemodel(parms, state)) #creates table of model output
-  #adjust starting values
-  state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
-              Biomass_N = out.spin$Biomass_N[end.time], 
-              SOM_C = out.spin$SOM_C[end.time], 
-              SOM_N = out.spin$SOM_N[end.time],
-              Available_N = out.spin$Available_N[end.time])
-  
-  
-  
-  time = seq(1:length(data$time))
-  Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
-  TempAvg.d1 <- approxfun(x=data$time, y=data$Temp_avg, method="linear", rule=2)
-  PAR.d1 <- approxfun(x=data$time, y=data$PAR_ARF, method="linear", rule=2)
-  scaltemp.d1 <- approxfun(x=data$time, y=scal.temp.sm, method="linear", rule=2)
-  scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
-  DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
-  Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
-  
+      param.est[i,p] = param.est[i-1,p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
+      if(param.est[i,p] > param.max[p]){param.est[i,p]=param.max[p]}
+      if(param.est[i,p] < param.min[p]){param.est[i,p]=param.min[p]}
+      if(is.na(param.est[i,p])){param.est[i,p]=(param.max[p] + param.min[p])/2}
+      all.draws[i,p] = param.est[i,p]
+    } #end of parameter loop
     
-  out = data.frame(solvemodel(parms, state)) #run model
+    parms = as.numeric(param.est[i,1:7]) #parameters for model run
+    state = as.numeric(param.est[i,8:12]) #parameters for model run
+    names(parms) = names(params) #fix names
+    names(state) = names(state1) #fix names
+  
+    out = data.frame(solvemodel(parms, state)) #run model
   
   if(any(is.na(out)) | any(out[,2:6]<0)){ #if there are NAs or negative stocks in the output
     reject=reject+1

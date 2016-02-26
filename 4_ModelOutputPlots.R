@@ -66,7 +66,7 @@ for (i in 1:length(data.spin$Temp)){
 plot(scal.temp.spin, type="l")
 
 #run model spin up for current parameter set
-numyears = 50
+numyears = 200
 Year.spin = rep(data.spin$Year, numyears)
 DOY.spin = rep(data.spin$DOY, numyears)
 Temp.spin = rep(data.spin$Temp, numyears)
@@ -88,12 +88,13 @@ Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
 
 
 #OPEN 3_Model.R and run it the first time
-out.spin= data.frame(solvemodel(params, state)) #creates table of model output
+out.spin= data.frame(solvemodel(param.best, state)) #creates table of model output
+plot(out.spin$Biomass_N)
 plot(out.spin$Biomass_C)
 end.time = length(out.spin[,1])
 #adjust starting values
 state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
-            Biomass_N = out.spin$Biomass_N[end.time], 
+            Biomass_N =  10,#out.spin$Biomass_N[end.time], 
             SOM_C = out.spin$SOM_C[end.time], 
             SOM_N = out.spin$SOM_N[end.time],
             Available_N = out.spin$Available_N[end.time])
@@ -109,7 +110,7 @@ scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
 
-out= data.frame(solvemodel(params, state)) #creates table of model output
+out= data.frame(solvemodel(param.best, state)) #creates table of model output
 
 
 #plot pools

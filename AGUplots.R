@@ -1,8 +1,8 @@
 ############PLOT ASSIMILATION DATA###########
 data.assim = read.csv("Assimilation_data_all.csv")
 data.sigma = read.csv("Assimilation_sigma_all.csv")
-data.assim = data.assim[data.assim$Year != 2013,]
-data.sigma = data.sigma[data.sigma$Year != 2013,]
+data.assim = data.assim[data.assim$Year == c(2009,2011,2013),]
+data.sigma = data.sigma[data.sigma$Year  == c(2009,2011,2013),]
 head(data.assim)
 head(data.sigma)
 tail(data.assim)
@@ -54,7 +54,7 @@ points(NDVI~Time, data=NDVI_dat, pch=16, cex=0.75, col="blue")
 par(mfrow=c(1,1), mar=c(2,2,2,2))
 plot(NEE~DOY,data=data.assim[data.assim$Year==2009,],ylim=c(-3,1), xlim=c(1, 365), type="p", pch=16, cex=2, col="darkblue")
 abline(h=0)
-points(NDVI~DOY,data=data.assim[data.assim$Year==2009,],ylim=c(0,1), xlim=c(1, 365), type="p", pch=16, cex=2, col="gray30")
+points(NDVI_ASDscal~DOY,data=data.assim[data.assim$Year==2009,],ylim=c(0,1), xlim=c(1, 365), type="p", pch=16, cex=2, col="gray30")
 
 
 ###########VALIDATION FIGURE##########
@@ -71,8 +71,6 @@ summarytable=data.frame(q05 = q05, q25 = q25, mean = means,
 
 #global sensitivity analysis to find confidence intervals
 sensvars = c("NEE",
-             "Re",
-             "GPP",
              "NDVI")
 
 param.best
@@ -83,25 +81,21 @@ head(params.sens.all)
 
 #run model code that does NOT include starting values as params
 require(FME)
-s.global <- sensRange(func=solvemodel, parms=params.sens, state=state, sensvar = sensvars, parInput=params.sens.all)
+s.global <- sensRange(func=solvemodel, parms=param.best, sensvar = sensvars, parInput=params.sens.all)
 s.global.summ = summary(s.global) #create summary table
 head(s.global.summ) #view first 6 rows
 tail(s.global.summ)
 
 #get model output & confidence intervals organized
-out=data.frame(solvemodel(params.sens, state))
-NEE_summ = data.frame(Time=s.global.summ[1:2191,1], NEE=out$NEE, sd=s.global.summ[1:2191,3], q05=s.global.summ[1:2191,6], q95=s.global.summ[1:2191,10], q25=s.global.summ[1:2191,7], q75=s.global.summ[1:2191,9])
+out=data.frame(solvemodel(param.best))
+NEE_summ = data.frame(Time=s.global.summ[1:1826,1], NEE=out$NEE, sd=s.global.summ[1:1826,3], q05=s.global.summ[1:1826,6], q95=s.global.summ[1:1826,10], q25=s.global.summ[1:1826,7], q75=s.global.summ[1:1826,9])
 head(NEE_summ)
-#Re_summ = data.frame(Time=s.global.summ[1827:3652,1],Re=out$Re, sd=s.global.summ[1827:3652,3], q05=s.global.summ[1827:3652,6], q95=s.global.summ[1827:3652,10])
-#head(Re_summ)
-#GPP_summ = data.frame(Time=s.global.summ[3653:5478,1], GPP=out$GPP, sd=s.global.summ[3653:5478,3], q05=s.global.summ[3653:5478,6], q95=s.global.summ[3653:5478,10])
-#head(GPP_summ)
-NDVI_summ = data.frame(Time=s.global.summ[6574:8764,1], NDVI=out$NDVI, sd=s.global.summ[6574:8764,3], q05=s.global.summ[6574:8764,6], q95=s.global.summ[6574:8764,10], q25=s.global.summ[6574:8764,7], q75=s.global.summ[6574:8764,9])
+NDVI_summ = data.frame(Time=s.global.summ[1827:3652,1], NDVI=out$NDVI, sd=s.global.summ[1827:3652,3], q05=s.global.summ[1827:3652,6], q95=s.global.summ[1827:3652,10], q25=s.global.summ[1827:3652,7], q75=s.global.summ[1827:3652,9])
 head(NDVI_summ)
 
 #get data ready
 data.compare2=read.csv("Assimilation_data_ALL.csv")
-data.compare2=data.compare2[data.compare2$Year!=2013,]
+data.compare2=data.compare2[data.compare2$Year== c(2009,2011,2013),]
 data.compare_NEE=data.compare2[complete.cases(data.compare2[,6]),c(1:5,6)]
 head(data.compare_NEE)
 data.compare_Re=data.compare2[complete.cases(data.compare2[,7]),c(1:5,7)]

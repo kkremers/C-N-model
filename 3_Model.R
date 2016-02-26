@@ -8,13 +8,12 @@ params <- c(kplant = 0.1, #0.07-0.34
             propN_fol = 0.05, #0-0.8
             propN_roots = 0.01, #0.002-0.03
             netNrate = 0.008, #0.001-0.04
-            cue=0.7, #0.4-0.8
             BiomassCN = 48) #28-62
 
 state  <- c(Biomass_C = 400, 
             Biomass_N = 7.5, 
-            SOM_C = 9000, 
-            SOM_N = 257,
+            SOM_C = 19358, 
+            SOM_N = 854,
             Available_N = 1)
 
 
@@ -38,12 +37,13 @@ solvemodel <- function(params, state, times) {
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
       Ndep_rate = 0.00007 #calculated from Alaska's changing arctic pg 106
       Nfix_rate=0.0015 #calculated from Alaska's changing arctic pg 106      
-      R0=0.07
-      beta=0.07
-      Rx=0.01
-      Pmax = 1.16 
-      E0 = 0.02
-      q10=1.92 
+      R0=0.06 #0.07
+      beta=0.06 #0.07
+      Rx=0.02 #0.01
+      Pmax = 1.2 #1.16 
+      E0 = 0.03 #0.02
+      q10=1.9 #1.92
+      k = 0.81
       
       #calculate propN_fol
       propN_fol.T = propN_fol + (0.0078*Temp_avg)
@@ -58,11 +58,12 @@ solvemodel <- function(params, state, times) {
         NDVI = (log(LAI/0.0026)/8.0783)
       }      
       
-      GPP = LAI * ( ( Pmax * E0 * PAR ) / ( Pmax + E0 * PAR ) ) * 12
+      GPP = (Pmax/k) * log ( (Pmax + (E0*PAR) ) / (Pmax + ( E0*PAR*exp(-k*LAI) ) ) ) * 12
+      #GPP = LAI * ( ( Pmax * E0 * PAR ) / ( Pmax + E0 * PAR ) ) * 12
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) )
-      Ra =  ( 1 - cue ) * GPP
-      Re = ((R0*LAI)+Rx)*exp(beta*Temp)*12  
-      Rh = Re - Ra
+      Ra =  12*((R0*LAI)*exp(beta*Temp))
+      Rh = 12*((Rx)*exp(beta*Temp))
+      Re = Ra+Rh
       Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 10 ) )
       N_dep = Ndep_rate
       N_fix=Nfix_rate*scaltemp
