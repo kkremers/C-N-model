@@ -2,20 +2,18 @@ require(deSolve)
 require(FME)
 
 
-params <- c(kplant = 0.1, #0.07-0.34
-            LitterRate = 0.0005, #0.0001-0.0024
-            UptakeRate = 0.002, #0.0020-0.004
-            propN_fol = 0.05, #0-0.8
-            propN_roots = 0.01, #0.002-0.03
-            netNrate = 0.008, #0.001-0.04
-            BiomassCN = 48) #28-62
+params <- c(kplant = 0.2, #0.07-0.34
+            LitterRate = 0.0007, #0.0001-0.0024
+            UptakeRate = 0.008, #0.002-0.012
+            propN_fol = 0.1, #0.09-0.92
+            propN_roots = 0.015, #0.002-0.03
+            netNrate = 0.015) #0.0001-0.0024 
 
-state  <- c(Biomass_C = 400, 
-            Biomass_N = 7.5, 
-            SOM_C = 19358, 
-            SOM_N = 854,
-            Available_N = 1)
-
+state  <- c(Biomass_C = 685, 
+            Biomass_N = 12.5, 
+            SOM_C = 19250, 
+            SOM_N = 850,
+            Available_N = 1.75)
 
 ####################MODEL#################################
 
@@ -36,7 +34,8 @@ solvemodel <- function(params, state, times) {
       
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
       Ndep_rate = 0.00007 #calculated from Alaska's changing arctic pg 106
-      Nfix_rate=0.0015 #calculated from Alaska's changing arctic pg 106      
+      Nout_rate = 0.0002 #calculated from Alaska's changing arctic page 106
+      Nfix_rate=0.001 #calculated from Alaska's changing arctic pg 106 and scal.temp   
       R0=0.06 #0.07
       beta=0.06 #0.07
       Rx=0.02 #0.01
@@ -54,21 +53,21 @@ solvemodel <- function(params, state, times) {
       LAI = ((TFN-0.31)/1.29) * scalseason #Williams and Rastetter 1999
       
       NDVI=0
-      if(LAI>0){
+      if(LAI>0 & !is.na(LAI)){
         NDVI = (log(LAI/0.0026)/8.0783)
       }      
       
       GPP = (Pmax/k) * log ( (Pmax + (E0*PAR) ) / (Pmax + ( E0*PAR*exp(-k*LAI) ) ) ) * 12
-      #GPP = LAI * ( ( Pmax * E0 * PAR ) / ( Pmax + E0 * PAR ) ) * 12
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) )
       Ra =  12*((R0*LAI)*exp(beta*Temp))
       Rh = 12*((Rx)*exp(beta*Temp))
       Re = Ra+Rh
       Ntrans = netNrate * ( q10 ^ ( (Temp-10) / 10 ) )
       N_dep = Ndep_rate
+      N_out = Nout_rate
       N_fix=Nfix_rate*scaltemp
       Litterfall_C =  LitterRate * Biomass_C
-      Litterfall_N  =  Litterfall_C * (1/BiomassCN)
+      Litterfall_N  =  LitterRate * Biomass_N
       
       #calculated variables to use for model fitting and analysis
       NEE = Re - GPP
@@ -80,7 +79,7 @@ solvemodel <- function(params, state, times) {
       dBiomass_N = Uptake  - Litterfall_N 
       dSOM_C = Litterfall_C  - Rh
       dSOM_N = Litterfall_N - Ntrans
-      dAvailable_N = Ntrans - Uptake + N_dep + N_fix
+      dAvailable_N = Ntrans - Uptake + N_dep + N_fix - N_out
       
       
       #what to output

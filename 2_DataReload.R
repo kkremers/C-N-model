@@ -6,7 +6,7 @@ head(data)
 
 
 #plot the data
-par(mfrow=c(3,1), mar=c(4,4,0.5,2))
+par(mfrow=c(2,1), mar=c(3,4,0.5,2))
 plot(data$Temp_ARF~data$time, type="l", ylab = "Daily Avg Temp (C)", col="red", xlab="")
 abline(h=0)
 plot(data$PAR_ARF~data$time, type="l", ylab = "Daily PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")

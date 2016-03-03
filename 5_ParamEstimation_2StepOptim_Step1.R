@@ -111,7 +111,14 @@ head(sigma.obs1)
 
 out= data.frame(solvemodel(params, state)) #creates table of model output
 
-###STEP 1: EXPLORE PARAMETER SPACE
+
+
+####DATA EXPLORATION###
+#set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
+param.max=c(0.34,0.0024,0.004,0.92,0.03,0.04,  820,15,22000,950,3)
+param.min=c(0.07,0.0001,0.002,0.09,0.002,0.001,  550,10,16500,750,0.5)
+
+##STEP 1: Explore with BOTH NEE and NDVI
 
 #other necessary knowns
 n.param = length(params) + length(state) #number of parameters to estimate
@@ -122,11 +129,6 @@ for(d in 1:D) { #for each data type
   n.time[d]=sum(!is.na(data.compare1[,d+1])) #calculate the number of time points that DO NOT have NA's
 } #end of for loop
 n.time #check 
-
-
-#set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.004,0.8,0.03,0.04,62,  820,15,22000,950,3)
-param.min=c(0.07,0.0001,0.002,0,0.002,0.001,28,  550,10,16500,750,0.5)
 
 #storage matrices
 J = rep(1E100, M) #storage vector for cost function output
@@ -174,9 +176,7 @@ reject=0 #reset reject counter
 t=0.5
 state1 = state
 
-#start exploration
-
-for (i in 531:M) {
+for (i in 59538:M) {
   
     for(p in 1:n.param){ #for each parameter
       param.est[i,p] = param.est[i-1,p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
@@ -186,8 +186,8 @@ for (i in 531:M) {
       all.draws[i,p] = param.est[i,p]
     } #end of parameter loop
   
-  parms = as.numeric(param.est[i,1:7]) #parameters for model run
-  state = as.numeric(param.est[i,8:12]) #parameters for model run
+  parms = as.numeric(param.est[i,1:6]) #parameters for model run
+  state = as.numeric(param.est[i,7:11]) #parameters for model run
   names(parms) = names(params) #fix names
   names(state) = names(state1) #fix names
   
@@ -259,10 +259,9 @@ for (i in 531:M) {
   
 } #end of exploration
 
-#beep(5)
-#make plots to check for mixing and make sure parameter space is thuroughly explored
-plot(all.draws[1:i,3])
-lines(param.est[1:i,3], col="red", lwd="2")
+#determine best parameter set and best j so far
+plot(all.draws[1:i,1])
+lines(param.est[1:i,1], col="red")
 
 steps=seq(1:i) #create a vector that represents the number of steps or iterations run
 J1=data.frame(steps, J[1:i]) #create a dataframe that has "steps" as the first column and "J" as the second column
@@ -270,10 +269,9 @@ head(J1); tail(J1) #check the table
 step.best = J1[which.min(J1[,2]),1] #determine which step has the minimum value of J and store as "step.best"
 param.est[step.best,] #show the parameter set that resulted in the best J
 param.best = as.numeric(param.est[step.best,]) #store that parameter set as param.best
-names(param.best) = names(params) #change the names to match params
+names(param.best) = c(names(params), names(state)) #change the names to match params
 j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_NDVI_ASDscaled_022416.Rdata")
-
+save.image(file="Step1_NEE_NDVI_BOTH_022916.Rdata")

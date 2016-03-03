@@ -66,7 +66,7 @@ for (i in 1:length(data.spin$Temp)){
 plot(scal.temp.spin, type="l")
 
 #run model spin up for current parameter set
-numyears = 200
+numyears = 50
 Year.spin = rep(data.spin$Year, numyears)
 DOY.spin = rep(data.spin$DOY, numyears)
 Temp.spin = rep(data.spin$Temp, numyears)
@@ -87,6 +87,12 @@ DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
 Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
 
 
+state  <- c(Biomass_C = 685, 
+            Biomass_N = 12.5, 
+            SOM_C = 19250, 
+            SOM_N = 850,
+            Available_N = 1.75)
+
 #OPEN 3_Model.R and run it the first time
 out.spin= data.frame(solvemodel(param.best, state)) #creates table of model output
 plot(out.spin$Biomass_N)
@@ -94,7 +100,7 @@ plot(out.spin$Biomass_C)
 end.time = length(out.spin[,1])
 #adjust starting values
 state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
-            Biomass_N =  10,#out.spin$Biomass_N[end.time], 
+            Biomass_N =  out.spin$Biomass_N[end.time], 
             SOM_C = out.spin$SOM_C[end.time], 
             SOM_N = out.spin$SOM_N[end.time],
             Available_N = out.spin$Available_N[end.time])
@@ -126,7 +132,7 @@ plot(out$Available_N~out$time, type="l", col="blue", main = "Available_ N", xlab
 data.compare2=read.csv("Assimilation_data_ALL.csv")
 data.compare_NEE=data.compare2[complete.cases(data.compare2[,6]),c(1:5,6)]
 head(data.compare_NEE)
-data.compare_NDVI=data.compare2[complete.cases(data.compare2[,9]),c(1:5,9)]
+data.compare_NDVI=data.compare2[complete.cases(data.compare2[,9]),c(1:5,10)]
 colnames(data.compare_NDVI)=c("Date", "Year", "Time", "DOY", "Year_DOY", "NDVI")
 head(data.compare_NDVI)
 out.compare_NEE = out[match(data.compare_NEE$Time, out$time),]
