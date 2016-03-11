@@ -235,7 +235,7 @@ state.min=c(250,6,12000,550,0)
 
 #other necessary knowns
 n.param = length(params)#number of parameters to estimate
-M = 10000 #number of iterations
+M = 50000 #number of iterations
 D = 2 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -282,14 +282,14 @@ tail(param.est)
 
 
 #set initial values
-anneal.temp0=500000 #starting temperature
-anneal.temp=500000 #starting temperature
+anneal.temp0=5000000 #starting temperature
+anneal.temp=5000000 #starting temperature
 iter=1 #simulated annealing iteration counter
 reject=0 #reset reject counter
 t=0.5
 
 
-for (i in 2:M) {
+for (i in 9035:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
@@ -430,4 +430,4 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_NDVI_030316_SPIN.Rdata")
+save.image(file="Step1_NEE_NDVI_031016_SPIN.Rdata")

@@ -235,7 +235,7 @@ state.min=c(250,6,12000,550,0)
 
 #other necessary knowns
 n.param = length(params)#number of parameters to estimate
-M = 50000 #number of iterations
+M = 10000 #number of iterations
 D = 1 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -289,7 +289,7 @@ reject=0 #reset reject counter
 t=0.5
 
 
-for (i in 2:M) {
+for (i in 8619:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
@@ -395,11 +395,11 @@ for (i in 2:M) {
     
     acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
     
-    if(acceptance>0.15){
+    if(acceptance>0.30){
       t = 1.01*t
     }
     
-    if(acceptance<0.05){
+    if(acceptance<0.10){
       t = 0.99*t
     }
     
@@ -430,4 +430,4 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NDVI_030316_SPIN.Rdata")
+save.image(file="Step1_NDVI_030516_SPIN.Rdata")
