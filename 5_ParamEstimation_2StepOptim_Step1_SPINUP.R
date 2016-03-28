@@ -103,8 +103,8 @@ head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
 head(out1)
 time.assim = out1[match(data.assim$Year_DOY, out1$year_DOY), 1]
-data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,10]))
-sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,10]))
+data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,9]))
+sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,9]))
 head(data.compare1)
 head(sigma.obs1)
 
@@ -289,7 +289,7 @@ reject=0 #reset reject counter
 t=0.5
 
 
-for (i in 9035:M) {
+for (i in 43946:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
@@ -430,4 +430,4 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_NDVI_031016_SPIN.Rdata")
+save.image(file="Step1_NEE_NDVI_032516_SPIN.Rdata")

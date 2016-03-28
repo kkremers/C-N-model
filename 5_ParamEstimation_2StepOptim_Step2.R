@@ -29,6 +29,7 @@ state <- c( Biomass_C = out.spin$Biomass_C[end.time],
             SOM_N = out.spin$SOM_N[end.time],
             Available_N = out.spin$Available_N[end.time])
 
+state.best=state
 
 time = seq(1:length(data$time))
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
@@ -44,8 +45,8 @@ head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
 head(out1)
 time.assim = out1[match(data.assim$Year_DOY, out1$year_DOY), 1]
-data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,10]))
-sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,10]))
+data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,9]))
+sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,9]))
 #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
 out.compare1 = out1[match(data.compare1$time, out1$time),c(1,7,11)] #these columns need to match the ones that were pulled out before
 head(out.compare1)
@@ -222,4 +223,4 @@ repeat { #repeat until desired number of parameter sets are accepted
 head(param.keep)
 tail(param.keep)
 
-save.image(file="Step2_NEE_NDVI_031016.Rdata")
+save.image(file="Step2_NEE_NDVI_032716.Rdata")

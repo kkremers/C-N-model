@@ -363,7 +363,7 @@ for(i in 1:length(latitudes)){
 
 #############
 summary=summary[-1,]
-write.csv(summary, "CaTT_Summary_temp") #save CSV 
+write.csv(summary, "CaTT_Summary_032116") #save CSV 
 
 
 #modelled vs. measured
@@ -539,7 +539,7 @@ all = rbind(var.kplant, var.LitterRate, var.UptakeRate, var.propN_fol,
 all=cbind(Parameters = parameters, all)
 
 #calculate total variance
-var.total = aggregate(all[3:8], list(all$Group.1), sum)  #CHECK THIS
+var.total = aggregate(all[3:12], list(all$Group.1), sum)  #CHECK THIS
 
 #now calculate percent variance
 perc.kplant = (var.kplant[,2:11]/var.total[,2:11])*100
@@ -813,13 +813,13 @@ perc.all.NDVI = data.frame(perc.all_NDVI)
 ####barplots####
 barplot(perc.all.NEE, col=c("darkolivegreen3", "aquamarine", "maroon4", "mediumseagreen",
                             "palegreen", "darkblue"),  legend=TRUE )
-barplot(perc.all.NEE$NEE, names.arg=names(params[1:9]), cex.names=0.5, 
+barplot(perc.all.NEE$NEE, names.arg=names(params), cex.names=0.5, 
         col="forestgreen", horiz=TRUE, main="NEE") #plot the data
 
 barplot(perc.all.NDVI$NDVI, names.arg=names(params), cex.names=0.75, 
         col="forestgreen", horiz=TRUE, main="NDVI") #plot the data
 
-save.image(file="Variance_030216.Rdata")
+save.image(file="Variance_032416.Rdata")
 
 
 
