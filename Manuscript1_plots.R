@@ -95,16 +95,16 @@ summarytable=data.frame(q05 = q05, q25 = q25, mean = means,
 sensvars = c("NEE",
              "NDVI")
 
-s.global <- sensRange(func=solvemodel, parms=param.best, state=state.best, sensvar = sensvars, parInput=param.keep)
+s.global <- sensRange(func=solvemodel, parms=param.best, state=state.best, sensvar = sensvars, parInput=param.keep, num=1000)
 s.global.summ = summary(s.global) #create summary table
 head(s.global.summ) #view first 6 rows
 tail(s.global.summ)
 
 #get model output & confidence intervals organized
 out=data.frame(solvemodel(param.best, state.best))
-NEE_summ = data.frame(Time=s.global.summ[1:2191,1], NEE=out$NEE, sd=s.global.summ[1:2191,3], q05=s.global.summ[1:2191,6], q95=s.global.summ[1:2191,10], q25=s.global.summ[1:2191,7], q75=s.global.summ[1:2191,9])
+NEE_summ = data.frame(Time=s.global.summ[1:2191,1], NEE=out$NEE, sd=s.global.summ[1:2191,3], min=s.global.summ[1:2191,4], max=s.global.summ[1:2191,5], q05=s.global.summ[1:2191,6], q95=s.global.summ[1:2191,10], q25=s.global.summ[1:2191,7], q75=s.global.summ[1:2191,9])
 head(NEE_summ)
-NDVI_summ = data.frame(Time=s.global.summ[2192:4382,1], NDVI=out$NDVI, sd=s.global.summ[2192:4382,3], q05=s.global.summ[2192:4382,6], q95=s.global.summ[2192:4382,10], q25=s.global.summ[2192:4382,7], q75=s.global.summ[2192:4382,9])
+NDVI_summ = data.frame(Time=s.global.summ[2192:4382,1], NDVI=out$NDVI, sd=s.global.summ[2192:4382,3], min=s.global.summ[2192:4382,4], max=s.global.summ[2192:4382,5],q05=s.global.summ[2192:4382,6], q95=s.global.summ[2192:4382,10], q25=s.global.summ[2192:4382,7], q75=s.global.summ[2192:4382,9])
 head(NDVI_summ)
 
 #get data ready
@@ -124,12 +124,30 @@ reg_NEE = lm(out.compare_NEE2$NEE~data.compare_NEE2$NEE)
 reg_NDVI = lm(out.compare_NDVI2$NDVI~data.compare_NDVI2$NDVI)
 
 
+#calculate RMSE
+error.NEE = (data.compare_NEE2[,6]-out.compare_NEE2[,7])
+errorsquared.NEE = error.NEE^2
+mean = mean(errorsquared.NEE)
+RMSE.NEE = sqrt(mean)
+
+error.NDVI = (data.compare_NDVI2[,6]-out.compare_NDVI2[,11])
+errorsquared.NDVI = error.NDVI^2
+mean = mean(errorsquared.NDVI, na.rm=TRUE)
+RMSE.NDVI = sqrt(mean)
+
+#calculate MAE
+abs.error = abs(out.compare_NEE2[,7]-data.compare_NEE2[,6])
+MAE.NEE = mean(abs.error, na.rm=TRUE)
+abs.error = abs(out.compare_NDVI2[,11]-data.compare_NDVI2[,6])
+MAE.NDVI = mean(abs.error, na.rm=TRUE)
+
+
 #plot
 par(mar=c(4,5,2,0.5))
-#layout(matrix(c(1,2,3,4), 2, 2, byrow = TRUE), widths=c(4,2))
-layout(matrix(c(1,2), 1, 2, byrow = TRUE), widths=c(4,2))
+layout(matrix(c(1,2,3,4), 2, 2, byrow = TRUE), widths=c(4,2))
+#layout(matrix(c(1,2), 1, 2, byrow = TRUE), widths=c(4,2))
 
-plot(NEE~Time,data=NEE_summ[1:1826,], type="p", pch=16, cex=0.5, axes=FALSE, xlab="", ylim=c(-5,3),xlim=c(0,1826), cex.lab=1.5)
+plot(NEE~Time,data=NEE_summ[1:1826,], type="p", pch=16, cex=0.5, axes=FALSE, xlab="", ylim=c(-8,3),xlim=c(0,1826), cex.lab=1.5, col="white")
 axis(1, at=c(0,365,730,1096,1461,1826), labels=c("","","","","",""))
 #axis(1, at=c(0,365,730,1096,1461,1826,2191), labels=c("","","","","","",""))
 mtext("2009", side=1, at=200) 
@@ -140,18 +158,20 @@ mtext("2013", side=1, at=1650)
 #mtext("2014", side=1, at=2010) 
 axis(2)
 #make polygon where coordinates start with lower limit and then upper limit in reverse order
-with(NEE_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = "grey75", border = FALSE))
+with(NEE_summ[1:1826,],polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = "grey75", border = "gray75"))
 points(NEE~Time, data=NEE_summ[1:1826,], pch=16, cex=0.75)
 points(NEE~Time, data=data.compare_NEE1, pch=16, col="aquamarine4", cex=0.75)
 points(NEE~Time, data=data.compare_NEE2, pch=16, col="darkorange3", cex=0.75)
-legend("topleft", legend=c("CCaN NEE", "Assimilated NEE Measurements", "NEE Measurements Not Assimilated"), bty="n", pch=16, col=c("black", "aquamarine4", "darkorange3"))
+legend("topleft", legend=c("CCaN NEE 90% C.I.", "CCaN NEE", "Assimilated NEE Measurements", "NEE Measurements Not Assimilated"), bty="n", pch=c(15,16,16,16), col=c("gray75", "black", "aquamarine4", "darkorange3"))
 
-plot(out.compare_NEE2$NEE~data.compare_NEE2$NEE, pch=16, cex=0.75, ylab="CCaN NEE", xlab="Measured NEE", ylim=c(-4,2), xlim=c(-4,2))
+plot(out.compare_NEE2$NEE~data.compare_NEE2$NEE, pch=16, cex=0.75, ylab="CCaN NEE", xlab="Measured NEE", ylim=c(-4,2), xlim=c(-4,2), axes=FALSE)
+axis(1)
+axis(2)
 abline(0,1, col="red", lty=2, lwd=2)
 legend("topleft", bty="n", legend= bquote(italic(R)^2 == .(format(summary(reg_NEE)$adj.r.squared, digits=2))))
 
 
-plot(NDVI~Time,data=NDVI_summ[1:1826,], type="p", pch=16, cex=0.5, axes=FALSE, xlab="",ylim=c(0,1),xlim=c(1,1826), cex.lab=1.5)
+plot(NDVI~Time,data=NDVI_summ[1:1826,], type="p", pch=16, cex=0.5, axes=FALSE, xlab="",ylim=c(0,1),xlim=c(1,1826), cex.lab=1.5, col="white")
 axis(1, at=c(0,365,730,1096,1461,1826), labels=c("","","","","",""))
 #axis(1, at=c(0,365,730,1096,1461,1826,2191), labels=c("","","","","","",""))
 mtext("2009", side=1, at=200) 
@@ -162,20 +182,17 @@ mtext("2013", side=1, at=1650)
 #mtext("2014", side=1, at=2010) 
 axis(2)
 #make polygon where coordinates start with lower limit and then upper limit in reverse order
-with(NDVI_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = "grey75", border = FALSE))
+with(NDVI_summ[1:1826,],polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = "grey75", border = "gray75"))
 points(NDVI~Time, data=NDVI_summ[1:1826,], pch=16, cex=0.75)
 points(NDVI_TOWscal~Time, data=data.compare_NDVI1, pch=16, col="aquamarine4", cex=0.75)
 points(NDVI_TOWscal~Time, data=data.compare_NDVI2, pch=16, col="darkorange3", cex=0.75)
-legend("topleft", legend=c("CCaN NDVI", "Assimilated NDVI Measurements", "NDVI Measurements Not Assimilated"), bty="n", pch=16, col=c("black", "aquamarine4", "darkorange3"))
+legend("topleft", legend=c("CCaN NDVI 90% C.I.", "CCaN NDVI", "Assimilated NDVI Measurements", "NDVI Measurements Not Assimilated"), bty="n", pch=c(15,16,16,16), col=c("gray75", "black", "aquamarine4", "darkorange3"))
 
 plot(out.compare_NDVI2$NDVI~data.compare_NDVI2$NDVI_TOWscal, axes=FALSE, pch=16, cex=0.75, ylab="CCaN NDVI", xlab="Measured NDVI", ylim=c(0.3,0.9), xlim=c(0.3,0.9))
 axis(1)
 axis(2)
 abline(0,1, col="red", lty=2, lwd=2)
 legend("topleft", bty="n", legend= bquote(italic(R)^2 == .(format(summary(reg_NDVI)$adj.r.squared, digits=2))))
-
-
-
 
 ################Spatial Validation######################
 
@@ -363,7 +380,7 @@ for(i in 1:length(latitudes)){
 
 #############
 summary=summary[-1,]
-write.csv(summary, "CaTT_Summary_032116") #save CSV 
+write.csv(summary, "CaTT_Summary_033116") #save CSV 
 
 
 #modelled vs. measured
@@ -373,8 +390,10 @@ summary(reg_NDVI)
 #regressions with latitude - NDVI
 par(mfrow=c(1,1))
 plot(summary$CCaN.MODIS_avg~summary$Latitude, pch=16, cex.lab=1.25, xlab="Latitude", ylab=expression("CCaN NDVI" [sat]), ylim=c(0.4,0.8), xlim=c(65,71), axes=FALSE)
+points(summary$MODIS_avg~summary$Latitude, pch=15, col="forestgreen")
 axis(1)
 axis(2)
+legend("topleft", legend=c("CCaN NDVI", "MODIS NDVI"), bty="n", pch=c(16,15), col=c("black", "forestgreen"))
 par(fig=c(0.6, 1, 0.5, 1), new = T)
 plot(summary$CCaN.MODIS_avg~summary$MODIS_avg, pch=16, cex.lab=1.25, ylab=expression("CCaN NDVI" [sat]), xlab="MODIS NDVI", ylim=c(0.3,0.8), xlim=c(0.3,0.8), axes=FALSE)
 axis(1, at=c(0.3,0.4,0.5,0.6,0.7,0.8), labels=c("0.3","","0.5","","0.7",""))
@@ -395,7 +414,7 @@ summary(reg_CCaN.temp) #slope is sensitivity
 
 
 ###########Temperature Sensitivity Comparison################
-Sample = c("CCaN", "Boelman", "Goetz", "MODIS")
+Sample = c("CCaN", "LTER", "Goetz", "MODIS")
 Sensitivty = c(0.021, 0.022, 0.02, 0.033)
 par(mfrow=c(1,1))
 barplot(Sensitivty, names.arg=Sample, ylab="Temperatre Sensitivity", ylim=c(0,0.04))
@@ -634,8 +653,17 @@ AVar_netNrate_NDVI = data.frame(matrix(1,1,1))
 colnames(AVar_netNrate_NDVI)=c("NDVI")
 
 head(summarytable)
+q15 = apply(param.keep, 2, quantile, 0.15)
+q85 = apply(param.keep, 2, quantile, 0.85)
+q40 = apply(param.keep, 2, quantile, 0.40)
+q60 = apply(param.keep, 2, quantile, 0.60)
+summarytable = data.frame(q05=summarytable[,1], q95=summarytable[,5], q15, q85, q25=summarytable[,2], q75=summarytable[,4], q40, q60)
+head(summarytable)
+
+param.keep_NEE_NDVI_UNBdata = param.keep
+
 first=1
-second=5
+second=2
 
 #kplant
 param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$kplant>=summarytable[1,first] & param.keep_NEE_NDVI_UNBdata$kplant<=summarytable[1,second],]
@@ -807,19 +835,84 @@ colnames(perc.all_NDVI)=c("NDVI")
 
 
 #store for this subset
-perc.all.NEE = data.frame(perc.all_NEE)
-perc.all.NDVI = data.frame(perc.all_NDVI)
+perc.all.NEE_100 = data.frame(perc.all_NEE)
+perc.all.NDVI_100 = data.frame(perc.all_NDVI)
 
 ####barplots####
-barplot(perc.all.NEE, col=c("darkolivegreen3", "aquamarine", "maroon4", "mediumseagreen",
-                            "palegreen", "darkblue"),  legend=TRUE )
-barplot(perc.all.NEE$NEE, names.arg=names(params), cex.names=0.5, 
+names = c("kplant", "LitterRate", "UptakeRate", "propN_fol.i", "propN_roots", "netNrate")
+par(mfrow=c(1,2))
+barplot(perc.all.NEE_100$NEE, names.arg=names, cex.names=0.75, 
         col="forestgreen", horiz=TRUE, main="NEE") #plot the data
 
-barplot(perc.all.NDVI$NDVI, names.arg=names(params), cex.names=0.75, 
+barplot(perc.all.NDVI_100$NDVI, names.arg=names, cex.names=0.75, 
         col="forestgreen", horiz=TRUE, main="NDVI") #plot the data
 
-save.image(file="Variance_032416.Rdata")
+
+
+
+#bind all together
+varNDVI_100 = (perc.all.NDVI_100$NDVI[2:5]/100)*perc.all.NDVI_100$NDVI[9]
+varNEE_100 = (perc.all.NEE_100$NEE[2:5]/100)*perc.all.NEE_100$NEE[9]
+varNDVI_90 = (perc.all.NDVI_90$NDVI[2:5]/100)*perc.all.NDVI_90$NDVI[9]
+varNEE_90 = (perc.all.NEE_90$NEE[2:5]/100)*perc.all.NEE_90$NEE[9]
+varNDVI_70 = (perc.all.NDVI_70$NDVI[2:5]/100)*perc.all.NDVI_70$NDVI[9]
+varNEE_70 = (perc.all.NEE_70$NEE[2:5]/100)*perc.all.NEE_70$NEE[9]
+varNDVI_50 = (perc.all.NDVI_50$NDVI[2:5]/100)*perc.all.NDVI_50$NDVI[9]
+varNEE_50 = (perc.all.NEE_50$NEE[2:5]/100)*perc.all.NEE_50$NEE[9]
+varNDVI_20 = (perc.all.NDVI_20$NDVI[2:5]/100)*perc.all.NDVI_20$NDVI[9]
+varNEE_20 = (perc.all.NEE_20$NEE[2:5]/100)*perc.all.NEE_20$NEE[9]
+
+NDVI_var = c(varNDVI_all, varNDVI_90, varNDVI_70, varNDVI_50, varNDVI_20)
+NEE_var = c(varNEE_all, varNEE_90, varNEE_70, varNEE_50, varNEE_20)
+parameter = rep(rownames(perc.all.NEE_all)[2:5], 5)
+range = rep(c(100,90,70,50,20), c(4,4,4,4,4))
+
+var_all = data.frame(parameter=parameter, range=range, NEE=NEE_var, NDVI=NDVI_var)
+head(var_all)
+
+regNDVI_LitterRate = lm(log(NDVI)~range,data=var_all[var_all$parameter=="LitterRate",])
+regNEE_LitterRate = lm(log(NEE)~range,data=var_all[var_all$parameter=="LitterRate",])
+
+regNDVI_UptakeRate = lm(log(NDVI)~range, data=var_all[var_all$parameter=="UptakeRate",])
+regNEE_UptakeRate = lm(log(NEE)~range, data=var_all[var_all$parameter=="UptakeRate",])
+
+regNDVI_propN_fol = lm(log(NDVI)~range, data=var_all[var_all$parameter=="propN_fol",])
+regNEE_propN_fol = lm(log(NEE)~range, data=var_all[var_all$parameter=="propN_fol",])
+
+regNDVI_propN_roots = lm(log(NDVI)~range, data=var_all[var_all$parameter=="propN_roots",])
+regNEE_propN_roots = lm(log(NEE)~range, data=var_all[var_all$parameter=="propN_roots",])
+
+summary(regNDVI_LitterRate)
+summary(regNEE_LitterRate)
+summary(regNDVI_UptakeRate)
+summary(regNEE_UptakeRate)
+summary(regNDVI_propN_fol)
+summary(regNEE_propN_fol)
+summary(regNDVI_propN_roots)
+summary(regNEE_propN_roots)
+
+
+par(mfrow=c(1,2), mar=c(4,4,2,2))
+plot(var_all$NEE[var_all$parameter=="LitterRate"]~var_all$range[var_all$parameter=="LitterRate"], pch=16, cex=1, col="aquamarine", ylim=c(min(var_all$NEE)-5, max(var_all$NEE)+5))
+lines(var_all$range[var_all$parameter=="LitterRate"], exp(predict(regNEE_LitterRate,list(range=var_all$range[var_all$parameter=="LitterRate"]))), col="aquamarine", lwd=2)
+points(var_all$NEE[var_all$parameter=="UptakeRate"]~var_all$range[var_all$parameter=="UptakeRate"], pch=16, cex=1, col="darkgreen")
+lines(var_all$range[var_all$parameter=="UptakeRate"], exp(predict(regNEE_UptakeRate,list(range=var_all$range[var_all$parameter=="UptakeRate"]))), col="darkgreen", lwd=2)
+points(var_all$NEE[var_all$parameter=="propN_fol"]~var_all$range[var_all$parameter=="propN_fol"], pch=16, cex=1, col="mediumseagreen")
+lines(var_all$range[var_all$parameter=="propN_fol"], exp(predict(regNEE_propN_fol,list(range=var_all$range[var_all$parameter=="propN_fol"]))), col="mediumseagreen", lwd=2)
+points(var_all$NEE[var_all$parameter=="propN_roots"]~var_all$range[var_all$parameter=="propN_roots"], pch=16, cex=1, col="palegreen")
+lines(var_all$range[var_all$parameter=="propN_roots"], exp(predict(regNEE_propN_roots,list(range=var_all$range[var_all$parameter=="propN_roots"]))), col="palegreen", lwd=2)
+
+plot(var_all$NDVI[var_all$parameter=="LitterRate"]~var_all$range[var_all$parameter=="LitterRate"], pch=16, cex=1, col="aquamarine", ylim=c(min(var_all$NDVI), max(var_all$NDVI)))
+lines(var_all$range[var_all$parameter=="LitterRate"], exp(predict(regNDVI_LitterRate,list(range=var_all$range[var_all$parameter=="LitterRate"]))), col="aquamarine", lwd=2)
+points(var_all$NDVI[var_all$parameter=="UptakeRate"]~var_all$range[var_all$parameter=="UptakeRate"], pch=16, cex=1, col="darkgreen")
+lines(var_all$range[var_all$parameter=="UptakeRate"], exp(predict(regNDVI_UptakeRate,list(range=var_all$range[var_all$parameter=="UptakeRate"]))), col="darkgreen", lwd=2)
+points(var_all$NDVI[var_all$parameter=="propN_fol"]~var_all$range[var_all$parameter=="propN_fol"], pch=16, cex=1, col="mediumseagreen")
+lines(var_all$range[var_all$parameter=="propN_fol"], exp(predict(regNDVI_propN_fol,list(range=var_all$range[var_all$parameter=="propN_fol"]))), col="mediumseagreen", lwd=2)
+points(var_all$NDVI[var_all$parameter=="propN_roots"]~var_all$range[var_all$parameter=="propN_roots"], pch=16, cex=1, col="palegreen")
+lines(var_all$range[var_all$parameter=="propN_roots"], exp(predict(regNDVI_propN_roots,list(range=var_all$range[var_all$parameter=="propN_roots"]))), col="palegreen", lwd=2)
+
+
+save.image(file="PLOTS_033116.Rdata")
 
 
 
