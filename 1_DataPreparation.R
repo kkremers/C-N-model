@@ -6,11 +6,11 @@ head(data) #view table
 
 #plot data
 par(mfrow=c(2,1)) 
-plot(data$Temp_T~data$time, type="l", ylab = "Daily Max Temp (C)", xlab="Time (days)") 
+plot(data$Temp_T~data$time, type="l", ylab = "Daily AVG Temp (C)", xlab="Time (days)") 
 abline(h=0)
-points(data$Temp_ARF~data$time, col="red", pch=16)
-plot(data$PAR_T~data$time, type="l", ylab = "Daily Max PAR (umol m-2 s-1)", xlab="Time (days)")
-points(data$PAR_ARF~data$time, col="blue", pch=16)
+points(data$Temp_ARF~data$time, col="red", pch=16, cex=0.5)
+plot(data$PAR_T~data$time, type="l", ylab = "Daily AVG PAR (umol m-2 s-1)", xlab="Time (days)")
+points(data$PAR_ARF~data$time, col="blue", pch=16, cex=0.5)
 #ARF data is missing winter measurements - want to fill this in
 
 #want to plot to determine relationship, and then fill in missing data in ARF data
@@ -51,10 +51,10 @@ data$PAR_T = data$PAR_T*(1E-6)*86400
 
 #check output to make sure it all lines up
 par(mfrow=c(2,1))
-plot(data$Temp_T~data$time, type="l", ylab = "Daily Max Temp (C)", xlab="Time (days)")
+plot(data$Temp_T~data$time, type="l", ylab = "Daily AVG Temp (C)", xlab="Time (days)")
 abline(h=0)
-points(data$Temp_ARF~data$time, col="red", pch=16)
-plot(data$PAR_T~data$time, type="l", ylab = "Daily Max PAR (mol m-2 s-1)", xlab="Time (days)")
-points(data$PAR_ARF~data$time, col="blue", pch=16)
+points(data$Temp_ARF~data$time, col="red", pch=16, cex=0.5)
+plot(data$PAR_T~data$time, type="l", ylab = "Daily AVG PAR (mol m-2 s-1)", xlab="Time (days)")
+points(data$PAR_ARF~data$time, col="blue", pch=16, cex=0.5)
 
 write.csv(data, "InputData_Processed.csv") #added the updated data to the working directory so that it is easy to access - won't have to do any of the above steps again

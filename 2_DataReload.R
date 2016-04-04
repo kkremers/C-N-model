@@ -14,13 +14,15 @@ plot(data$PAR_ARF~data$time, type="l", ylab = "Daily PAR (mol m-2 day-1)", col="
 #need to calculate DOY of senescence 
 years = unique(data$year) #tells you which years we have data for 
 sen.day = NA
+num.days = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
   sen.day[i] = min(data.year$DOY[which(data.year$Temp_ARF<=10 & data.year$DOY>200)])
+  num.days[i] = length(data.year[,1])
 }
 sen.day
-num.days = c(365, 365, 365, 366, 365,365)
+num.days
 senDOY = rep(c(sen.day), c(num.days))
 data = data.frame(data, senDOY = senDOY)
 head(data)
@@ -94,7 +96,7 @@ for(i in 1:length(end)){
   slope[start.i:end.i]=rep(slope.i, 8)
 }
 slope
-slope[2185:length(slope)]=slope[2184] #these points don't really matter, but I don't want them to be NAs
+slope[2921:length(slope)]=slope[2920] #these points don't really matter, but I don't want them to be NAs
 slope
 data=data.frame(data, slope=slope)
 head(data)
@@ -152,12 +154,13 @@ data = data.frame(data, endDOY = endDOY)
 head(data)
 
 data.compare2=read.csv("Assimilation_data_ALL.csv")
+days.tot = c(0, cumsum(num.days)[1:7])
 
 par(mfrow=c(1,1))
-plot(data.compare2$NEE~data.compare2$Time, col="forestgreen", xlim=c(1,1826))
-abline(v=c(start.day+c(0,365,365+365,365+365+366, 365+365+366+365, 365+365+366+365+365)), col="red")
-abline(v=c(sen.day+c(0,365,365+365,365+365+366, 365+365+366+365, 365+365+366+365+365)))
-abline(v=c(end.day+c(0,365,365+365,365+365+366, 365+365+366+365, 365+365+366+365+365)), col="blue")
+plot(data.compare2$NEE~data.compare2$Time, col="forestgreen", pch=16, cex=0.5)
+abline(v=c(start.day+days.tot), col="red")
+abline(v=c(sen.day+days.tot))
+abline(v=c(end.day+days.tot), col="blue")
 
 ###############seasonal scalar##############
 
