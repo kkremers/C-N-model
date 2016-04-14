@@ -157,7 +157,7 @@ data.compare2=read.csv("Assimilation_data_ALL.csv")
 days.tot = c(0, cumsum(num.days)[1:7])
 
 par(mfrow=c(1,1))
-plot(data.compare2$NEE~data.compare2$Time, col="forestgreen", pch=16, cex=0.5)
+plot(data.compare2$NDVI~data.compare2$Time, col="forestgreen", pch=16, cex=0.5)
 abline(v=c(start.day+days.tot), col="red")
 abline(v=c(sen.day+days.tot))
 abline(v=c(end.day+days.tot), col="blue")

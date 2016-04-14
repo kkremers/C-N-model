@@ -66,7 +66,7 @@ for (i in 1:length(data.spin$Temp)){
 plot(scal.temp.spin, type="l")
 
 #run model spin up for current parameter set
-numyears = 50
+numyears = 25
 Year.spin = rep(data.spin$Year, numyears)
 DOY.spin = rep(data.spin$DOY, numyears)
 Temp.spin = rep(data.spin$Temp, numyears)
@@ -116,7 +116,14 @@ scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
 
-out= data.frame(solvemodel(param.best, state)) #creates table of model output
+out= data.frame(solvemodel(param.best)) #creates table of model output
+
+
+#plot fluxes
+plot(out$GPP)
+plot(out$Ra)
+plot(out$Rh)
+
 
 
 #plot pools
@@ -127,13 +134,16 @@ plot(out$SOM_C~out$time, type="l", col="brown", main = "SOM C", xlab="", ylab="g
 plot(out$SOM_N~out$time, type="l", col="brown", main = "SOM N", xlab="Time (days)", ylab="g N m-2")
 plot(out$Available_N~out$time, type="l", col="blue", main = "Available_ N", xlab="Time (days)", ylab="g N m-2",lty=2)
 
+
+
+
+
 #see how well data matches
 #to compare on 1:1 line with data, need to select only points for which data is available
 data.compare2=read.csv("Assimilation_data_ALL.csv")
 data.compare_NEE=data.compare2[complete.cases(data.compare2[,6]),c(1:5,6)]
 head(data.compare_NEE)
-data.compare_NDVI=data.compare2[complete.cases(data.compare2[,9]),c(1:5,10)]
-colnames(data.compare_NDVI)=c("Date", "Year", "Time", "DOY", "Year_DOY", "NDVI")
+data.compare_NDVI=data.compare2[complete.cases(data.compare2[,7]),c(1:5,7)]
 head(data.compare_NDVI)
 out.compare_NEE = out[match(data.compare_NEE$Time, out$time),]
 out.compare_NDVI = out[match(data.compare_NDVI$Time, out$time),]
@@ -222,6 +232,38 @@ points((data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=
 #arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
 plot(data.compare_NDVI$NDVI[data.compare_NDVI$Year==2013], out.compare_NDVI$NDVI[out.compare_NDVI$year==2013], ylab="Model", xlab="Data", ylim=c(0, 1), xlim=c(0,1))
 abline(0,1, col="red")
+
+
+#PLOT DATA FOR 2014
+par(mfrow=c(2,2), mar=c(4,4,2,2))
+plot(out$NEE[out$year==2014]~out$time[out$year==2014], col="azure4", pch=18, ylim=c(-6,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
+points(data.compare2$NEE~data.compare2$Time, col="blue", pch=16, cex=0.6)
+abline(h=0)
+plot(data.compare_NEE$NEE[data.compare_NEE$Year==2014], out.compare_NEE$NEE[out.compare_NEE$year==2014], ylim=c(-4, 4), xlim=c(-4,4),  ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(out$NDVI[out$year==2014]~out$time[out$year==2014], col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", ylim=c(0, 1))
+points((data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
+#arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
+plot(data.compare_NDVI$NDVI[data.compare_NDVI$Year==2014], out.compare_NDVI$NDVI[out.compare_NDVI$year==2014], ylab="Model", xlab="Data", ylim=c(0, 1), xlim=c(0,1))
+abline(0,1, col="red")
+
+
+#PLOT DATA FOR 2015
+par(mfrow=c(2,2), mar=c(4,4,2,2))
+plot(out$NEE[out$year==2015]~out$time[out$year==2015], col="azure4", pch=18, ylim=c(-6,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)", type="l")
+points(data.compare2$NEE~data.compare2$Time, col="blue", pch=16, cex=0.6)
+abline(h=0)
+plot(data.compare_NEE$NEE[data.compare_NEE$Year==2015], out.compare_NEE$NEE[out.compare_NEE$year==2015], ylim=c(-4, 4), xlim=c(-4,4),  ylab="Model", xlab="Data")
+abline(0,1, col="red")
+
+plot(out$NDVI[out$year==2015]~out$time[out$year==2015], col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", ylim=c(0, 1))
+points((data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
+#arrows(data.compare_NDVI$Time, data.compare_NDVI$NDVI-sigma.compare_NDVI$NDVI, data.compare_NDVI$Time, data.compare_NDVI$NDVI+sigma.compare_NDVI$NDVI, length=0.05, angle=90, code=3)
+plot(data.compare_NDVI$NDVI[data.compare_NDVI$Year==2015], out.compare_NDVI$NDVI[out.compare_NDVI$year==2015], ylab="Model", xlab="Data", ylim=c(0, 1), xlim=c(0,1))
+abline(0,1, col="red")
+
+
 
 
 
@@ -362,7 +404,7 @@ resid.NDVI = data.compare_NDVI$NDVI - out.compare_NDVI$NDVI
 resid_NDVI = data.frame(time=out.compare_NDVI$time, Year=out.compare_NDVI$year, DOY=out.compare_NDVI$DOY, resid.NDVI)
 head(resid_NDVI)
 
-par(mfrow=c(4,1), mar=c(4,4,2,2))
+par(mfrow=c(2,1), mar=c(4,4,2,2))
 plot(resid_NEE$DOY, resid_NEE$resid.NEE, main="NEE Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
 plot(resid_NDVI$DOY, resid_NDVI$resid.NDVI, main="NDVI Residuals", ylab="Residuals", xlab="DOY")
@@ -385,7 +427,7 @@ resid.meansflux=data.frame(DOY=time, resid.GPP.mean, resid.NEE.mean, resid.Re.me
 time=seq(149,250,1)
 resid.meansNDVI=data.frame(DOY=time, resid.NDVI.mean)
 
-par(mfrow=c(4,1), mar=c(4,4,2,2))
+par(mfrow=c(2,1), mar=c(4,4,2,2))
 plot(resid.meansflux$DOY, resid.meansflux$resid.NEE.mean, main="NEE Residuals", ylab="Residuals", xlab="DOY")
 abline(h=0, col="red")
 plot(resid.meansNDVI$DOY, resid.meansNDVI$resid.NDVI.mean, main="NDVI Residuals", ylab="Residuals", xlab="DOY")
@@ -448,11 +490,16 @@ summary(reg.length) #view model stats
 
 #CHECK RELATIONSHIPS WITH FORCINGS
 par(mfrow=c(2,1))
-data.check = data[match(out.compare_NEE$time, data$time),]
-plot(data.compare_NEE$NEE~data.check$PAR_ARF, pch=16)
-points(out.compare_NEE$NEE~data.check$PAR_ARF, col="red")
-plot(data.compare_NEE$NEE~data.check$Temp_ARF, pch=16)
-points(out.compare_NEE$NEE~data.check$Temp_ARF, col="red")
+data.check = data[match(out.compare_NEE$time[out.compare_NEE$DOY>=160 & out.compare_NEE$DOY<=240], data$time),]
+data.compareNEE = (data.compare_NEE[match(data.compare_NEE$Time, data.check$time),])
+data.compareNEE = data.compareNEE[is.na(data.compareNEE$Time)==FALSE,]
+out.compareNEE = (out.compare_NEE[match(out.compare_NEE$time, data.check$time),])
+out.compareNEE = out.compareNEE[is.na(out.compareNEE$time)==FALSE,]
+
+plot(data.compareNEE$NEE~data.check$PAR_ARF, pch=16)
+points(out.compareNEE$NEE~data.check$PAR_ARF, col="red")
+plot(data.compareNEE$NEE~data.check$Temp_ARF, pch=16)
+points(out.compareNEE$NEE~data.check$Temp_ARF, col="red")
 
 
 

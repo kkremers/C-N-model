@@ -93,8 +93,8 @@ head(sigma.obs1)
 ###LOAD REAL DATA###
 data.assim = read.csv("Assimilation_data_all.csv")
 data.sigma = read.csv("Assimilation_sigma_all.csv")
-data.assim = subset(data.assim, Year==2009 | Year==2011 | Year==2013)
-data.sigma = subset(data.sigma, Year==2009 | Year==2011 | Year==2013)
+data.assim = subset(data.assim, Year==2009 | Year==2011 | Year==2013 | Year==2015)
+data.sigma = subset(data.sigma, Year==2009 | Year==2011 | Year==2013 | Year==2015)
 head(data.assim)
 head(data.sigma)
 tail(data.assim)
@@ -103,8 +103,8 @@ head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
 head(out1)
 time.assim = out1[match(data.assim$Year_DOY, out1$year_DOY), 1]
-data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,9]))
-sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,9]))
+data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,7]))
+sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,7]))
 head(data.compare1)
 head(sigma.obs1)
 
@@ -115,8 +115,7 @@ head(sigma.obs1)
 #Step 2: calculate decadal averages
 Temp.spin= tapply(data$Temp_ARF, data$DOY, mean)
 plot(Temp.spin)
-Temp_GS = data$Temp_ARF[data$DOY>=data$startDOY[1] & data$DOY <= data$endDOY[1]]
-AvgTempGS = mean(Temp_GS)
+AvgTempGS = mean(data$Temp_avg)
 TempAvg.spin = rep(AvgTempGS, 366)
 PAR.spin = tapply(data$PAR_ARF, data$DOY, mean)
 plot(PAR.spin)
@@ -126,16 +125,16 @@ data.spin=data.frame(Year=Year.spin, DOY=DOY.spin, Temp=Temp.spin, Temp_avg=Temp
 head(data.spin)
 
 #seasonality scalar
-sen.day=min(data.spin$DOY[which(data.spin$Temp<=10 & data.spin$DOY>200)])
+sen.day=round(mean(data$senDOY,0))
 sen.day #DOY of senescence 
 num.days = 366
 senDOY = rep(sen.day, num.days)
 data.spin = data.frame(data.spin, senDOY = senDOY)
-start.day=min(data.spin$DOY[which(data.spin$Temp>=-5 & data.spin$DOY>120)])
+start.day=round(mean(data$startDOY,0))
 start.day #start day
 startDOY = rep(start.day, num.days)
 data.spin = data.frame(data.spin, startDOY = startDOY)
-end.day=min(data.spin$DOY[which(data.spin$Temp<=0 & data.spin$DOY>240)])
+end.day=round(mean(data$endDOY,0))
 end.day #end day
 endDOY = rep(end.day, num.days)
 data.spin = data.frame(data.spin, endDOY = endDOY)
@@ -176,7 +175,7 @@ for (i in 1:length(data.spin$Temp)){
 plot(scal.temp.spin, type="l")
 
 #run model spin up for current parameter set
-numyears = 50
+numyears = 25
 Year.spin = rep(data.spin$Year, numyears)
 DOY.spin = rep(data.spin$DOY, numyears)
 Temp.spin = rep(data.spin$Temp, numyears)
@@ -221,13 +220,13 @@ Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
 
 out= data.frame(solvemodel(params, state)) #creates table of model output
 
-
+plot(out$Biomass_C)
 
 
 ####DATA EXPLORATION###
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.012,0.92,0.03,0.04)
-param.min=c(0.07,0.0001,0.002,0.09,0.002,0.001)
+param.max=c(0.34,0.0024,0.012,0.3,0.022,0.04,0.105,0.09,0.04,1.24,0.035,1,3)
+param.min=c(0.07,0.0001,0.002,0.09,0.01,0.003,0.045,0.05,0.001,1.08,0.015,0.105,1)
 
 state.min=c(250,6,12000,550,0)
 
@@ -282,14 +281,13 @@ tail(param.est)
 
 
 #set initial values
-anneal.temp0=5000000 #starting temperature
-anneal.temp=5000000 #starting temperature
+anneal.temp0=10000000 #starting temperature
+anneal.temp=10000000 #starting temperature
 reject=0 #reset reject counter
 t=0.5
 
 
-for (i in 59645:M) {
-  
+for (i in 4674:M) {
   repeat{
     for(p in 1:n.param){ #for each parameter
       param.est[i,p] = param.est[i-1,p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
@@ -297,38 +295,38 @@ for (i in 59645:M) {
       parms = as.numeric(param.est[i,]) #parameters for model run
       names(parms) = names(params) #fix names
     } #end of parameter loop
-      if(all(param.est[i,]>=param.min) & all(param.est[i,]<=param.max)){
-            
-    #RUN MODEL SPINUP
-    time = seq(1:length(DOY.spin))
-    Temp.d1 <- approxfun(x=time, y=Temp.spin, method="linear", rule=2)
-    TempAvg.d1 <- approxfun(x=time, y=TempAvg.spin, method="linear", rule=2)
-    PAR.d1 <- approxfun(x=time, y=PAR.spin, method="linear", rule=2)
-    scaltemp.d1 <- approxfun(x=time, y=scal.temp.spin1, method="linear", rule=2)
-    scalseason.d1 <- approxfun(x=time, y=scal.seas.spin1, method="linear", rule=2)
-    DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
-    Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
-    
-    state  <- c(Biomass_C = 685, 
-                Biomass_N = 12.5, 
-                SOM_C = 19250, 
-                SOM_N = 850,
-                Available_N = 1.75)
-    
-    out.spin= data.frame(solvemodel(parms, state)) #creates table of model output
-    #adjust starting values
-    state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
-                Biomass_N = out.spin$Biomass_N[end.time], 
-                SOM_C = out.spin$SOM_C[end.time], 
-                SOM_N = out.spin$SOM_N[end.time],
-                Available_N = out.spin$Available_N[end.time])
-  
-    if(all(!is.na(state)) & all(state>=state.min)){ 
-       break
-         } #end of if loop
+    if(all(param.est[i,]>=param.min) & all(param.est[i,]<=param.max)){
+      
+      #RUN MODEL SPINUP
+      time = seq(1:length(DOY.spin))
+      Temp.d1 <- approxfun(x=time, y=Temp.spin, method="linear", rule=2)
+      TempAvg.d1 <- approxfun(x=time, y=TempAvg.spin, method="linear", rule=2)
+      PAR.d1 <- approxfun(x=time, y=PAR.spin, method="linear", rule=2)
+      scaltemp.d1 <- approxfun(x=time, y=scal.temp.spin1, method="linear", rule=2)
+      scalseason.d1 <- approxfun(x=time, y=scal.seas.spin1, method="linear", rule=2)
+      DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
+      Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
+      
+      state  <- c(Biomass_C = 685, 
+                  Biomass_N = 12.5, 
+                  SOM_C = 19250, 
+                  SOM_N = 850,
+                  Available_N = 1.75)
+      
+      out.spin= data.frame(solvemodel(parms, state)) #creates table of model output
+      #adjust starting values
+      state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
+                  Biomass_N = out.spin$Biomass_N[end.time], 
+                  SOM_C = out.spin$SOM_C[end.time], 
+                  SOM_N = out.spin$SOM_N[end.time],
+                  Available_N = out.spin$Available_N[end.time])
+      
+      if(all(!is.na(state)) & all(state>=state.min)){ 
+        break
       } #end of if loop
-    } #end of repeat
-    
+    } #end of if loop
+  } #end of repeat
+        
     time = seq(1:length(data$time))
     Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
     TempAvg.d1 <- approxfun(x=data$time, y=data$Temp_avg, method="linear", rule=2)
@@ -340,13 +338,6 @@ for (i in 59645:M) {
     
     out = data.frame(solvemodel(parms, state)) #run model  
     
-    if(any(is.na(out)) | any(out[,2:6]<0)){ #if there are any NAs or negative stocks in the output
-      reject = reject+1 #reject parameter set
-      param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
-      J[i] = J[i-1] #set current J to previous J
-      j[i,] = j[i-1,]
-    } else { #if there are no NAs or negative stocks & biomass pool doesn't crash
-      
       #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
       
       out.compare1 = out[match(data.compare1$time, out$time),c(1,7,11)] #these columns need to match the ones that were pulled out before
@@ -390,7 +381,6 @@ for (i in 59645:M) {
       } #end of if loop
       
     } #end of else loop
-    } #end of else loop
     
     acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
     
@@ -403,16 +393,17 @@ for (i in 59645:M) {
     }
     
     
-    anneal.temp=anneal.temp*0.9 #decrease temperature
+    anneal.temp=anneal.temp*0.999 #decrease temperature
     
     
     
-    if(anneal.temp<(0.25*anneal.temp0)){ #if temperature drops to less than 10% of initial
+    if(anneal.temp<(0.01*anneal.temp0)){ #if temperature drops to less than 10% of initial
       anneal.temp=anneal.temp0 #jump back up to initial
     }
     
   
 } #end of exploration
+
 
 plot(all.draws[1:i,1])
 lines(param.est[1:i,1], col="red")
@@ -429,4 +420,4 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_NEE_NDVI_032816_SPIN.Rdata")
+save.image(file="Step1_041116_SPIN.Rdata")
