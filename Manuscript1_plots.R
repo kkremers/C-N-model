@@ -1,4 +1,74 @@
-#PLOTS FOR MANUSCRIPT 1
+###########Analysis of Climate data for Results####################
+
+#set working directory to C-N-model
+data = read.csv("InputData_Processed.csv") #This is the "FluxData.csv" file, but with added calculations of GDD
+head(data)
+
+#plot the data
+par(mfrow=c(2,1), mar=c(3,4,0.5,2))
+plot(data$Temp_ARF~data$time, type="l", ylab = "Daily Avg Temp (C)", col="red", xlab="")
+abline(h=0)
+plot(data$PAR_ARF~data$time, type="l", ylab = "Daily PAR (mol m-2 day-1)", col="blue", xlab = "Time (days)")
+
+
+#calculate yearly max, min, and GS avg temp and PAR
+years = unique(data$year) #tells you which years we have data for 
+Tmax = NA
+Tmin = NA
+Tavg = NA
+PARmax = NA
+PARavg = NA
+
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data, data$year==year.i)
+  Tmax[i]=max(data.year$Temp_ARF)
+  Tmin[i]=min(data.year$Temp_ARF)
+  Temp_GS = data.year$Temp_ARF[data.year$DOY>=150 & data.year$DOY <= 240]
+  Tavg[i] = mean(Temp_GS)
+  PARmax[i]=max(data.year$PAR_ARF)
+  PAR_GS = data.year$PAR_ARF[data.year$DOY>=150 & data.year$DOY <= 240]
+  PARavg[i] = mean(PAR_GS)  
+}
+
+#look at data for all years
+Tmax; Tmin; Tavg; PARmax; PARavg
+years
+assim = c(0,1,0,1,0,1,0,1) #0=NO, 1=YES
+stats=data.frame(Year=years, Assim=assim, Tmax, Tmin, Tavg, PARmax, PARavg)
+stats
+
+#stats for Tmax
+min(Tmax); max(Tmax); mean(Tmax); sd(Tmax)
+#stats for Tmin
+min(Tmin); max(Tmin); mean(Tmin); sd(Tmin)
+#stats for Tavg
+min(Tavg); max(Tavg); mean(Tavg); sd(Tavg)
+#stats for PARmax
+min(PARmax); max(PARmax); mean(PARmax); sd(PARmax)
+#stats for PARavg
+min(PARavg); max(PARavg); mean(PARavg); sd(PARavg)
+
+#now look at values for assimilated vs. not assimilated data
+
+tapply(stats$Tmax, stats$Assim, mean)
+tapply(stats$Tmin, stats$Assim, mean)
+tapply(stats$Tavg, stats$Assim, mean)
+tapply(stats$PARmax, stats$Assim, mean)
+tapply(stats$PARavg, stats$Assim, mean)
+
+Tmax.test = t.test(stats$Tmax[stats$Assim==0], stats$Tmax[stats$Assim==1])
+Tmax.test
+Tmin.test = t.test(stats$Tmin[stats$Assim==0], stats$Tmin[stats$Assim==1])
+Tmin.test
+Tavg.test = t.test(stats$Tavg[stats$Assim==0], stats$Tavg[stats$Assim==1])
+Tavg.test
+PARmax.test = t.test(stats$PARmax[stats$Assim==0], stats$PARmax[stats$Assim==1])
+PARmax.test
+PARavg.test = t.test(stats$PARavg[stats$Assim==0], stats$PARavg[stats$Assim==1])
+PARavg.test
+
+#####################PLOTS FOR MANUSCRIPT 1######################
 
 ##################Histograms########################
 par(mfrow=c(3,2), mar=c(5,5,2,2))
