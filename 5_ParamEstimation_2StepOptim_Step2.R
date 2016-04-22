@@ -45,8 +45,8 @@ head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
 head(out1)
 time.assim = out1[match(data.assim$Year_DOY, out1$year_DOY), 1]
-data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,9]))
-sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,9]))
+data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,7]))
+sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,7]))
 #pull out predicted values to compare to data; only include time points where data is available and columns that match data.compare
 out.compare1 = out1[match(data.compare1$time, out1$time),c(1,7,11)] #these columns need to match the ones that were pulled out before
 head(out.compare1)
@@ -123,11 +123,11 @@ repeat { #repeat until desired number of parameter sets are accepted
       DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
       Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
       
-      state  <- c(Biomass_C = 685, 
-                  Biomass_N = 12.5, 
-                  SOM_C = 19250, 
-                  SOM_N = 850,
-                  Available_N = 1.75)
+      state  <- c(Biomass_C = 500, 
+                  Biomass_N = 10, 
+                  SOM_C = 16000, 
+                  SOM_N = 800,
+                  Available_N = 1)
       
       out.spin= data.frame(solvemodel(parms, state)) #creates table of model output
       #adjust starting values
@@ -223,4 +223,4 @@ repeat { #repeat until desired number of parameter sets are accepted
 head(param.keep)
 tail(param.keep)
 
-save.image(file="Step2_NEE_NDVI_032716.Rdata")
+save.image(file="Step2_NEE_NDVI_042216.Rdata")

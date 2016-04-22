@@ -1,95 +1,3 @@
-####Install package for sounds (alerts you when script is done running)
-#install.packages("beepr")   #run this line of code only if the package hasn't been installed yet
-#require(beepr)
-#beep(5) #test sounds; there are 9 options; don't need to run this every time, just to choose a sound
-
-######################Synthetic data experiments#######################
-
-#Get data ready
-head(out) #this is the output from the model run
-data.assim = out[,c(1:7)] #choose columns that you want
-head(data.assim) #preview table
-
-#####remove some data points for Stock data
-time.keepSTOCK  = seq(100, length(time), 182) #keep data for once per year (~once per year)
-#Biomass_C
-BiomassC.assim = data.assim$Biomass_C[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
-BiomassC.assim = data.frame(time=time.keepSTOCK, BiomassC.assim) #create a dataframe of the new data and the corresponding timesteps
-head(BiomassC.assim) #check table
-data.assim$Biomass_C=BiomassC.assim$BiomassC.assim[match(data.assim$time, BiomassC.assim$time)] #change the data in the assimilation table to NAs
-#Biomass_N
-BiomassN.assim = data.assim$Biomass_N[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
-BiomassN.assim = data.frame(time=time.keepSTOCK, BiomassN.assim) #create a dataframe of the new data and the corresponding timesteps
-head(BiomassN.assim)
-data.assim$Biomass_N=BiomassN.assim$BiomassN.assim[match(data.assim$time, BiomassN.assim$time)] #change the data in the assimilation table to NAs
-#SOM_C
-SOMC.assim = data.assim$SOM_C[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
-SOMC.assim = data.frame(time=time.keepSTOCK, SOMC.assim) #create a dataframe of the new data and the corresponding timesteps
-head(SOMC.assim) #check table
-data.assim$SOM_C=SOMC.assim$SOMC.assim[match(data.assim$time, SOMC.assim$time)] #change the data in the assimilation table to NAs
-#SOM_N
-SOMN.assim = data.assim$SOM_N[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
-SOMN.assim = data.frame(time=time.keepSTOCK, SOMN.assim) #create a dataframe of the new data and the corresponding timesteps
-head(SOMN.assim)
-data.assim$SOM_N=SOMN.assim$SOMN.assim[match(data.assim$time, SOMN.assim$time)] #change the data in the assimilation table to NAs
-#Available_N
-AvailN.assim = data.assim$Available_N[match(time.keepSTOCK, data.assim$time)]  #create vector of data for only those timesteps
-AvailN.assim = data.frame(time=time.keepSTOCK, AvailN.assim) #create a dataframe of the new data and the corresponding timesteps
-head(AvailN.assim)
-data.assim$Available_N=AvailN.assim$AvailN.assim[match(data.assim$time, AvailN.assim$time)] #change the data in the assimilation table to NAs
-
-#####remove some data points for flux data
-time.keepFLUX = data$time[which(data$DOY<=250 & data$DOY>=150)] #keep data for summer only
-#GPP
-#GPP.assim = data.assim$GPP[match(time.keepFLUX, data.assim$time)]  #create vector of data for only those timesteps
-#GPP.assim = data.frame(time=time.keepFLUX, GPP.assim) #create a dataframe of the new data and the corresponding timesteps
-#head(GPP.assim) #check table
-#data.assim$GPP=GPP.assim$GPP.assim[match(data.assim$time, GPP.assim$time)] #change the data in the assimilation table to NAs
-#NEE
-NEE.assim = data.assim$NEE[match(time.keepFLUX, data.assim$time)]  #create vector of data for only those timesteps
-NEE.assim = data.frame(time=time.keepFLUX, NEE.assim) #create a dataframe of the new data and the corresponding timesteps
-head(NEE.assim) #check table
-data.assim$NEE=NEE.assim$NEE.assim[match(data.assim$time, NEE.assim$time)] #change the data in the assimilation table to NAs
-#Re
-#Re.assim = data.assim$Re[match(time.keepFLUX, data.assim$time)]  #create vector of data for only those timesteps
-#Re.assim = data.frame(time=time.keepFLUX, Re.assim) #create a dataframe of the new data and the corresponding timesteps
-#head(Re.assim) #check table
-#data.assim$Re=Re.assim$Re.assim[match(data.assim$time, Re.assim$time)] #change the data in the assimilation table to NAs
-#NDVI
-#NDVI.assim = data.assim$NDVI[match(time.keepFLUX, data.assim$time)]  #create vector of data for only those timesteps
-#NDVI.assim = data.frame(time=time.keepFLUX, NDVI.assim) #create a dataframe of the new data and the corresponding timesteps
-#head(NDVI.assim) #check table
-#data.assim$NDVI=NDVI.assim$NDVI.assim[match(data.assim$time, NDVI.assim$time)] #change the data in the assimilation table to NAs
-head(data.assim) #preview
-
-#plot to view data
-par(mfrow=c(3,2), mar=c(4,4,4,4))
-plot(data.assim$Biomass_C~data.assim$time, pch=16, ylab="Biomass_C", xlab="Time (days)", ylim=c(300, 500))
-plot(data.assim$Biomass_N~data.assim$time, pch=16, ylab="Biomass_N", xlab="Time (days)", ylim=c(4.4, 4.8))
-plot(data.assim$SOM_C~data.assim$time, pch=16, ylab="SOM_C", xlab="Time (days)", ylim=c(1400, 2000))
-plot(data.assim$SOM_N~data.assim$time, pch=16, ylab="SOM_N", xlab="Time (days)", ylim=c(30, 40))
-plot(data.assim$Available_N~data.assim$time, pch=16, ylab="Available_N", xlab="Time (days)", ylim=c(0, 0.15))
-plot(data.assim$NEE~data.assim$time, pch=16, ylab="NEE", xlab="Time (days)")
-
-
-head(data.assim)
-data.compare1 = data.assim[,c(1:3,7)] #pull out columns for data that you want to assimilate
-sigma.obs1 = data.frame(matrix(NA, length(data.compare1$time), length(data.compare1))) #observation errors for each data type 
-sigma.obs1[,1] = data.assim$time
-sigma.obs1[!is.na(data.compare1[,2]),2] = 52
-sigma.obs1[!is.na(data.compare1[,3]),3] = 0.84
-sigma.obs1[!is.na(data.compare1[,4]),4] = 3649
-sigma.obs1[!is.na(data.compare1[,5]),5] = 121
-sigma.obs1[!is.na(data.compare1[,6]),6] = 0.13
-sigma.obs1[!is.na(data.compare1[,7]),7] = 1
-
-
-colnames(sigma.obs1) = colnames(data.compare1)
-#sigma.obs1: columns need to be in SAME ORDER as data.compare1
-head(data.compare1)
-head(sigma.obs1)
-############################################
-
 ###LOAD REAL DATA###
 data.assim = read.csv("Assimilation_data_all.csv")
 data.sigma = read.csv("Assimilation_sigma_all.csv")
@@ -107,7 +15,6 @@ data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.as
 sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,7]))
 head(data.compare1)
 head(sigma.obs1)
-
 
 
 #create dataframe for model spinup
@@ -175,7 +82,7 @@ for (i in 1:length(data.spin$Temp)){
 plot(scal.temp.spin, type="l")
 
 #run model spin up for current parameter set
-numyears = 25
+numyears = 30
 Year.spin = rep(data.spin$Year, numyears)
 DOY.spin = rep(data.spin$DOY, numyears)
 Temp.spin = rep(data.spin$Temp, numyears)
@@ -220,15 +127,16 @@ Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
 
 out= data.frame(solvemodel(params, state)) #creates table of model output
 
-plot(out$Biomass_C)
+plot(out$NEE)
 
 
 ####DATA EXPLORATION###
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.012,0.3,0.022,0.04,0.105,0.09,0.04,1.24,0.035,1,3)
-param.min=c(0.07,0.0001,0.002,0.09,0.01,0.003,0.045,0.05,0.001,1.08,0.015,0.105,1)
+param.max=c(0.34,0.0024,0.012,0.23,0.022,0.04,3)
+param.min=c(0.07,0.0001,0.002,0.01,0.01,0.003,1)
 
-state.min=c(250,6,12000,550,0)
+state.min=c(941,17,24217,1045,3.62)
+state.max=c(408,8,14501,663,0.03)
 
 ##STEP 1: Explore with BOTH NEE and NDVI
 
@@ -281,13 +189,13 @@ tail(param.est)
 
 
 #set initial values
-anneal.temp0=10000000 #starting temperature
-anneal.temp=10000000 #starting temperature
+anneal.temp0=1000000 #starting temperature
+anneal.temp=1000000 #starting temperature
 reject=0 #reset reject counter
 t=0.5
 
 
-for (i in 4674:M) {
+for (i in 33406:M) {
   repeat{
     for(p in 1:n.param){ #for each parameter
       param.est[i,p] = param.est[i-1,p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
@@ -307,11 +215,11 @@ for (i in 4674:M) {
       DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
       Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
       
-      state  <- c(Biomass_C = 685, 
-                  Biomass_N = 12.5, 
-                  SOM_C = 19250, 
-                  SOM_N = 850,
-                  Available_N = 1.75)
+      state  <- c(Biomass_C = 500, 
+                  Biomass_N = 10, 
+                  SOM_C = 16000, 
+                  SOM_N = 800,
+                  Available_N = 1)
       
       out.spin= data.frame(solvemodel(parms, state)) #creates table of model output
       #adjust starting values
@@ -321,7 +229,7 @@ for (i in 4674:M) {
                   SOM_N = out.spin$SOM_N[end.time],
                   Available_N = out.spin$Available_N[end.time])
       
-      if(all(!is.na(state)) & all(state>=state.min)){ 
+      if(all(!is.na(state))){ 
         break
       } #end of if loop
     } #end of if loop
@@ -420,4 +328,4 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_041116_SPIN.Rdata")
+save.image(file="Step1_042216_SPIN.Rdata")

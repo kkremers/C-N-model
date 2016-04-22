@@ -5,16 +5,17 @@ require(FME)
 params <- c(kplant = 0.16, #0.07-0.34
             LitterRate = 0.0008, #0.0001-0.0024
             UptakeRate = 0.005, #0.002-0.012
-            propN_fol = 0.1, #0.09-0.3
+            propN_fol = 0.1, #0.01-0.23
             propN_roots = 0.01, #0.01-0.022
             netNrate = 0.007, #0.003-0.04
             q10=1.29) #1-3
 
-state  <- c(Biomass_C = 400, 
-            Biomass_N = 8, 
-            SOM_C = 14000, 
-            SOM_N = 600,
-            Available_N = 0.05)
+
+state  <- c(Biomass_C = 500, 
+            Biomass_N = 10, 
+            SOM_C = 16000, 
+            SOM_N = 800,
+            Available_N = 1)
 
 ####################MODEL#################################
 
@@ -37,12 +38,11 @@ solvemodel <- function(params, state, times) {
       Ndep_rate = 0.00007 #calculated from Alaska's changing arctic pg 106
       Nout_rate = 0.0002 #calculated from Alaska's changing arctic page 106
       Nfix_rate=0.001 #calculated from Alaska's changing arctic pg 106 and scal.temp   
-      R0= 0.06 #0.045-0.105
-      beta= 0.06 #0.05-0.09
-      Rx=0.02 #0.001-0.04
+      R0= 0.07 #0.045-0.105
+      beta= 0.07 #0.05-0.09
+      Rx=0.01 #0.001-0.04
       Pmax = 1.16 #1.08-1.24
-      E0 = 0.03 #0.015-0.035
-      k = 0.84 #0.105-1
+      E0 = 0.02 #0.015-0.035
       
       #calculate propN_fol
       propN_fol.T = propN_fol + (0.0078*Temp_avg)
@@ -54,10 +54,10 @@ solvemodel <- function(params, state, times) {
       
       NDVI=0
       if(LAI>0 & !is.na(LAI)){
-        NDVI = (log(LAI/0.0026)/8.0783)
+        NDVI = (log(LAI/0.008)/8.0783)
       }      
       
-      GPP = (Pmax/k) * log ( (Pmax + (E0*PAR) ) / (Pmax + ( E0*PAR*exp(-k*LAI) ) ) ) * 12
+      GPP = LAI*((Pmax*E0*PAR)/(Pmax+(E0*PAR))) * 12
       Ra = ((R0*LAI)*exp(beta*Temp)) * 12
       Rh = (Rx*exp(beta*Temp)) * 12 
       Re = Ra+Rh
@@ -92,6 +92,7 @@ solvemodel <- function(params, state, times) {
       
     })  #end of with(as.list(...
   } #end of model
+  
   
   
   return(ode(y=state,times=time,func=model,parms = params, method="rk4")) #integrate using runge-kutta 4 method

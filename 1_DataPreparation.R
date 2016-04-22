@@ -43,6 +43,15 @@ for(i in 1:length(data$Temp_ARF)){
   if(is.na(data$PAR_ARF[i])==TRUE) {
     data$PAR_ARF[i] = data$PAR_T[i]*slope.p
   }
+  
+}
+
+for(i in 1:length(data$PAR_ARF)){
+  
+  if(data$PAR_ARF[i]<0) {
+    data$PAR_ARF[i] = 0
+  }
+  
 }
 
 #need to convert units of PAR

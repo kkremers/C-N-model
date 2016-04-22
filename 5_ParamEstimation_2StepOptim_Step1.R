@@ -19,14 +19,14 @@ head(sigma.obs1)
 
 ####DATA EXPLORATION###
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.012,0.3,0.022,0.04,3,   941,17,24217,1045,3.62)
-param.min=c(0.07,0.0001,0.002,0.09,0.01,0.003,1,  408,8,14501,663,0.03)
+param.max=c(0.34,0.0024,0.012,0.23,0.022,0.04,3,   941,17,24217,1045,3.62)
+param.min=c(0.07,0.0001,0.002,0.01,0.01,0.003,1,  408,8,14501,663,0.03)
 
 ##STEP 1: Explore with BOTH NEE and NDVI
 
 #other necessary knowns
 n.param = length(params)#number of parameters to estimate
-M = 150000 #number of iterations
+M = 200000 #number of iterations
 D = 2 #number of data types being assimilated 
 n.time = rep(1, D) #create a vector to store the number of timepoints with data for each data stream
 for(d in 1:D) { #for each data type
@@ -79,7 +79,7 @@ reject=0 #reset reject counter
 t=0.5
 
 
-for (i in 2:M) {
+for (i in 46012:M) {
   
   repeat{
     for(p in 1:n.param){ #for each parameter
@@ -141,16 +141,16 @@ for (i in 2:M) {
       
     acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
     
-    if(acceptance>0.30){
+    if(acceptance>0.20){
       t = 1.01*t
     }
     
-    if(acceptance<0.10){
+    if(acceptance<0.05){
       t = 0.99*t
     }
     
     
-    anneal.temp=anneal.temp*0.9999 #decrease temperature
+    anneal.temp=anneal.temp*0.999 #decrease temperature
     
     
     
@@ -177,4 +177,4 @@ j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
 j.best #view the minimum J
 
-save.image(file="Step1_041416.Rdata")
+save.image(file="Step1_041916.Rdata")

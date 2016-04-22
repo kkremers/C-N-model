@@ -31,11 +31,25 @@ for (i in 1: length(years)){
   PARavg[i] = mean(PAR_GS)  
 }
 
+#Determine DOY of peak temp and peak PAR
+years = unique(data$year) #tells you which years we have data for 
+Tmax.day = NA
+PARmax.day = NA
+for (i in 1: length(years)){
+  year.i = years[i]
+  Temp.i = Tmax[i]
+  PAR.i = PARmax[i]
+  data.year = subset(data, data$year==year.i)
+  Tmax.day[i] = data.year$DOY[which(data.year$Temp_ARF==Temp.i)]
+  PARmax.day[i] = data.year$DOY[which(data.year$PAR_ARF==PAR.i)]
+}
+
+
 #look at data for all years
-Tmax; Tmin; Tavg; PARmax; PARavg
+Tmax; Tmin; Tavg; PARmax; PARavg; Tmax.day; PARmax.day
 years
 assim = c(0,1,0,1,0,1,0,1) #0=NO, 1=YES
-stats=data.frame(Year=years, Assim=assim, Tmax, Tmin, Tavg, PARmax, PARavg)
+stats=data.frame(Year=years, Assim=assim, Tmax, Tmin, Tavg, PARmax, PARavg, Tmax.day, PARmax.day)
 stats
 
 #stats for Tmax
@@ -48,6 +62,10 @@ min(Tavg); max(Tavg); mean(Tavg); sd(Tavg)
 min(PARmax); max(PARmax); mean(PARmax); sd(PARmax)
 #stats for PARavg
 min(PARavg); max(PARavg); mean(PARavg); sd(PARavg)
+#stats for Tmax.day
+min(Tmax.day); max(Tmax.day); mean(Tmax.day); sd(Tmax.day)
+#stats for PARmax.day
+min(PARmax.day); max(PARmax.day); mean(PARmax.day); sd(PARmax.day)
 
 #now look at values for assimilated vs. not assimilated data
 
@@ -56,6 +74,8 @@ tapply(stats$Tmin, stats$Assim, mean)
 tapply(stats$Tavg, stats$Assim, mean)
 tapply(stats$PARmax, stats$Assim, mean)
 tapply(stats$PARavg, stats$Assim, mean)
+tapply(stats$Tmax.day, stats$Assim, mean)
+tapply(stats$PARmax.day, stats$Assim, mean)
 
 Tmax.test = t.test(stats$Tmax[stats$Assim==0], stats$Tmax[stats$Assim==1])
 Tmax.test
@@ -67,11 +87,93 @@ PARmax.test = t.test(stats$PARmax[stats$Assim==0], stats$PARmax[stats$Assim==1])
 PARmax.test
 PARavg.test = t.test(stats$PARavg[stats$Assim==0], stats$PARavg[stats$Assim==1])
 PARavg.test
+Tmax.day.test = t.test(stats$Tmax.day[stats$Assim==0], stats$Tmax.day[stats$Assim==1])
+Tmax.day.test
+PARmax.day.test = t.test(stats$PARmax.day[stats$Assim==0], stats$PARmax.day[stats$Assim==1])
+PARmax.day.test
+
+#################NOW DO THE SAME FOR NEE AND NDVI DATA#################
+
+data = read.csv("Assimilation_data_ALL.csv") #This is the "FluxData.csv" file, but with added calculations of GDD
+head(data)
+
+#calculate yearly max, min, and GS avg temp and PAR
+years = unique(data$Year) #tells you which years we have data for 
+NEEmin = NA
+NEEavg = NA
+NDVImax = NA
+NDVIavg = NA
+
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data, data$Year==year.i)
+  NEEmin[i]=min(data.year$NEE, na.rm=TRUE)
+  NDVImax[i]=max(data.year$NDVI, na.rm=TRUE)
+  NEE_GS = data.year$NEE[data.year$DOY>=150 & data.year$DOY <= 240]
+  NEEavg[i] = mean(NEE_GS, na.rm=TRUE)
+  NDVI_GS = data.year$NDVI[data.year$DOY>=150 & data.year$DOY <= 240]
+  NDVIavg[i] = mean(NDVI_GS, na.rm=TRUE)  
+}
+
+#Determine DOY of peak NEE and peak NDVI
+NEE.day = NA
+NDVI.day = NA
+for (i in 1: length(years)){
+  year.i = years[i]
+  NEE.i = NEEmin[i]
+  NDVI.i = NDVImax[i]
+  data.year = subset(data, data$Year==year.i)
+  NEE.day[i] = data.year$DOY[which(data.year$NEE==NEE.i)]
+  NDVI.day[i] = data.year$DOY[which(data.year$NDVI==NDVI.i)]
+}
+
+
+#look at data for all years
+assim = c(0,1,0,1,0,1,0,1) #0=NO, 1=YES
+stats1=data.frame(Year=years, Assim=assim, NEEmin, NDVImax, NEEavg, NDVIavg, NEE.day, NDVI.day)
+stats1
+
+#stats for NEEmin
+min(NEEmin); max(NEEmin); mean(NEEmin); sd(NEEmin)
+#stats for NDVImax
+min(NDVImax); max(NDVImax); mean(NDVImax); sd(NDVImax)
+#stats for NEEavg
+min(NEEavg); max(NEEavg); mean(NEEavg); sd(NEEavg)
+#stats for NDVIavg
+min(NDVIavg); max(NDVIavg); mean(NDVIavg); sd(NDVIavg)
+#stats for NEE.day
+min(NEE.day); max(NEE.day); mean(NEE.day); sd(NEE.day)
+#stats for NDVI.day
+min(NDVI.day); max(NDVI.day); mean(NDVI.day); sd(NDVI.day)
+
+#now look at values for assimilated vs. not assimilated data
+
+tapply(stats1$NEEmin, stats1$Assim, mean)
+tapply(stats1$NDVImax, stats1$Assim, mean)
+tapply(stats1$NEEavg, stats1$Assim, mean)
+tapply(stats1$NDVIavg, stats1$Assim, mean)
+tapply(stats1$NEE.day, stats1$Assim, mean)
+tapply(stats1$NDVI.day, stats1$Assim, mean)
+
+NEEmin.test = t.test(stats1$NEEmin[stats1$Assim==0], stats1$NEEmin[stats1$Assim==1])
+NEEmin.test
+NDVImax.test = t.test(stats1$NDVImax[stats1$Assim==0], stats1$NDVImax[stats1$Assim==1])
+NDVImax.test
+NEEavg.test = t.test(stats1$NEEavg[stats1$Assim==0], stats1$NEEavg[stats1$Assim==1])
+NEEavg.test
+NDVIavg.test = t.test(stats1$NDVIavg[stats1$Assim==0], stats1$NDVIavg[stats1$Assim==1])
+NDVIavg.test
+NEE.day.test = t.test(stats1$NEE.day[stats1$Assim==0], stats1$NEE.day[stats1$Assim==1])
+NEE.day.test
+NDVI.day.test = t.test(stats1$NDVI.day[stats1$Assim==0], stats1$NDVI.day[stats1$Assim==1])
+NDVI.day.test
+
+
 
 #####################PLOTS FOR MANUSCRIPT 1######################
 
 ##################Histograms########################
-par(mfrow=c(3,2), mar=c(5,5,2,2))
+par(mfrow=c(4,3), mar=c(5,5,2,2))
 plot(density(param.keep[,1]), main="", ylab="Density", xlab=names(params[1]), cex.lab=2, cex.axis = 1.5)
 abline(v=param.best[1], col="red", lwd=3)
 plot(density(param.keep[,2]), main="", ylab="Density", xlab=names(params[2]), cex.lab=2, cex.axis = 1.5)
@@ -84,18 +186,104 @@ plot(density(param.keep[,5]), main="", ylab="Density", xlab=names(params[5]), ce
 abline(v=param.best[5], col="red", lwd=3)
 plot(density(param.keep[,6]), main="", ylab="Density", xlab=names(params[6]), cex.lab=2, cex.axis = 1.5)
 abline(v=param.best[6], col="red", lwd=3)
+plot(density(param.keep[,7]), main="", ylab="Density", xlab=names(params[7]), cex.lab=2, cex.axis = 1.5)
+abline(v=param.best[7], col="red", lwd=3)
+plot(density(param.keep[,8]), main="", ylab="Density", xlab=names(params[8]), cex.lab=2, cex.axis = 1.5)
+abline(v=param.best[8], col="red", lwd=3)
+plot(density(param.keep[,9]), main="", ylab="Density", xlab=names(params[9]), cex.lab=2, cex.axis = 1.5)
+abline(v=param.best[9], col="red", lwd=3)
+plot(density(param.keep[,10]), main="", ylab="Density", xlab=names(params[10]), cex.lab=2, cex.axis = 1.5)
+abline(v=param.best[10], col="red", lwd=3)
+plot(density(param.keep[,11]), main="", ylab="Density", xlab=names(params[11]), cex.lab=2, cex.axis = 1.5)
+abline(v=param.best[11], col="red", lwd=3)
+
+
+param.min_new = apply(param.keep, 2, min)
+param.max_new = apply(param.keep, 2, max)
+
+range.i = param.max-param.min
+range.f = param.max_new - param.min_new
+
+range.f<range.i
+mean(range.f/range.i)
+
 
 ###################Temporal Validation#################
-#load data
-data.assim = read.csv("Assimilation_data_all.csv")
-data.sigma = read.csv("Assimilation_sigma_all.csv")
-data.assim = data.assim[data.assim$Year == c(2009,2011,2013),]
-data.sigma = data.sigma[data.sigma$Year  == c(2009,2011,2013),]
-head(data.assim)
-head(data.sigma)
-tail(data.assim)
-tail(data.sigma)
 
+#create dataframe for model spinup
+
+#calculate decadal averages
+Temp.spin= tapply(data$Temp_ARF, data$DOY, mean)
+plot(Temp.spin)
+Temp_GS = data$Temp_ARF[data$DOY>=data$startDOY[1] & data$DOY <= data$endDOY[1]]
+AvgTempGS = mean(Temp_GS)
+TempAvg.spin = rep(AvgTempGS, 366)
+PAR.spin = tapply(data$PAR_ARF, data$DOY, mean)
+plot(PAR.spin)
+DOY.spin=seq(1:366)
+Year.spin=rep(2000,366)
+data.spin=data.frame(Year=Year.spin, DOY=DOY.spin, Temp=Temp.spin, Temp_avg=TempAvg.spin, PAR=PAR.spin)
+head(data.spin)
+
+#seasonality scalar
+sen.day=min(data.spin$DOY[which(data.spin$Temp<=10 & data.spin$DOY>200)])
+sen.day #DOY of senescence 
+num.days = 366
+senDOY = rep(sen.day, num.days)
+data.spin = data.frame(data.spin, senDOY = senDOY)
+start.day=min(data.spin$DOY[which(data.spin$Temp>=-5 & data.spin$DOY>120)])
+start.day #start day
+startDOY = rep(start.day, num.days)
+data.spin = data.frame(data.spin, startDOY = startDOY)
+end.day=min(data.spin$DOY[which(data.spin$Temp<=0 & data.spin$DOY>240)])
+end.day #end day
+endDOY = rep(end.day, num.days)
+data.spin = data.frame(data.spin, endDOY = endDOY)
+head(data.spin)
+
+
+#create scalar
+scal.seas.spin=rep(1, length(data.spin$DOY))
+for (i in 1:length(data.spin$DOY)){
+  if(data.spin$DOY[i]<data.spin$startDOY[i]){ #prior to snow melt
+    scal.seas.spin[i]=0
+  }
+  if(data.spin$DOY[i]>=data.spin$startDOY[i]){ #after melt
+    if(data.spin$DOY[i]<=data.spin$senDOY[i]){ #prior to peak
+      slope = 1/(data.spin$senDOY[i]-data.spin$startDOY[i])
+      scal.seas.spin[i] = 0+(slope*(data.spin$DOY[i]-data.spin$startDOY[i]))
+    }
+    if(data.spin$DOY[i]>data.spin$senDOY[i] & data.spin$DOY[i]<data.spin$endDOY[i]){ #after peak but before frost
+      slope = 1/(data.spin$endDOY[i]-data.spin$senDOY[i])
+      scal.seas.spin[i] = 0+(slope*(data.spin$endDOY[i]-data.spin$DOY[i]))
+    }
+    if(data.spin$DOY[i]>=data.spin$endDOY[i]){ #after frost
+      scal.seas.spin[i]=0
+    }
+  }
+}
+
+plot(scal.seas.spin)
+
+#temperature scalar
+Tmax = max(data.spin$Temp)
+Tmin = min(data.spin$Temp)
+scal.temp.spin=NULL
+for (i in 1:length(data.spin$Temp)){
+  scal.temp.spin[i] = (data.spin$Temp[i] - Tmin)/(Tmax-Tmin) 
+}
+
+plot(scal.temp.spin, type="l")
+
+#run model spin up for current parameter set
+numyears = 50
+Year.spin = rep(data.spin$Year, numyears)
+DOY.spin = rep(data.spin$DOY, numyears)
+Temp.spin = rep(data.spin$Temp, numyears)
+TempAvg.spin = rep(data.spin$Temp_avg, numyears)
+PAR.spin = rep(data.spin$PAR, numyears)
+scal.temp.spin1 = rep(scal.temp.spin, numyears)
+scal.seas.spin1 = rep(scal.seas.spin, numyears)
 
 time = seq(1:length(DOY.spin))
 
@@ -108,26 +296,19 @@ scalseason.d1 <- approxfun(x=time, y=scal.seas.spin1, method="linear", rule=2)
 DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
 Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
 
-
-state  <- c(Biomass_C = 685, 
-            Biomass_N = 12.5, 
-            SOM_C = 19250, 
-            SOM_N = 850,
-            Available_N = 1.75)
+#RUN 3_MODEL.R
 
 #OPEN 3_Model.R and run it the first time
-out.spin= data.frame(solvemodel(param.best, state)) #creates table of model output
-plot(out.spin$Biomass_N)
+out.spin= data.frame(solvemodel(param.best[1:7], param.best[8:12])) #creates table of model output
 plot(out.spin$Biomass_C)
 end.time = length(out.spin[,1])
 #adjust starting values
 state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
-            Biomass_N =  out.spin$Biomass_N[end.time], 
+            Biomass_N = out.spin$Biomass_N[end.time], 
             SOM_C = out.spin$SOM_C[end.time], 
             SOM_N = out.spin$SOM_N[end.time],
             Available_N = out.spin$Available_N[end.time])
 
-state.best=state
 
 time = seq(1:length(data$time))
 #make into functions so that it will be continuous in the model
@@ -139,13 +320,27 @@ scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
 
-out= data.frame(solvemodel(param.best, state.best)) #creates table of model output
+out= data.frame(solvemodel(param.best[1:8], state)) #creates table of model output
+
+
+
+#load data
+data.assim = read.csv("Assimilation_data_all.csv")
+data.sigma = read.csv("Assimilation_sigma_all.csv")
+data.assim = data.assim[data.assim$Year == c(2009,2011,2013,2015),]
+data.sigma = data.sigma[data.sigma$Year  == c(2009,2011,2013,2015),]
+head(data.assim)
+head(data.sigma)
+tail(data.assim)
+tail(data.sigma)
+
+out= data.frame(solvemodel(param.best)) #creates table of model output
 head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
 head(out1)
 time.assim = out1[match(data.assim$Year_DOY, out1$year_DOY), 1]
-data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,10]))
-sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,10]))
+data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,7]))
+sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,7]))
 head(data.compare1)
 head(sigma.obs1)
 
@@ -165,27 +360,29 @@ summarytable=data.frame(q05 = q05, q25 = q25, mean = means,
 sensvars = c("NEE",
              "NDVI")
 
-s.global <- sensRange(func=solvemodel, parms=param.best, state=state.best, sensvar = sensvars, parInput=param.keep, num=1000)
+s.global <- sensRange(func=solvemodel, parms=param.best, sensvar = sensvars, parInput=param.keep, num=1000)
 s.global.summ = summary(s.global) #create summary table
 head(s.global.summ) #view first 6 rows
 tail(s.global.summ)
 
 #get model output & confidence intervals organized
-out=data.frame(solvemodel(param.best, state.best))
-NEE_summ = data.frame(Time=s.global.summ[1:2191,1], NEE=out$NEE, sd=s.global.summ[1:2191,3], min=s.global.summ[1:2191,4], max=s.global.summ[1:2191,5], q05=s.global.summ[1:2191,6], q95=s.global.summ[1:2191,10], q25=s.global.summ[1:2191,7], q75=s.global.summ[1:2191,9])
+out=data.frame(solvemodel(param.best))
+NEE_summ = data.frame(Time=s.global.summ[1:2922,1], NEE=out$NEE, sd=s.global.summ[1:2922,3], min=s.global.summ[1:2922,4], max=s.global.summ[1:2922,5], q05=s.global.summ[1:2922,6], q95=s.global.summ[1:2922,10], q25=s.global.summ[1:2922,7], q75=s.global.summ[1:2922,9])
 head(NEE_summ)
-NDVI_summ = data.frame(Time=s.global.summ[2192:4382,1], NDVI=out$NDVI, sd=s.global.summ[2192:4382,3], min=s.global.summ[2192:4382,4], max=s.global.summ[2192:4382,5],q05=s.global.summ[2192:4382,6], q95=s.global.summ[2192:4382,10], q25=s.global.summ[2192:4382,7], q75=s.global.summ[2192:4382,9])
+NDVI_summ = data.frame(Time=s.global.summ[2923:5844,1], NDVI=out$NDVI, sd=s.global.summ[2923:5844,3], min=s.global.summ[2923:5844,4], max=s.global.summ[2923:5844,5],q05=s.global.summ[2923:5844,6], q95=s.global.summ[2923:5844,10], q25=s.global.summ[2923:5844,7], q75=s.global.summ[2923:5844,9])
 head(NDVI_summ)
 
 #get data ready
 data.compare=read.csv("Assimilation_data_ALL.csv")
-data.compare1=data.compare[data.compare$Year== c(2009,2011,2013),]
-data.compare2=data.compare[data.compare$Year== c(2010,2012),]
+data.compare1=subset(data.compare, Year== 2009 | Year== 2011 | Year== 2013 | Year== 2015)
+data.compare2=subset(data.compare, Year== 2008 | Year== 2010 | Year== 2012 | Year== 2014)
 data.compare_NEE1=data.compare1[complete.cases(data.compare1[,6]),c(1:5,6)]
 data.compare_NEE2=data.compare2[complete.cases(data.compare2[,6]),c(1:5,6)]
 data.compare_NDVI1=data.compare1[complete.cases(data.compare1[,7]),c(1:5,7)]
 data.compare_NDVI2=data.compare2[complete.cases(data.compare2[,7]),c(1:5,7)]
+out.compare_NEE1 = out[match(data.compare_NEE1$Time, out$time),]
 out.compare_NEE2 = out[match(data.compare_NEE2$Time, out$time),]
+out.compare_NDVI1 = out[match(data.compare_NDVI1$Time, out$time),]
 out.compare_NDVI2 = out[match(data.compare_NDVI2$Time, out$time),]
 
 
@@ -194,75 +391,98 @@ reg_NEE = lm(out.compare_NEE2$NEE~data.compare_NEE2$NEE)
 reg_NDVI = lm(out.compare_NDVI2$NDVI~data.compare_NDVI2$NDVI)
 
 
-#calculate RMSE
-error.NEE = (data.compare_NEE2[,6]-out.compare_NEE2[,7])
-errorsquared.NEE = error.NEE^2
-mean = mean(errorsquared.NEE)
-RMSE.NEE = sqrt(mean)
 
-error.NDVI = (data.compare_NDVI2[,6]-out.compare_NDVI2[,11])
-errorsquared.NDVI = error.NDVI^2
-mean = mean(errorsquared.NDVI, na.rm=TRUE)
-RMSE.NDVI = sqrt(mean)
+#now need to calculate residuals and determine RMSE for each year
+resid.NEE2 = data.compare_NEE2$NEE - out.compare_NEE2$NEE
+resid.NEE1 = data.compare_NEE1$NEE - out.compare_NEE1$NEE
+resid.NEE = c(resid.NEE1, resid.NEE2)
+resid_NEE = data.frame(time=c(out.compare_NEE1$time, out.compare_NEE2$time), Year=c(out.compare_NEE1$year, out.compare_NEE2$year), DOY=c(out.compare_NEE1$DOY, out.compare_NEE2$DOY), resid.NEE)
+resid_NEE = resid_NEE[ order(resid_NEE[,2]), ]
 
-#calculate MAE
-abs.error = abs(out.compare_NEE2[,7]-data.compare_NEE2[,6])
-MAE.NEE = mean(abs.error, na.rm=TRUE)
-abs.error = abs(out.compare_NDVI2[,11]-data.compare_NDVI2[,6])
-MAE.NDVI = mean(abs.error, na.rm=TRUE)
+resid.NDVI2 = data.compare_NDVI2$NDVI - out.compare_NDVI2$NDVI
+resid.NDVI1 = data.compare_NDVI1$NDVI - out.compare_NDVI1$NDVI
+resid.NDVI = c(resid.NDVI1, resid.NDVI2)
+resid_NDVI = data.frame(time=c(out.compare_NDVI1$time, out.compare_NDVI2$time), Year=c(out.compare_NDVI1$year, out.compare_NDVI2$year), DOY=c(out.compare_NDVI1$DOY, out.compare_NDVI2$DOY), resid.NDVI)
+resid_NDVI = resid_NDVI[ order(resid_NDVI[,2]), ]
+
+
+#calculate RMSE by year:
+rmse <- function(x){
+  sqrt(mean(x^2))
+}
+NEE_yrRMSE = tapply(resid_NEE$resid.NEE, resid_NEE$Year, rmse)
+NDVI_yrRMSE = tapply(resid_NDVI$resid.NDVI, resid_NDVI$Year, rmse)
+
+#calculate overall RMSE
+RMSE.NEE = rmse(resid.NEE)
+RMSE.NDVI = rmse(resid.NDVI)
+
+#RMSE for years NOT assimilated
+RMSE.NEE2 = rmse(resid.NEE2)
+RMSE.NDVI2 = rmse(resid.NDVI2)
 
 
 #plot
-par(mar=c(4,5,2,0.5))
-layout(matrix(c(1,2,3,4), 2, 2, byrow = TRUE), widths=c(4,2))
-#layout(matrix(c(1,2), 1, 2, byrow = TRUE), widths=c(4,2))
+par(mar=c(4,5,2,2), las=1)
+#layout(matrix(c(1,2,3,4,5,6,7,8,9,10,11,12), 2, 3, byrow = TRUE), widths=c(3,1,1))
+layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE), widths=c(2,1))
 
-plot(NEE~Time,data=NEE_summ[1:1826,], type="p", pch=16, cex=0.5, axes=FALSE, xlab="", ylim=c(-8,3),xlim=c(0,1826), cex.lab=1.5, col="white")
-axis(1, at=c(0,365,730,1096,1461,1826), labels=c("","","","","",""))
-#axis(1, at=c(0,365,730,1096,1461,1826,2191), labels=c("","","","","","",""))
-mtext("2009", side=1, at=200) 
-mtext("2010", side=1, at=550) 
-mtext("2011", side=1, at=925) 
-mtext("2012", side=1, at=1275) 
-mtext("2013", side=1, at=1650) 
-#mtext("2014", side=1, at=2010) 
-axis(2)
+plot(NEE~Time,data=NEE_summ, type="p", pch=16, cex=1.5, axes=FALSE, xlab="", ylim=c(-6,4), cex.lab=1.5, col="white")
+axis(1, at=c(0,365,730,1096,1461,1826,2191,2556,2922), labels=c("","","","","","","","",""))
+mtext("2008", side=1, at=182, cex=1.5, line=0.5)
+mtext("2009", side=1, at=547, cex=1.5, line=0.5) 
+mtext("2010", side=1, at=912, cex=1.5, line=0.5) 
+mtext("2011", side=1, at=1277, cex=1.5, line=0.5) 
+mtext("2012", side=1, at=1642, cex=1.5, line=0.5) 
+mtext("2013", side=1, at=2007, cex=1.5, line=0.5) 
+mtext("2014", side=1, at=2372, cex=1.5, line=0.5)
+mtext("2015", side=1, at=2737, cex=1.5, line=0.5) 
+axis(2, cex.axis=1.5)
 #make polygon where coordinates start with lower limit and then upper limit in reverse order
-with(NEE_summ[1:1826,],polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = "grey75", border = "gray75"))
-points(NEE~Time, data=NEE_summ[1:1826,], pch=16, cex=0.75)
+with(NEE_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = "grey75", border = "gray75"))
+points(NEE~time, data=out, pch=16, cex=0.75)
 points(NEE~Time, data=data.compare_NEE1, pch=16, col="aquamarine4", cex=0.75)
 points(NEE~Time, data=data.compare_NEE2, pch=16, col="darkorange3", cex=0.75)
-legend("topleft", legend=c("CCaN NEE 90% C.I.", "CCaN NEE", "Assimilated NEE Measurements", "NEE Measurements Not Assimilated"), bty="n", pch=c(15,16,16,16), col=c("gray75", "black", "aquamarine4", "darkorange3"))
+legend("topleft", cex=1.5, legend=c("CCaN NEE 90% C.I.", "CCaN NEE", "Assimilated NEE Measurements", "NEE Measurements Not Assimilated"), bty="n", pch=c(15,16,16,16), col=c("gray75", "black", "aquamarine4", "darkorange3"))
 
-plot(out.compare_NEE2$NEE~data.compare_NEE2$NEE, pch=16, cex=0.75, ylab="CCaN NEE", xlab="Measured NEE", ylim=c(-4,2), xlim=c(-4,2), axes=FALSE)
-axis(1)
-axis(2)
+par(las=3)
+barplot(NEE_yrRMSE, ylim=c(0,max(NEE_yrRMSE)+0.5), ylab="RMSE", cex=1.5, cex.axis=1.5, cex.lab = 1.5, col=c("darkorange3", "aquamarine4", "darkorange3", "aquamarine4", "darkorange3", "aquamarine4", "darkorange3", "aquamarine4"))
+
+par(las=0)
+plot(out.compare_NEE2$NEE~data.compare_NEE2$NEE, pch=16, cex.lab=1.5, cex=0.75, ylab="CCaN NEE", xlab="Measured NEE", ylim=c(-4,2), xlim=c(-4,2), axes=FALSE)
+axis(1, cex.axis = 1.5)
+axis(2, cex.axis = 1.5)
 abline(0,1, col="red", lty=2, lwd=2)
-legend("topleft", bty="n", legend= bquote(italic(R)^2 == .(format(summary(reg_NEE)$adj.r.squared, digits=2))))
+legend("topleft", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(reg_NEE)$adj.r.squared, digits=2))))
 
 
-plot(NDVI~Time,data=NDVI_summ[1:1826,], type="p", pch=16, cex=0.5, axes=FALSE, xlab="",ylim=c(0,1),xlim=c(1,1826), cex.lab=1.5, col="white")
-axis(1, at=c(0,365,730,1096,1461,1826), labels=c("","","","","",""))
-#axis(1, at=c(0,365,730,1096,1461,1826,2191), labels=c("","","","","","",""))
-mtext("2009", side=1, at=200) 
-mtext("2010", side=1, at=550) 
-mtext("2011", side=1, at=925) 
-mtext("2012", side=1, at=1275) 
-mtext("2013", side=1, at=1650) 
-#mtext("2014", side=1, at=2010) 
-axis(2)
+plot(NDVI~Time,data=NDVI_summ, type="p", pch=16, cex=1.5, axes=FALSE, xlab="",ylim=c(0,1), cex.lab=1.5, col="white")
+axis(1, at=c(0,365,730,1096,1461,1826,2191,2556,2922), labels=c("","","","","","","","",""))
+mtext("2008", side=1, at=182, cex=1.5, line=0.5)
+mtext("2009", side=1, at=547, cex=1.5, line=0.5) 
+mtext("2010", side=1, at=912, cex=1.5, line=0.5) 
+mtext("2011", side=1, at=1277, cex=1.5, line=0.5) 
+mtext("2012", side=1, at=1642, cex=1.5, line=0.5) 
+mtext("2013", side=1, at=2007, cex=1.5, line=0.5) 
+mtext("2014", side=1, at=2372, cex=1.5, line=0.5)
+mtext("2015", side=1, at=2737, cex=1.5, line=0.5) 
+axis(2, cex.axis=1.5)
 #make polygon where coordinates start with lower limit and then upper limit in reverse order
-with(NDVI_summ[1:1826,],polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = "grey75", border = "gray75"))
-points(NDVI~Time, data=NDVI_summ[1:1826,], pch=16, cex=0.75)
-points(NDVI_TOWscal~Time, data=data.compare_NDVI1, pch=16, col="aquamarine4", cex=0.75)
-points(NDVI_TOWscal~Time, data=data.compare_NDVI2, pch=16, col="darkorange3", cex=0.75)
-legend("topleft", legend=c("CCaN NDVI 90% C.I.", "CCaN NDVI", "Assimilated NDVI Measurements", "NDVI Measurements Not Assimilated"), bty="n", pch=c(15,16,16,16), col=c("gray75", "black", "aquamarine4", "darkorange3"))
+with(NDVI_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = "grey75", border = "gray75"))
+points(NDVI~Time, data=NDVI_summ, pch=16, cex=0.75)
+points(NDVI~Time, data=data.compare_NDVI1, pch=16, col="aquamarine4", cex=0.75)
+points(NDVI~Time, data=data.compare_NDVI2, pch=16, col="darkorange3", cex=0.75)
+legend("topleft", cex=1.5, legend=c("CCaN NDVI 90% C.I.", "CCaN NDVI", "Assimilated NDVI Measurements", "NDVI Measurements Not Assimilated"), bty="n", pch=c(15,16,16,16), col=c("gray75", "black", "aquamarine4", "darkorange3"))
 
-plot(out.compare_NDVI2$NDVI~data.compare_NDVI2$NDVI_TOWscal, axes=FALSE, pch=16, cex=0.75, ylab="CCaN NDVI", xlab="Measured NDVI", ylim=c(0.3,0.9), xlim=c(0.3,0.9))
-axis(1)
-axis(2)
+par(las=3)
+barplot(NDVI_yrRMSE, ylim=c(0,max(NDVI_yrRMSE)+0.02), ylab="RMSE", cex=1.5, cex.axis=1.5, cex.lab=1.5, col=c("darkorange3", "aquamarine4", "darkorange3", "aquamarine4", "darkorange3", "aquamarine4", "darkorange3", "aquamarine4"))
+
+par(las=0)
+plot(out.compare_NDVI2$NDVI~data.compare_NDVI2$NDVI, axes=FALSE, pch=16, cex.lab=1.5, cex=0.75, ylab="CCaN NDVI", xlab="Measured NDVI", ylim=c(0.2,0.7), xlim=c(0.2,0.7))
+axis(1, cex.axis = 1.5)
+axis(2, cex.axis = 1.5)
 abline(0,1, col="red", lty=2, lwd=2)
-legend("topleft", bty="n", legend= bquote(italic(R)^2 == .(format(summary(reg_NDVI)$adj.r.squared, digits=2))))
+legend("topleft", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(reg_NDVI)$adj.r.squared, digits=2))))
 
 ################Spatial Validation######################
 
@@ -386,16 +606,16 @@ for(i in 1:length(latitudes)){
   
   #OPEN 3_Model.R and run it the first time
   
-  params = param.best
+  params = param.best[1:8]
   
   
-  state  <- c(Biomass_C = 685, 
-              Biomass_N = 12.5, 
-              SOM_C = 19250, 
-              SOM_N = 850,
-              Available_N = 1.75)
+  state  <- c(Biomass_C = 500, 
+              Biomass_N = 10, 
+              SOM_C = 16000, 
+              SOM_N = 800,
+              Available_N = 1)
   
-  out.spin= data.frame(solvemodel(params, state)) #creates table of model output
+  out.spin= data.frame(solvemodel1(params, state)) #creates table of model output
   
   #Run model for each site and record NDVI
   
@@ -420,7 +640,7 @@ for(i in 1:length(latitudes)){
               Available_N = out.spin$Available_N[end.time])
   
   
-  out= data.frame(solvemodel(params, state)) #creates table of model output
+  out= data.frame(solvemodel1(params, state)) #creates table of model output
   
   #determine max NDVI & record in spreadsheet
   CCaN_max = max(out$NDVI)
@@ -450,7 +670,7 @@ for(i in 1:length(latitudes)){
 
 #############
 summary=summary[-1,]
-write.csv(summary, "CaTT_Summary_033116") #save CSV 
+write.csv(summary, "CaTT_Summary_041916") #save CSV 
 
 
 #modelled vs. measured
@@ -459,20 +679,69 @@ summary(reg_NDVI)
 
 #regressions with latitude - NDVI
 par(mfrow=c(1,1))
-plot(summary$CCaN.MODIS_avg~summary$Latitude, pch=16, cex.lab=1.25, xlab="Latitude", ylab=expression("CCaN NDVI" [sat]), ylim=c(0.4,0.8), xlim=c(65,71), axes=FALSE)
+plot(summary$CCaN.MODIS_avg~summary$Latitude, pch=16, cex.lab=1.5, xlab="Latitude", ylab=expression("CCaN NDVI" [sat]), ylim=c(0.3,0.9), xlim=c(65,71), axes=FALSE)
 points(summary$MODIS_avg~summary$Latitude, pch=15, col="forestgreen")
-axis(1)
-axis(2)
-legend("topleft", legend=c("CCaN NDVI", "MODIS NDVI"), bty="n", pch=c(16,15), col=c("black", "forestgreen"))
+axis(1, cex.axis = 1.5)
+axis(2, cex.axis = 1.5)
+legend("topleft", cex=1.5, legend=c("CCaN NDVI", "MODIS NDVI"), bty="n", pch=c(16,15), col=c("black", "forestgreen"))
 par(fig=c(0.6, 1, 0.5, 1), new = T)
 plot(summary$CCaN.MODIS_avg~summary$MODIS_avg, pch=16, cex.lab=1.25, ylab=expression("CCaN NDVI" [sat]), xlab="MODIS NDVI", ylim=c(0.3,0.8), xlim=c(0.3,0.8), axes=FALSE)
-axis(1, at=c(0.3,0.4,0.5,0.6,0.7,0.8), labels=c("0.3","","0.5","","0.7",""))
-axis(2, at=c(0.3,0.4,0.5,0.6,0.7,0.8), labels=c("0.3","","0.5","","0.7",""))
+axis(1, at=c(0.3,0.4,0.5,0.6,0.7,0.8), labels=c("0.3","","0.5","","0.7",""), cex.axis=1.25)
+axis(2, at=c(0.3,0.4,0.5,0.6,0.7,0.8), labels=c("0.3","","0.5","","0.7",""), cex.axis=1.25)
 abline(0,1, col="red", lty=2, lwd=2)
-legend("topleft", bty="n", legend= bquote(italic(R)^2 == .(format(summary(reg_NDVI)$adj.r.squared, digits=2))))
+legend("topleft", bty="n", cex=1.25, legend= bquote(italic(R)^2 == .(format(summary(reg_NDVI)$adj.r.squared, digits=2))))
+
+
+#look at how residuals relate to other MODIS bands
+MODISbands = data.frame(read.csv("MODISbands_gsmeans.csv"))
+head(MODISbands)
+head(summary)
+SRWI.calc = MODISbands$
+#calculate residuals
+residuals = abs(summary$MODIS_avg-summary$CCaN.MODIS_avg)
+resid.dat = data.frame(Latitude=summary$Latitude, residuals, MODISbands[,3:10])
+resid.dat
+
+red = lm(residuals~band1, data=resid.dat)
+NIR = lm(residuals~band2, data=resid.dat)
+SWIR = lm(residuals~band7, data=resid.dat)
+NDWI = lm(residuals~NDWI, data=resid.dat)
+
+summary(red)
+summary(NIR)
+summary(SWIR)
+summary(NDWI)
+
+par(mfrow=c(2,2))
+plot(resid.dat$residuals~resid.dat$band1, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="MODIS Band 1 (Red)")
+abline(red, col="red", lwd=2)
+legend("topright", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(red)$adj.r.squared, digits=2))))
+plot(resid.dat$residuals~resid.dat$band2, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="MODIS Band 2 (NIR)")
+abline(NIR, col="red", lwd=2)
+legend("topright", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(NIR)$adj.r.squared, digits=2))))
+plot(resid.dat$residuals~resid.dat$band7, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="MODIS Band 7 (SWIR)")
+abline(SWIR, col="red", lwd=2)
+legend("topright", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(SWIR)$adj.r.squared, digits=2))))
+plot(resid.dat$residuals~resid.dat$NDWI, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="NDWI")
+abline(NDWI, col="red", lwd=2)
+legend("topright", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(NDWI)$adj.r.squared, digits=2))))
 
 
 
+
+#regressions with latitude - NDVI
+par(mfrow=c(1,1))
+plot(summary$CCaN.MODIS_avg~summary$Latitude, pch=16, cex.lab=1.5, xlab="Latitude", ylab="", ylim=c(0,0.9), xlim=c(65,71), axes=FALSE)
+points(summary$MODIS_avg~summary$Latitude, pch=16, col="forestgreen")
+points(MODISbands$NDWI~summary$Latitude, pch=16, col="blue")
+points(MODISbands$band2~summary$Latitude, pch=16, col="orange")
+points(MODISbands$band1~summary$Latitude, pch=16, col="red")
+axis(1, cex.axis = 1.5)
+axis(2, cex.axis = 1.5)
+legend("topright", cex=1.5, legend=c("CCaN NDVI", "MODIS NDVI", "MODIS NDWI", "MODIS NIR", "MODIS Red"), bty="n", pch=16, col=c("black", "forestgreen", "blue", "orange", "red"))
+
+
+###########Temperature Sensitivity Comparison################
 #regressions with temperature - NDVI
 reg_MODIS.temp = lm(summary$MODIS_avg~summary$Tavg)
 reg_CCaN.temp = lm(summary$CCaN_avg~summary$Tavg)
@@ -481,15 +750,10 @@ reg_CCaN.temp = lm(summary$CCaN_avg~summary$Tavg)
 summary(reg_MODIS.temp) #slope is sensitivity
 summary(reg_CCaN.temp) #slope is sensitivity
 
-
-
-###########Temperature Sensitivity Comparison################
 Sample = c("CCaN", "LTER", "Goetz", "MODIS")
-Sensitivty = c(0.021, 0.022, 0.02, 0.033)
+Sensitivty = c(0.028, 0.022, 0.02, 0.033)
 par(mfrow=c(1,1))
-barplot(Sensitivty, names.arg=Sample, ylab="Temperatre Sensitivity", ylim=c(0,0.04))
-
-
+barplot(Sensitivty, cex=1.5, names.arg=Sample, ylab="Temperatre Sensitivity", ylim=c(0,0.04), cex.lab=1.5, cex.axis=1.5)
 
 ##########################VARIANCE DECOMPOSITION ANALYSIS#######################
 
@@ -505,6 +769,7 @@ means
 # 3) for each model run, calculate the monthly average of the output
 # 4) Calculate the variance in monthly averages for each parameter - this gives you the contribution of that parameter to the model variance
 
+out = data.frame(solvemodel(param.best))
 head(out[,1:11])
 
 
@@ -523,8 +788,8 @@ MVar_propN_roots = data.frame(matrix(1,1,11))
 colnames(MVar_propN_roots)=c("Month", colnames(out[,2:11]))
 MVar_netNrate = data.frame(matrix(1,1,11))
 colnames(MVar_netNrate)=c("Month", colnames(out[,2:11]))
-
-
+MVar_q10 = data.frame(matrix(1,1,11))
+colnames(MVar_q10)=c("Month", colnames(out[,2:11]))
 
 #need to create a vector of months to append to model output
 months = rep(c(seq(1:12)),
@@ -532,12 +797,11 @@ months = rep(c(seq(1:12)),
 months.leap = rep(c(seq(1:12)),
                   c(31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31))
 
-months = c(months, months, months, months.leap, months)
+months = c(months.leap, months, months, months, months.leap, months, months, months)
 
-state.best
-state=state.best
-
-time = seq(1:1826)
+time = seq(1:length(data$time))
+means=means[1:7]
+state=param.best[8:12]
 
 #kplant
 for(i in 1:1000){
@@ -605,6 +869,17 @@ for(i in 1:1000){
   MVar_netNrate = rbind(MVar_netNrate, monthly.avg)
 }  
 
+#q10
+for(i in 1:1000){
+  params.i = means #set parmeters to mean values
+  params.i[6] = unlist(c(param.keep[i,6]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i,state)) #run model
+  out.i = cbind(out.i, Month = months) #add month vector
+  monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
+  names(monthly.avg) = names(MVar_q10)
+  MVar_q10 = rbind(MVar_q10, monthly.avg)
+}  
+
 
 MVar_kplant = MVar_kplant[-1,]
 MVar_LitterRate = MVar_LitterRate[-1,]
@@ -612,6 +887,7 @@ MVar_UptakeRate = MVar_UptakeRate[-1,]
 MVar_propN_fol = MVar_propN_fol[-1,]
 MVar_propN_roots = MVar_propN_roots[-1,]
 MVar_netNrate = MVar_netNrate[-1,]
+MVar_q10 = MVar_q10[-1,]
 
 var.kplant = aggregate(MVar_kplant[,2:11], list(MVar_kplant$Month), var)
 var.LitterRate = aggregate(MVar_LitterRate[,2:11], list(MVar_LitterRate$Month), var)
@@ -619,13 +895,15 @@ var.UptakeRate = aggregate(MVar_UptakeRate[,2:11], list(MVar_UptakeRate$Month), 
 var.propN_fol = aggregate(MVar_propN_fol[,2:11], list(MVar_propN_fol$Month), var)
 var.propN_roots = aggregate(MVar_propN_roots[,2:11], list(MVar_propN_roots$Month), var)
 var.netNrate = aggregate(MVar_netNrate[,2:11], list(MVar_netNrate$Month), var)
+var.q10 = aggregate(MVar_q10[,2:11], list(MVar_q10$Month), var)
 
 parameters = rep(names(params), c(12,12,12,12,12,12))
 
 all = rbind(var.kplant, var.LitterRate, var.UptakeRate, var.propN_fol, 
-            var.propN_roots, var.netNrate)
+            var.propN_roots, var.netNrate, var.q10)
 
 all=cbind(Parameters = parameters, all)
+head(all)
 
 #calculate total variance
 var.total = aggregate(all[3:12], list(all$Group.1), sum)  #CHECK THIS
@@ -649,10 +927,14 @@ perc.propN_roots = cbind(Parameter = rep("propN_roots", 12), Month=var.total$Gro
 perc.netNrate = (var.netNrate[,2:11]/var.total[,2:11])*100
 perc.netNrate = cbind(Parameter = rep("netNrate", 12), Month=var.total$Group.1, perc.netNrate)
 
+
+perc.q10 = (var.q10[,2:11]/var.total[,2:11])*100
+perc.q10 = cbind(Parameter = rep("q10", 12), Month=var.total$Group.1, perc.q10)
+
 #create a table binding all together
 
 perc.all = rbind(perc.kplant, perc.LitterRate, perc.UptakeRate, 
-                 perc.propN_fol, perc.propN_roots, perc.netNrate)
+                 perc.propN_fol, perc.propN_roots, perc.netNrate, perc.q10)
 
 head(perc.all)
 perc.all = perc.all[,-11]

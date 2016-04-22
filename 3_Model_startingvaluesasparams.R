@@ -5,7 +5,7 @@ require(FME)
 params <- c(kplant = 0.16, #0.07-0.34
             LitterRate = 0.0008, #0.0001-0.0024
             UptakeRate = 0.005, #0.002-0.012
-            propN_fol = 0.1, #0.09-0.3
+            propN_fol = 0.1, #0.01-0.23
             propN_roots = 0.01, #0.01-0.022
             netNrate = 0.007, #0.003-0.04
             q10=1.29, #1-3
