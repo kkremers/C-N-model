@@ -135,9 +135,6 @@ plot(out$NEE)
 param.max=c(0.34,0.0024,0.012,0.23,0.022,0.04,3)
 param.min=c(0.07,0.0001,0.002,0.01,0.01,0.003,1)
 
-state.min=c(941,17,24217,1045,3.62)
-state.max=c(408,8,14501,663,0.03)
-
 ##STEP 1: Explore with BOTH NEE and NDVI
 
 #other necessary knowns
@@ -195,7 +192,7 @@ reject=0 #reset reject counter
 t=0.5
 
 
-for (i in 33406:M) {
+for (i in 690:M) {
   repeat{
     for(p in 1:n.param){ #for each parameter
       param.est[i,p] = param.est[i-1,p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
@@ -292,11 +289,11 @@ for (i in 33406:M) {
     
     acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
     
-    if(acceptance>0.15){
+    if(acceptance>0.20){
       t = 1.01*t
     }
     
-    if(acceptance<0.05){
+    if(acceptance<0.10){
       t = 0.99*t
     }
     

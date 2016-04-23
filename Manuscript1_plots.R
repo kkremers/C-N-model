@@ -173,7 +173,7 @@ NDVI.day.test
 #####################PLOTS FOR MANUSCRIPT 1######################
 
 ##################Histograms########################
-par(mfrow=c(4,3), mar=c(5,5,2,2))
+par(mfrow=c(4,2), mar=c(5,5,2,2))
 plot(density(param.keep[,1]), main="", ylab="Density", xlab=names(params[1]), cex.lab=2, cex.axis = 1.5)
 abline(v=param.best[1], col="red", lwd=3)
 plot(density(param.keep[,2]), main="", ylab="Density", xlab=names(params[2]), cex.lab=2, cex.axis = 1.5)
@@ -188,15 +188,6 @@ plot(density(param.keep[,6]), main="", ylab="Density", xlab=names(params[6]), ce
 abline(v=param.best[6], col="red", lwd=3)
 plot(density(param.keep[,7]), main="", ylab="Density", xlab=names(params[7]), cex.lab=2, cex.axis = 1.5)
 abline(v=param.best[7], col="red", lwd=3)
-plot(density(param.keep[,8]), main="", ylab="Density", xlab=names(params[8]), cex.lab=2, cex.axis = 1.5)
-abline(v=param.best[8], col="red", lwd=3)
-plot(density(param.keep[,9]), main="", ylab="Density", xlab=names(params[9]), cex.lab=2, cex.axis = 1.5)
-abline(v=param.best[9], col="red", lwd=3)
-plot(density(param.keep[,10]), main="", ylab="Density", xlab=names(params[10]), cex.lab=2, cex.axis = 1.5)
-abline(v=param.best[10], col="red", lwd=3)
-plot(density(param.keep[,11]), main="", ylab="Density", xlab=names(params[11]), cex.lab=2, cex.axis = 1.5)
-abline(v=param.best[11], col="red", lwd=3)
-
 
 param.min_new = apply(param.keep, 2, min)
 param.max_new = apply(param.keep, 2, max)
@@ -276,7 +267,7 @@ for (i in 1:length(data.spin$Temp)){
 plot(scal.temp.spin, type="l")
 
 #run model spin up for current parameter set
-numyears = 50
+numyears = 30
 Year.spin = rep(data.spin$Year, numyears)
 DOY.spin = rep(data.spin$DOY, numyears)
 Temp.spin = rep(data.spin$Temp, numyears)
@@ -299,7 +290,7 @@ Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
 #RUN 3_MODEL.R
 
 #OPEN 3_Model.R and run it the first time
-out.spin= data.frame(solvemodel(param.best[1:7], param.best[8:12])) #creates table of model output
+out.spin= data.frame(solvemodel(param.best, state)) #creates table of model output
 plot(out.spin$Biomass_C)
 end.time = length(out.spin[,1])
 #adjust starting values
@@ -320,7 +311,7 @@ scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
 
-out= data.frame(solvemodel(param.best[1:8], state)) #creates table of model output
+out= data.frame(solvemodel(param.best, state)) #creates table of model output
 
 
 
@@ -334,7 +325,7 @@ head(data.sigma)
 tail(data.assim)
 tail(data.sigma)
 
-out= data.frame(solvemodel(param.best)) #creates table of model output
+out= data.frame(solvemodel(param.best, state)) #creates table of model output
 head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
 head(out1)
@@ -343,6 +334,7 @@ data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.as
 sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,7]))
 head(data.compare1)
 head(sigma.obs1)
+
 
 #run model code that does NOT include starting values as params
 require(FME)
@@ -360,13 +352,13 @@ summarytable=data.frame(q05 = q05, q25 = q25, mean = means,
 sensvars = c("NEE",
              "NDVI")
 
-s.global <- sensRange(func=solvemodel, parms=param.best, sensvar = sensvars, parInput=param.keep, num=1000)
+s.global <- sensRange(func=solvemodel, parms=param.best, state=state, sensvar = sensvars, parInput=param.keep, num=760)
 s.global.summ = summary(s.global) #create summary table
 head(s.global.summ) #view first 6 rows
 tail(s.global.summ)
 
 #get model output & confidence intervals organized
-out=data.frame(solvemodel(param.best))
+out=data.frame(solvemodel(param.best, state))
 NEE_summ = data.frame(Time=s.global.summ[1:2922,1], NEE=out$NEE, sd=s.global.summ[1:2922,3], min=s.global.summ[1:2922,4], max=s.global.summ[1:2922,5], q05=s.global.summ[1:2922,6], q95=s.global.summ[1:2922,10], q25=s.global.summ[1:2922,7], q75=s.global.summ[1:2922,9])
 head(NEE_summ)
 NDVI_summ = data.frame(Time=s.global.summ[2923:5844,1], NDVI=out$NDVI, sd=s.global.summ[2923:5844,3], min=s.global.summ[2923:5844,4], max=s.global.summ[2923:5844,5],q05=s.global.summ[2923:5844,6], q95=s.global.summ[2923:5844,10], q25=s.global.summ[2923:5844,7], q75=s.global.summ[2923:5844,9])
@@ -384,6 +376,7 @@ out.compare_NEE1 = out[match(data.compare_NEE1$Time, out$time),]
 out.compare_NEE2 = out[match(data.compare_NEE2$Time, out$time),]
 out.compare_NDVI1 = out[match(data.compare_NDVI1$Time, out$time),]
 out.compare_NDVI2 = out[match(data.compare_NDVI2$Time, out$time),]
+
 
 
 #linear regressions for years not assimilated
@@ -404,6 +397,13 @@ resid.NDVI1 = data.compare_NDVI1$NDVI - out.compare_NDVI1$NDVI
 resid.NDVI = c(resid.NDVI1, resid.NDVI2)
 resid_NDVI = data.frame(time=c(out.compare_NDVI1$time, out.compare_NDVI2$time), Year=c(out.compare_NDVI1$year, out.compare_NDVI2$year), DOY=c(out.compare_NDVI1$DOY, out.compare_NDVI2$DOY), resid.NDVI)
 resid_NDVI = resid_NDVI[ order(resid_NDVI[,2]), ]
+
+
+par(mfrow=c(2,1), mar=c(4,4,2,2))
+plot(resid_NEE$DOY, resid_NEE$resid.NEE, main="NEE Residuals", ylab="Residuals", xlab="DOY")
+abline(h=0, col="red")
+plot(resid_NDVI$DOY, resid_NDVI$resid.NDVI, main="NDVI Residuals", ylab="Residuals", xlab="DOY")
+abline(h=0, col="red")
 
 
 #calculate RMSE by year:
@@ -427,7 +427,7 @@ par(mar=c(4,5,2,2), las=1)
 #layout(matrix(c(1,2,3,4,5,6,7,8,9,10,11,12), 2, 3, byrow = TRUE), widths=c(3,1,1))
 layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE), widths=c(2,1))
 
-plot(NEE~Time,data=NEE_summ, type="p", pch=16, cex=1.5, axes=FALSE, xlab="", ylim=c(-6,4), cex.lab=1.5, col="white")
+plot(NEE~time,data=out, type="p", pch=16, cex=1.5, axes=FALSE, xlab="", ylim=c(-6,4), cex.lab=1.5, col="white")
 axis(1, at=c(0,365,730,1096,1461,1826,2191,2556,2922), labels=c("","","","","","","","",""))
 mtext("2008", side=1, at=182, cex=1.5, line=0.5)
 mtext("2009", side=1, at=547, cex=1.5, line=0.5) 
@@ -456,7 +456,7 @@ abline(0,1, col="red", lty=2, lwd=2)
 legend("topleft", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(reg_NEE)$adj.r.squared, digits=2))))
 
 
-plot(NDVI~Time,data=NDVI_summ, type="p", pch=16, cex=1.5, axes=FALSE, xlab="",ylim=c(0,1), cex.lab=1.5, col="white")
+plot(NDVI~time,data=out, type="p", pch=16, cex=1.5, axes=FALSE, xlab="",ylim=c(0,1), cex.lab=1.5, col="white")
 axis(1, at=c(0,365,730,1096,1461,1826,2191,2556,2922), labels=c("","","","","","","","",""))
 mtext("2008", side=1, at=182, cex=1.5, line=0.5)
 mtext("2009", side=1, at=547, cex=1.5, line=0.5) 
@@ -469,7 +469,7 @@ mtext("2015", side=1, at=2737, cex=1.5, line=0.5)
 axis(2, cex.axis=1.5)
 #make polygon where coordinates start with lower limit and then upper limit in reverse order
 with(NDVI_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = "grey75", border = "gray75"))
-points(NDVI~Time, data=NDVI_summ, pch=16, cex=0.75)
+points(NDVI~time, data=out, pch=16, cex=0.75)
 points(NDVI~Time, data=data.compare_NDVI1, pch=16, col="aquamarine4", cex=0.75)
 points(NDVI~Time, data=data.compare_NDVI2, pch=16, col="darkorange3", cex=0.75)
 legend("topleft", cex=1.5, legend=c("CCaN NDVI 90% C.I.", "CCaN NDVI", "Assimilated NDVI Measurements", "NDVI Measurements Not Assimilated"), bty="n", pch=c(15,16,16,16), col=c("gray75", "black", "aquamarine4", "darkorange3"))
@@ -606,7 +606,7 @@ for(i in 1:length(latitudes)){
   
   #OPEN 3_Model.R and run it the first time
   
-  params = param.best[1:8]
+  params = param.best
   
   
   state  <- c(Biomass_C = 500, 
@@ -615,7 +615,7 @@ for(i in 1:length(latitudes)){
               SOM_N = 800,
               Available_N = 1)
   
-  out.spin= data.frame(solvemodel1(params, state)) #creates table of model output
+  out.spin= data.frame(solvemodel(params, state)) #creates table of model output
   
   #Run model for each site and record NDVI
   
@@ -640,7 +640,7 @@ for(i in 1:length(latitudes)){
               Available_N = out.spin$Available_N[end.time])
   
   
-  out= data.frame(solvemodel1(params, state)) #creates table of model output
+  out= data.frame(solvemodel(params, state)) #creates table of model output
   
   #determine max NDVI & record in spreadsheet
   CCaN_max = max(out$NDVI)
@@ -670,7 +670,12 @@ for(i in 1:length(latitudes)){
 
 #############
 summary=summary[-1,]
-write.csv(summary, "CaTT_Summary_041916") #save CSV 
+write.csv(summary, "CaTT_Summary_042216") #save CSV 
+
+#plots of spatial data
+par(mfrow=c(2,1), mar=c(4,5,2,2))
+plot(summary$Tavg~summary$Latitude, pch=16, xlab="Latitude", ylab="GS Avg Temp")
+plot(summary$PARavg~summary$Latitude, pch=16, xlab="Latitude", ylab="GS Avg PAR")
 
 
 #modelled vs. measured
@@ -678,7 +683,7 @@ reg_NDVI = lm(summary$CCaN.MODIS_avg~summary$MODIS_avg)
 summary(reg_NDVI)
 
 #regressions with latitude - NDVI
-par(mfrow=c(1,1))
+par(mfrow=c(1,1), mar=c(5,5,2,2))
 plot(summary$CCaN.MODIS_avg~summary$Latitude, pch=16, cex.lab=1.5, xlab="Latitude", ylab=expression("CCaN NDVI" [sat]), ylim=c(0.3,0.9), xlim=c(65,71), axes=FALSE)
 points(summary$MODIS_avg~summary$Latitude, pch=15, col="forestgreen")
 axis(1, cex.axis = 1.5)
@@ -696,7 +701,6 @@ legend("topleft", bty="n", cex=1.25, legend= bquote(italic(R)^2 == .(format(summ
 MODISbands = data.frame(read.csv("MODISbands_gsmeans.csv"))
 head(MODISbands)
 head(summary)
-SRWI.calc = MODISbands$
 #calculate residuals
 residuals = abs(summary$MODIS_avg-summary$CCaN.MODIS_avg)
 resid.dat = data.frame(Latitude=summary$Latitude, residuals, MODISbands[,3:10])
@@ -751,10 +755,11 @@ summary(reg_MODIS.temp) #slope is sensitivity
 summary(reg_CCaN.temp) #slope is sensitivity
 
 Sample = c("CCaN", "LTER", "Goetz", "MODIS")
-Sensitivty = c(0.028, 0.022, 0.02, 0.033)
+Sensitivity = c(0.030, 0.022, 0.02, 0.033)
+ErrorBars = c(0.0006,0.0004, 0, 0.004 )
 par(mfrow=c(1,1))
-barplot(Sensitivty, cex=1.5, names.arg=Sample, ylab="Temperatre Sensitivity", ylim=c(0,0.04), cex.lab=1.5, cex.axis=1.5)
-
+barx=barplot(Sensitivity, cex=1.5, names.arg=Sample, ylab="Temperatre Sensitivity", ylim=c(0,0.04), cex.lab=1.5, cex.axis=1.5)
+arrows(x0=barx,y0=Sensitivity+ErrorBars,y1=Sensitivity-ErrorBars,angle=90,code=3,length=0.2)
 ##########################VARIANCE DECOMPOSITION ANALYSIS#######################
 
 head(param.keep) #view table of accepted parameters
@@ -769,7 +774,7 @@ means
 # 3) for each model run, calculate the monthly average of the output
 # 4) Calculate the variance in monthly averages for each parameter - this gives you the contribution of that parameter to the model variance
 
-out = data.frame(solvemodel(param.best))
+out = data.frame(solvemodel(param.best, state))
 head(out[,1:11])
 
 
@@ -800,11 +805,9 @@ months.leap = rep(c(seq(1:12)),
 months = c(months.leap, months, months, months, months.leap, months, months, months)
 
 time = seq(1:length(data$time))
-means=means[1:7]
-state=param.best[8:12]
 
 #kplant
-for(i in 1:1000){
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
   params.i[1] = unlist(c(param.keep[i,1]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i,state)) #run model
@@ -815,7 +818,7 @@ for(i in 1:1000){
 }  
 
 #LitterRate
-for(i in 1:1000){
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
   params.i[2] = unlist(c(param.keep[i,2]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i,state)) #run model
@@ -826,7 +829,7 @@ for(i in 1:1000){
 }  
 
 #UptakeRate
-for(i in 1:1000){
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
   params.i[3] = unlist(c(param.keep[i,3]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i,state)) #run model
@@ -837,7 +840,7 @@ for(i in 1:1000){
 }  
 
 #propN_fol
-for(i in 1:1000){
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
   params.i[4] = unlist(c(param.keep[i,4]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i,state)) #run model
@@ -848,7 +851,7 @@ for(i in 1:1000){
 }  
 
 #propN_roots
-for(i in 1:1000){
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
   params.i[5] = unlist(c(param.keep[i,5]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i,state)) #run model
@@ -859,7 +862,7 @@ for(i in 1:1000){
 }  
 
 #netNrate
-for(i in 1:1000){
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
   params.i[6] = unlist(c(param.keep[i,6]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i,state)) #run model
@@ -870,9 +873,9 @@ for(i in 1:1000){
 }  
 
 #q10
-for(i in 1:1000){
+for(i in 1:length(param.keep[,1])){
   params.i = means #set parmeters to mean values
-  params.i[6] = unlist(c(param.keep[i,6]))  #change the parameter value of interest
+  params.i[7] = unlist(c(param.keep[i,7]))  #change the parameter value of interest
   out.i = data.frame(solvemodel(params.i,state)) #run model
   out.i = cbind(out.i, Month = months) #add month vector
   monthly.avg=aggregate(out.i[,2:11], list(out.i$Month), mean)
@@ -897,7 +900,7 @@ var.propN_roots = aggregate(MVar_propN_roots[,2:11], list(MVar_propN_roots$Month
 var.netNrate = aggregate(MVar_netNrate[,2:11], list(MVar_netNrate$Month), var)
 var.q10 = aggregate(MVar_q10[,2:11], list(MVar_q10$Month), var)
 
-parameters = rep(names(params), c(12,12,12,12,12,12))
+parameters = rep(names(params), c(12,12,12,12,12,12,12))
 
 all = rbind(var.kplant, var.LitterRate, var.UptakeRate, var.propN_fol, 
             var.propN_roots, var.netNrate, var.q10)
@@ -927,7 +930,6 @@ perc.propN_roots = cbind(Parameter = rep("propN_roots", 12), Month=var.total$Gro
 perc.netNrate = (var.netNrate[,2:11]/var.total[,2:11])*100
 perc.netNrate = cbind(Parameter = rep("netNrate", 12), Month=var.total$Group.1, perc.netNrate)
 
-
 perc.q10 = (var.q10[,2:11]/var.total[,2:11])*100
 perc.q10 = cbind(Parameter = rep("q10", 12), Month=var.total$Group.1, perc.q10)
 
@@ -955,8 +957,8 @@ for (n in 3:11) { #for each output
   sub1[5,] = sub[49:60,3]
   sub1[6,] = sub[61:72,3]
   barplot(sub1, col=c("darkolivegreen3", "aquamarine", "maroon4", "mediumseagreen",
-                      "palegreen", "darkblue"),             
-          main=names(perc.all[n]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100)) #plot the data
+                      "palegreen", "darkblue", "gray"),             
+          main=names(perc.all[n]), cex.main=1.5, names.arg=c("J","F","M","A","M","J","J","A","S","O","N","D"), axisnames=TRUE, ylim=c(0,100), cex.names=1.25, cex.axis=1.25) #plot the data
 } #end of for loop
 
 
@@ -971,8 +973,8 @@ sub1[4,] = sub[37:48,3]
 sub1[5,] = sub[49:60,3]
 sub1[6,] = sub[61:72,3]
 barplot(sub1, col=c("darkolivegreen3", "aquamarine", "maroon4", "mediumseagreen",
-                    "palegreen", "darkblue"),           
-        main=names(perc.all[11]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100), legend=TRUE) #plot the data
+                    "palegreen", "darkblue", "gray"),           
+        main=names(perc.all[11]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100), legend=TRUE, args.legend=c(horiz=TRUE)) #plot the data
 
 
 ####ANNUAL ANALYSIS####
@@ -990,6 +992,8 @@ AVar_propN_roots = data.frame(matrix(1,1,3))
 colnames(AVar_propN_roots)=colnames(out[,7:9])
 AVar_netNrate = data.frame(matrix(1,1,3))
 colnames(AVar_netNrate)=colnames(out[,7:9])
+AVar_q10 = data.frame(matrix(1,1,3))
+colnames(AVar_q10)=colnames(out[,7:9])
 
 AVar_kplant_NDVI = data.frame(matrix(1,1,1))
 colnames(AVar_kplant_NDVI)=c("NDVI")
@@ -1003,6 +1007,8 @@ AVar_propN_roots_NDVI = data.frame(matrix(1,1,1))
 colnames(AVar_propN_roots_NDVI)=c("NDVI")
 AVar_netNrate_NDVI = data.frame(matrix(1,1,1))
 colnames(AVar_netNrate_NDVI)=c("NDVI")
+AVar_q10_NDVI = data.frame(matrix(1,1,1))
+colnames(AVar_q10_NDVI)=c("NDVI")
 
 head(summarytable)
 q15 = apply(param.keep, 2, quantile, 0.15)
@@ -1114,12 +1120,30 @@ for(i in 1:length(param.keep[,1])){
   AVar_netNrate_NDVI = rbind(AVar_netNrate_NDVI, annual.avgNDVI) #add row to table
 }  
 
+#q10
+param.keep=param.keep_NEE_NDVI_UNBdata[param.keep_NEE_NDVI_UNBdata$q10>=summarytable[6,first] & param.keep_NEE_NDVI_UNBdata$q10<=summarytable[6,second],]
+for(i in 1:length(param.keep[,1])){
+  params.i = means #set parmeters to mean values
+  params.i[7] = unlist(c(param.keep[i,7]))  #change the parameter value of interest
+  out.i = data.frame(solvemodel(params.i,state)) #run model
+  annual.sum=aggregate(out.i[,7:9], list(out.i$year), sum) #calculate annual sum
+  annual.avg=apply(annual.sum[,-1], 2, mean) #calculate sum across all years
+  names(annual.avg) = names(AVar_q10) #change names
+  AVar_q10 = rbind(AVar_q10, annual.avg) #add row to table
+  annual.max=aggregate(out.i[,11], list(out.i$year), max) #calculate annual max
+  annual.avgNDVI=mean(annual.max[,2]) #calculate avg sum across all years
+  names(annual.avgNDVI) = names(AVar_q10_NDVI) #change names
+  AVar_q10_NDVI = rbind(AVar_q10_NDVI, annual.avgNDVI) #add row to table
+}  
+
+
 AVar_kplant = AVar_kplant[-1,]
 AVar_LitterRate = AVar_LitterRate[-1,]
 AVar_UptakeRate = AVar_UptakeRate[-1,]
 AVar_propN_fol = AVar_propN_fol[-1,]
 AVar_propN_roots = AVar_propN_roots[-1,]
 AVar_netNrate = AVar_netNrate[-1,]
+AVar_q10 = AVar_q10[-1,]
 
 var.kplant = apply(AVar_kplant, 2, var)
 var.LitterRate = apply(AVar_LitterRate, 2, var)
@@ -1127,6 +1151,7 @@ var.UptakeRate = apply(AVar_UptakeRate, 2, var)
 var.propN_fol = apply(AVar_propN_fol, 2, var)
 var.propN_roots = apply(AVar_propN_roots, 2, var)
 var.netNrate = apply(AVar_netNrate, 2, var)
+var.q10 = apply(AVar_q10, 2, var)
 
 AVar_kplant_NDVI = AVar_kplant_NDVI[-1,]
 AVar_LitterRate_NDVI  = AVar_LitterRate_NDVI[-1,]
@@ -1134,6 +1159,7 @@ AVar_UptakeRate_NDVI  = AVar_UptakeRate_NDVI[-1,]
 AVar_propN_fol_NDVI  = AVar_propN_fol_NDVI[-1,]
 AVar_propN_roots_NDVI  = AVar_propN_roots_NDVI[-1,]
 AVar_netNrate_NDVI  = AVar_netNrate_NDVI[-1,]
+AVar_q10_NDVI  = AVar_q10_NDVI[-1,]
 
 var.kplant_NDVI = var(AVar_kplant_NDVI)
 var.LitterRate_NDVI = var(AVar_LitterRate_NDVI)
@@ -1141,12 +1167,13 @@ var.UptakeRate_NDVI = var(AVar_UptakeRate_NDVI)
 var.propN_fol_NDVI = var(AVar_propN_fol_NDVI)
 var.propN_roots_NDVI = var(AVar_propN_roots_NDVI)
 var.netNrate_NDVI = var(AVar_netNrate_NDVI)
+var.q10_NDVI = var(AVar_q10_NDVI)
 
 
 all_NEE = rbind(var.kplant, var.LitterRate, var.UptakeRate, var.propN_fol, 
-                var.propN_roots, var.netNrate)
+                var.propN_roots, var.netNrate, var.q10)
 all_NDVI = rbind(var.kplant_NDVI, var.LitterRate_NDVI, var.UptakeRate_NDVI, var.propN_fol_NDVI, 
-                 var.propN_roots_NDVI, var.netNrate_NDVI)
+                 var.propN_roots_NDVI, var.netNrate_NDVI, var.q10_NDVI)
 
 rownames(all_NEE)=names(params)
 rownames(all_NDVI)=names(params)
@@ -1162,6 +1189,7 @@ perc.UptakeRate = (var.UptakeRate/var.total)*100
 perc.propN_fol = (var.propN_fol/var.total)*100
 perc.propN_roots = (var.propN_roots/var.total)*100
 perc.netNrate = (var.netNrate/var.total)*100
+perc.q10 = (var.q10/var.total)*100
 
 perc.kplant_NDVI = (var.kplant_NDVI/var.total_NDVI)*100
 perc.LitterRate_NDVI = (var.LitterRate_NDVI/var.total_NDVI)*100
@@ -1169,17 +1197,18 @@ perc.UptakeRate_NDVI = (var.UptakeRate_NDVI/var.total_NDVI)*100
 perc.propN_fol_NDVI = (var.propN_fol_NDVI/var.total_NDVI)*100
 perc.propN_roots_NDVI = (var.propN_roots_NDVI/var.total_NDVI)*100
 perc.netNrate_NDVI = (var.netNrate_NDVI/var.total_NDVI)*100
+perc.q10_NDVI = (var.q10_NDVI/var.total_NDVI)*100
 
 
 #create a table binding all together
 
 perc.all_NEE = rbind(perc.kplant, perc.LitterRate, perc.UptakeRate, 
-                     perc.propN_fol, perc.propN_roots, perc.netNrate)
+                     perc.propN_fol, perc.propN_roots, perc.netNrate, perc.q10)
 
 rownames(perc.all_NEE)=c(names(params))
 
 perc.all_NDVI = rbind(perc.kplant_NDVI, perc.LitterRate_NDVI, perc.UptakeRate_NDVI, 
-                      perc.propN_fol_NDVI, perc.propN_roots_NDVI, perc.netNrate_NDVI)
+                      perc.propN_fol_NDVI, perc.propN_roots_NDVI, perc.netNrate_NDVI, perc.q10_NDVI)
 
 rownames(perc.all_NDVI)=c(names(params))
 colnames(perc.all_NDVI)=c("NDVI")
@@ -1191,13 +1220,15 @@ perc.all.NEE_100 = data.frame(perc.all_NEE)
 perc.all.NDVI_100 = data.frame(perc.all_NDVI)
 
 ####barplots####
-names = c("kplant", "LitterRate", "UptakeRate", "propN_fol.i", "propN_roots", "netNrate")
-par(mfrow=c(1,2))
-barplot(perc.all.NEE_100$NEE, names.arg=names, cex.names=0.75, 
-        col="forestgreen", horiz=TRUE, main="NEE") #plot the data
+names = c("kplant", "LitterRate", "UptakeRate", "propN_fol0", "propN_roots", "netNrate", "Q10")
+par(mfrow=c(2,1), mar=c(5,5,3,2))
+barplot(perc.all.NEE_100$NEE, names.arg=names, ylim=c(0, 50),
+        col=c("darkolivegreen3", "aquamarine", "maroon4", "mediumseagreen",
+              "palegreen", "darkblue", "gray"), horiz=FALSE, main="NEE Annual Variance", cex.names=1.5, cex.main=3, cex.axis=1.25,ylab="% of Variance", cex.lab=1.5) #plot the data
 
-barplot(perc.all.NDVI_100$NDVI, names.arg=names, cex.names=0.75, 
-        col="forestgreen", horiz=TRUE, main="NDVI") #plot the data
+barplot(perc.all.NDVI_100$NDVI, names.arg=names, ylim=c(0,50),
+        col=c("darkolivegreen3", "aquamarine", "maroon4", "mediumseagreen",
+              "palegreen", "darkblue", "gray"), horiz=FALSE, main="NDVI Annual Variance", cex.names=1.5, cex.main=3, cex.axis=1.25,ylab="% of Variance", cex.lab=1.5) #plot the data
 
 
 
