@@ -82,7 +82,7 @@ for (i in 1:length(data.spin$Temp)){
 plot(scal.temp.spin, type="l")
 
 #run model spin up for current parameter set
-numyears = 30
+numyears = 50
 Year.spin = rep(data.spin$Year, numyears)
 DOY.spin = rep(data.spin$DOY, numyears)
 Temp.spin = rep(data.spin$Temp, numyears)
@@ -105,7 +105,7 @@ Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
 
 #OPEN 3_Model.R and run it the first time
 out.spin= data.frame(solvemodel(params, state)) #creates table of model output
-plot(out.spin$Biomass_C)
+plot(out.spin$Biomass_N)
 end.time = length(out.spin[,1])
 #adjust starting values
 state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
@@ -132,8 +132,8 @@ plot(out$NEE)
 
 ####DATA EXPLORATION###
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.012,0.23,0.022,0.04,3)
-param.min=c(0.07,0.0001,0.002,0.01,0.01,0.003,1)
+param.max=c(0.34,0.0024,0.012,0.23,0.022,0.015,0.8,3)
+param.min=c(0.07,0.0001,0.002,0.01,0.01,0.00005,0.4,1)
 
 ##STEP 1: Explore with BOTH NEE and NDVI
 
@@ -153,11 +153,15 @@ j = matrix(1E100, M, D) #to store error calculations for this iteration
 all.draws = data.frame(matrix(1, M, n.param)) #storage for all parameter estimate iterations;
 colnames(all.draws) = c(names(params))
 param.est = data.frame(matrix(1, M, n.param)) #storage for accepted parameter estimate iterations;
+state.est = data.frame(matrix(1, M, length(state)))
 param.est[1,]=params #change first row to current guess
 all.draws[1,]=params #change first row to current guess
+state.est[1,]=state
+colnames(state.est) = c(names(state))
 colnames(param.est) = c(names(params))
 head(param.est) #check to make sure this is correct
 head(all.draws)
+head(state.est)
 
 #replace 1st row with values for current parameters
 out=data.frame(solvemodel(params, state))
@@ -186,13 +190,13 @@ tail(param.est)
 
 
 #set initial values
-anneal.temp0=1000000 #starting temperature
-anneal.temp=1000000 #starting temperature
+#anneal.temp0=1000000 #starting temperature
+#anneal.temp=1000000 #starting temperature
 reject=0 #reset reject counter
 t=0.5
 
 
-for (i in 690:M) {
+for (i in 127:M) {
   repeat{
     for(p in 1:n.param){ #for each parameter
       param.est[i,p] = param.est[i-1,p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
@@ -231,7 +235,9 @@ for (i in 690:M) {
       } #end of if loop
     } #end of if loop
   } #end of repeat
-        
+    
+    state.est[i,] = state
+  
     time = seq(1:length(data$time))
     Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
     TempAvg.d1 <- approxfun(x=data$time, y=data$Temp_avg, method="linear", rule=2)
@@ -263,23 +269,24 @@ for (i in 690:M) {
       J[i] = prod(j[i,]) #calculate aggregate cost function
       
       
-      diff=J[i]-J[i-1] #calculate difference between current J and previous J
+      diff = J[i-1]/J[i] #calculate the acceptance ratio
       
       if(is.na(diff)){
         reject = reject+1 #reject parameter set
         param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
+        state.est[i,] = state.est[i-1,] #set states to previous states
         J[i] = J[i-1] #set current J to previous J
         j[i,] = j[i-1,]
       } else { 
       
-      if(diff>0){ #if difference is > 0 (or if the current J is greater than the previous J)
+      if(diff<1){ #if difference is < 1 (or if the current J is greater than the previous J)
         
         u=runif(1, 0, 1) #draw random number between 0 and 1
-        prob=exp((-1*diff)/anneal.temp) #simulated annealing - determines probability that a parameter set is accepted
         
-        if(u>=prob){    
+        if(u>=diff){   
           reject = reject+1 #reject parameter set
           param.est[i,] = param.est[i-1,] #set current parameter set to previous parameter set
+          state.est[i,] = state.est[i-1,] #set states to previous states
           J[i] = J[i-1] #set current J to previous J (the minimum J so far)
           j[i,] = j[i-1,]
         } #end of if loop
@@ -289,23 +296,19 @@ for (i in 690:M) {
     
     acceptance = 1 - (reject / i) #calculate proportion of accepted iterations
     
-    if(acceptance>0.20){
+    if(acceptance>0.30){
       t = 1.01*t
     }
     
-    if(acceptance<0.10){
+    if(acceptance<0.25){
       t = 0.99*t
     }
-    
-    
-    anneal.temp=anneal.temp*0.999 #decrease temperature
-    
-    
-    
-    if(anneal.temp<(0.01*anneal.temp0)){ #if temperature drops to less than 10% of initial
-      anneal.temp=anneal.temp0 #jump back up to initial
+  
+    if(t>0.5){
+      t=0.5
     }
     
+  
   
 } #end of exploration
 
@@ -321,8 +324,14 @@ step.best = J1[which.min(J1[,2]),1] #determine which step has the minimum value 
 param.est[step.best,] #show the parameter set that resulted in the best J
 param.best = as.numeric(param.est[step.best,]) #store that parameter set as param.best
 names(param.best) = c(names(params)) #change the names to match params
+state.best = as.numeric(state.est[step.best,])
+names(state.best) = c(names(state))
 j.best = j[step.best,] #pull out the minimum j
 param.best #view the best parameter set
+state.best
 j.best #view the minimum J
+i
+t
+acceptance
 
-save.image(file="Step1_042216_SPIN.Rdata")
+save.image(file="Step1_060716_SPIN.Rdata")

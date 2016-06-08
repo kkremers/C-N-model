@@ -87,16 +87,19 @@ DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
 Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
 
 
-state  <- c(Biomass_C = 685, 
-            Biomass_N = 12.5, 
-            SOM_C = 19250, 
-            SOM_N = 850,
-            Available_N = 1.75)
+state  <- c(Biomass_C = 715, 
+            Biomass_N = 14, 
+            SOM_C = 8700, 
+            SOM_N = 355,
+            Available_N = 0.01)
 
 #OPEN 3_Model.R and run it the first time
-out.spin= data.frame(solvemodel(param.best, state)) #creates table of model output
+out.spin= data.frame(solvemodel(params, state)) #creates table of model output
 plot(out.spin$Biomass_N)
 plot(out.spin$Biomass_C)
+plot(out.spin$SOM_N)
+plot(out.spin$SOM_C)
+plot(out.spin$Available_N)
 end.time = length(out.spin[,1])
 #adjust starting values
 state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
@@ -116,13 +119,25 @@ scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
 
-out= data.frame(solvemodel(param.best)) #creates table of model output
+out= data.frame(solvemodel(params, state)) #creates table of model output
 
 
 #plot fluxes
 plot(out$GPP)
 plot(out$Ra)
 plot(out$Rh)
+
+
+
+ntrans.avg = tapply(out$Ntrans, out$DOY, mean)
+plot(ntrans.avg)
+sum(ntrans.avg[150:240])
+sum(ntrans.avg[c(1:150,241:366)])
+
+
+
+plot(out$GPP~out$LAI, xlab="LAI", ylab="GPP")
+plot(out$LAI~out$Temp, xlab="Temp", ylab="LAI")
 
 
 
@@ -134,10 +149,6 @@ plot(out$SOM_C~out$time, type="l", col="brown", main = "SOM C", xlab="", ylab="g
 plot(out$SOM_N~out$time, type="l", col="brown", main = "SOM N", xlab="Time (days)", ylab="g N m-2")
 plot(out$Available_N~out$time, type="l", col="blue", main = "Available_ N", xlab="Time (days)", ylab="g N m-2",lty=2)
 
-
-
-
-
 #see how well data matches
 #to compare on 1:1 line with data, need to select only points for which data is available
 data.compare2=read.csv("Assimilation_data_ALL.csv")
@@ -148,6 +159,20 @@ head(data.compare_NDVI)
 out.compare_NEE = out[match(data.compare_NEE$Time, out$time),]
 out.compare_NDVI = out[match(data.compare_NDVI$Time, out$time),]
 
+#plot
+par(mfrow=c(1,1), mar=c(2,2,2,2))
+plot(NEE~Time,data=data.assim, type="p", pch=16, cex=0.25, ylim=c(-4,2))
+arrows(data.assim$Time,data.assim$NEE+data.sigma$NEE, data.assim$Time, data.assim$NEE-data.sigma$NEE, angle=90, code=3, length=0.01, col="gray47")
+points(NEE~Time, data=data.assim, pch=16, cex=0.4, col="blue")
+abline(h=0)
+
+plot(NDVI~Time,data=data.assim, type="p", pch=16, cex=0.25, ylim=c(0,1))
+arrows(data.assim$Time,data.assim$NDVI+data.sigma$NDVI, data.assim$Time, data.assim$NDVI-data.sigma$NDVI, angle=90, code=3, length=0.01, col="gray47")
+points(NDVI~Time, data=data.assim, pch=16, cex=0.4, col="blue")
+
+
+
+
 #PLOT DATA FOR ALL YEARS
 par(mfrow=c(2,2), mar=c(4,4,2,2))
 plot(out$NEE~out$time, col="azure4", pch=18, ylim=c(-6,2), xlab="Time (days)", ylab="NEE (gC m-2 day-1)")
@@ -156,7 +181,7 @@ abline(h=0)
 plot(data.compare_NEE$NEE, out.compare_NEE$NEE, ylim=c(-4, 4), xlim=c(-4,4), ylab="Model", xlab="Data")
 abline(0,1, col="red")
 
-plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", ylim=c(0,1))
+plot(out$NDVI~out$time, col="azure4", pch=18, ylab="NDVI", xlab="Time(days)", ylim=c(0,0.8))
 points((data.compare_NDVI$NDVI)~data.compare_NDVI$Time, col="blue", pch=18, cex=0.8)
 plot(data.compare_NDVI$NDVI, out.compare_NDVI$NDVI, ylab="Model", xlab="Data", ylim=c(0, 1), xlim=c(0,1) )
 abline(0,1, col="red")
@@ -270,7 +295,7 @@ abline(0,1, col="red")
 #linear regressions for all years
 out.compare_NEE = out[match(data.compare_NEE$Time, out$time),]
 out.compare_NDVI = out[match(data.compare_NDVI$Time, out$time),]
-par(mfrow=c(4,2), mar=c(4,4,2,2))
+par(mfrow=c(2,2), mar=c(4,4,2,2))
 
 reg_NEE = lm(out.compare_NEE$NEE~data.compare_NEE$NEE)
 plot(data.compare_NEE$NEE, out.compare_NEE$NEE, xlab= "Actual", ylab="Modelled", main = "NEE")
@@ -444,12 +469,6 @@ rmse.NEE;rmse.NDVI
 tapply(resid_NEE$resid.NEE, resid_NEE$Year, rmse)
 tapply(resid_NDVI$resid.NDVI, resid_NDVI$Year, rmse)
 
-#calculate RMSE with 2013 removed
-
-rmse.NEE=rmse(resid_NEE$resid.NEE[resid_NEE$Year!=2013])
-rmse.NDVI=rmse(resid_NDVI$resid.NDVI[resid_NDVI$Year!=2013])
-rmse.NEE;rmse.NDVI
-
 
 
 ##look at relationship between spring NEE RMSE and DOY.minGDD
@@ -458,30 +477,31 @@ head(resid_NEE)
 rmse.NEE = tapply(resid_NEE$resid.NEE, resid_NEE$Year, rmse)
 RMSE.spring=NULL
 years = unique(data$year) #tells you which years we have data for 
+senday=as.vector(tapply(data$senDOY, data$year, mean)) 
 for (i in 1: length(years)){
   year.i = years[i] #select year
   data.year = subset(resid_NEE, resid_NEE$Year==year.i) #subset for that year
-  resid_NEE.spring = data.year[data.year$DOY<=mid.day[i],] #subset for spring
+  resid_NEE.spring = data.year[data.year$DOY<=senday[i],] #subset for spring
   RMSE.spring[i] = rmse(resid_NEE.spring$resid.NEE) #calculate rmse
 }
 RMSE.spring #show yearly values
-melt.day #show day of melt
-frost.day #show day of frost
-length.season = frost.day-melt.day
+startday = as.vector(tapply(data$startDOY, data$year, mean)) 
+endday = as.vector(tapply(data$endDOY, data$year, mean)) 
+length.season = endday-startday
 length.season
-NEE_springRMSE = data.frame(RMSEspring = RMSE.spring, RMSEall = rmse.NEE, melt.day = melt.day, frost.day=frost.day, length=length.season)#create data frame
+NEE_springRMSE = data.frame(RMSEspring = RMSE.spring, RMSEall = rmse.NEE, start.day = startday, end.day=endday, length=length.season)#create data frame
 NEE_springRMSE #view
 
 par(mfrow=c(3,1))
-reg.melt = lm(NEE_springRMSE$RMSEall~NEE_springRMSE$melt.day) #run linear model
-plot(NEE_springRMSE$RMSEall~NEE_springRMSE$melt.day) #plot data
-abline(reg.melt, col="red") #add model line
-summary(reg.melt) #view model stats
+reg.spring = lm(NEE_springRMSE$RMSEall~NEE_springRMSE$start.day) #run linear model
+plot(NEE_springRMSE$RMSEall~NEE_springRMSE$start.day) #plot data
+abline(reg.spring, col="red") #add model line
+summary(reg.spring) #view model stats
 
-reg.frost = lm(NEE_springRMSE$RMSEall~NEE_springRMSE$frost.day) #run linear model
-plot(NEE_springRMSE$RMSEall~NEE_springRMSE$frost.day) #plot data
-abline(reg.frost, col="red") #add model line
-summary(reg.frost) #view model stats
+reg.fall = lm(NEE_springRMSE$RMSEall~NEE_springRMSE$end.day) #run linear model
+plot(NEE_springRMSE$RMSEall~NEE_springRMSE$end.day) #plot data
+abline(reg.fall, col="red") #add model line
+summary(reg.fall) #view model stats
 
 reg.length = lm(NEE_springRMSE$RMSEall~NEE_springRMSE$length) #run linear model
 plot(NEE_springRMSE$RMSEall~NEE_springRMSE$length) #plot data
@@ -495,37 +515,52 @@ data.compareNEE = (data.compare_NEE[match(data.compare_NEE$Time, data.check$time
 data.compareNEE = data.compareNEE[is.na(data.compareNEE$Time)==FALSE,]
 out.compareNEE = (out.compare_NEE[match(out.compare_NEE$time, data.check$time),])
 out.compareNEE = out.compareNEE[is.na(out.compareNEE$time)==FALSE,]
+out.compare = (out[match(out$time, data.check$time),])
 
-plot(data.compareNEE$NEE~data.check$PAR_ARF, pch=16)
+
+plot(data.compareNEE$NEE~data.check$PAR_ARF, pch=16, ylab="NEE", xlab="PAR")
 points(out.compareNEE$NEE~data.check$PAR_ARF, col="red")
-plot(data.compareNEE$NEE~data.check$Temp_ARF, pch=16)
+plot(data.compareNEE$NEE~data.check$Temp_ARF, pch=16, ylab="NEE", xlab="TEMP")
 points(out.compareNEE$NEE~data.check$Temp_ARF, col="red")
 
+plot(out.compare$GPP~out.compare$PAR, pch=16, ylab="GPP", xlab="PAR")
+plot(out.compare$GPP~out.compare$Temp, pch=16, ylab="GPP", xlab="TEMP")
+
+plot(out.compare$GPP~out.compare$LAI, pch=16, ylab="GPP", xlab="LAI")
+plot(out.compare$LAI~out.compare$Temp, pch=16, ylab="LAI", xlab="TEMP")
+
+plot(out$GPP~out$PAR, pch=16, ylab="GPP", xlab="PAR")
+plot(out$GPP~out$Temp, pch=16, ylab="GPP", xlab="TEMP")
+
+par(mfrow=c(3,1), mar=c(4,4,1,4))
+plot(out.compare$Re~out.compare$Temp, ylab="Re", xlab="Temp", pch=16)
+plot(out.compare$Rh~out.compare$Temp, col="red", ylab="Rh", xlab="Temp", pch=16)
+plot(out.compare$Ra~out.compare$Temp, col="forestgreen", ylab="Ra", xlab="Temp", pch=16)
 
 
-#####new plots for adrian######
+plot(out$Re~out$time, ylab="Respiration", xlab="Time", pch=16)
+points(out$Rh~out$time, col="red")
+points(out$Ra~out$time, col="forestgreen")
+sum(out$Rh)/sum(out$Re)
+sum(out$Ra)/sum(out$Re)
+
+plot(out$Available_N~out$Temp, ylab="Available N", xlab="Temp")
+par(mfrow=c(1,2), mar=c(4,4,1,2))
+plot(out$Ntrans~out$Temp, ylab="Net N Min", xlab="Temp")
+plot(out$Uptake~out$Temp, ylab="N Uptake", xlab="Temp")
 
 par(mfrow=c(2,1), mar=c(4,4,1,4))
-plot(out$DOY, out$TFN, xlab="DOY", ylab="") # first plot
-par(new = TRUE)
-plot(out$DOY, out$scalseason, ylim=c(0, 1), pch=16, col="red", axes = FALSE, bty = "n", xlab = "", ylab = "")
-axis(4, ylim=c(0,0.7), col="red",col.axis="red",las=1)
-
-plot(out$DOY, out$LAI, xlab="DOY", ylab="") # first plot
+plot(out$DOY, out$TFN, xlab="DOY", ylab="TFN") # first plot
+plot(out$DOY, out$LAI, xlab="DOY", ylab="LAI") # first plot
 par(new = TRUE)
 plot(out$DOY, out$NDVI, ylim=c(0, 1), pch=16, col="red", axes = FALSE, bty = "n", xlab = "", ylab = "")
-axis(4, ylim=c(0,0.7), col="red",col.axis="red",las=1)
+axis(4, col="red",col.axis="red",las=1)
 
-
-
-#looking at NDVI data
-head(data.compare2)
-DOY=140:250
-ASD.avg = tapply(data.compare2[,9], data.compare2$DOY, mean)
-TOW.avg = tapply(data.compare2[,10], data.compare2$DOY, mean)
-
-plot(ASD.avg~DOY, pch=16, ylim=c(0,0.7))
-plot(TOW.avg~DOY, pch=16, ylim=c(0,0.7))
+plot(out$LAI~out$NDVI, ylab="LAI", xlab="NDVI")
+plot(out$Available_N~out$time)
+par(new = TRUE)
+plot(out$time, out$NDVI, ylim=c(0, 1), pch=16, col="red", axes = FALSE, bty = "n", xlab = "", ylab = "")
+axis(4, col="red",col.axis="red",las=1)
 
 
 

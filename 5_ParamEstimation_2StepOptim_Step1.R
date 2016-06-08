@@ -19,8 +19,8 @@ head(sigma.obs1)
 
 ####DATA EXPLORATION###
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.012,0.23,0.022,0.04,3,   941,17,24217,1045,3.62)
-param.min=c(0.07,0.0001,0.002,0.01,0.01,0.003,1,  408,8,14501,663,0.03)
+param.max=c(0.34,0.0024,0.012,0.23,0.022,0.015,0.8,   941,17,24217,1045,3.62)
+param.min=c(0.07,0.0001,0.002,0.01,0.01,0.00005,0.4,  408,8,14501,663,0.03)
 
 ##STEP 1: Explore with BOTH NEE and NDVI
 

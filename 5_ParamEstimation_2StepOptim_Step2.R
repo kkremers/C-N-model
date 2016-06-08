@@ -19,6 +19,12 @@ Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
 
 
 #OPEN 3_Model.R and run it the first time
+state  <- c(Biomass_C = 715, 
+            Biomass_N = 14, 
+            SOM_C = 8700, 
+            SOM_N = 355,
+            Available_N = 0.01)
+
 out.spin= data.frame(solvemodel(param.best, state)) #creates table of model output
 plot(out.spin$Biomass_C)
 end.time = length(out.spin[,1])
@@ -83,7 +89,10 @@ param.keep = data.frame(matrix(1, 1000, n.param)) #storage for parameter estimat
 colnames(param.keep) = c(names(param.best))
 param.keep[1,]=param.best
 head(param.keep)#check to make sure this is correct
-
+state.keep = data.frame(matrix(1,1000,length(state)))
+colnames(state.keep) = c(names(state.best))
+state.keep[1,] = state.best
+head(state.keep)
 
 #also need to know degrees of freedom for chi square test
 n.par = n.param #number of parameters predicted by each data stream
@@ -95,6 +104,7 @@ df #check values
 
 #set initial values
 param.est = param.best #set initial values for parameters
+state = state.best
 reject=0 #reset reject counter
 num.accepted = 0 #counter for number of accepted parameters - when this gets to 1000, loop will stop
 num.reps = 0 #counter for number of repititions - calculates acceptance rate
@@ -123,11 +133,11 @@ repeat { #repeat until desired number of parameter sets are accepted
       DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
       Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
       
-      state  <- c(Biomass_C = 500, 
-                  Biomass_N = 10, 
-                  SOM_C = 16000, 
-                  SOM_N = 800,
-                  Available_N = 1)
+      state  <- c(Biomass_C = 715, 
+                  Biomass_N = 14, 
+                  SOM_C = 8700, 
+                  SOM_N = 355,
+                  Available_N = 0.01)
       
       out.spin= data.frame(solvemodel(parms, state)) #creates table of model output
       #adjust starting values
@@ -195,6 +205,7 @@ repeat { #repeat until desired number of parameter sets are accepted
     if(d.accept==D) { #if all j's are accepted
       num.accepted = num.accepted+1 #add to number of parameter sets accepted
       param.keep[num.accepted,]=param.est #store the parameter set in the storage dataframe
+      state.keep[num.accepted,]=state
     } #end of if loop
     if(d.accept<D) { #if any j's rejected
       reject = reject+1 #reject parameter set
@@ -223,4 +234,4 @@ repeat { #repeat until desired number of parameter sets are accepted
 head(param.keep)
 tail(param.keep)
 
-save.image(file="Step2_NEE_NDVI_042316_820.Rdata")
+save.image(file="Step2_NEE_NDVI_060616.Rdata")

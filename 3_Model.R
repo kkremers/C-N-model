@@ -2,20 +2,20 @@ require(deSolve)
 require(FME)
 
 
-params <- c(kplant = 0.16, #0.07-0.34
-            LitterRate = 0.0008, #0.0001-0.0024
-            UptakeRate = 0.005, #0.002-0.012
-            propN_fol = 0.1, #0.01-0.23
+params <- c(kplant = 0.2, #0.07-0.34
+            LitterRate = 0.0005, #0.0001-0.0024
+            UptakeRate = 0.01, #0.002-0.012
+            propN_fol = 0.035, #0.01-0.23
             propN_roots = 0.01, #0.01-0.022
-            netNrate = 0.007, #0.003-0.04
-            q10=1.29) #1-3
+            netNrate = 0.01, #0.00005-0.015
+            retrans = 0.7, #0.4 - 0.8
+            q10 = 2) #1 - 3
 
-
-state  <- c(Biomass_C = 500, 
-            Biomass_N = 10, 
-            SOM_C = 16000, 
-            SOM_N = 800,
-            Available_N = 1)
+state  <- c(Biomass_C = 715, 
+            Biomass_N = 14, 
+            SOM_C = 8700, 
+            SOM_N = 355,
+            Available_N = 0.01)
 
 ####################MODEL#################################
 
@@ -35,9 +35,8 @@ solvemodel <- function(params, state, times) {
       Year = Year.d1(t)
       
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
-      Ndep_rate = 0.00007 #calculated from Alaska's changing arctic pg 106
+      Nin_rate = 0.00034 #calculated from Alaska's changing arctic pg 106
       Nout_rate = 0.0002 #calculated from Alaska's changing arctic page 106
-      Nfix_rate=0.001 #calculated from Alaska's changing arctic pg 106 and scal.temp   
       R0= 0.07 #0.045-0.105
       beta= 0.07 #0.05-0.09
       Rx=0.01 #0.001-0.04
@@ -65,6 +64,8 @@ solvemodel <- function(params, state, times) {
       Ntrans = netNrate * q10^(Temp/10)
       Litterfall_C =  LitterRate * Biomass_C
       Litterfall_N  =  LitterRate * Biomass_N
+      N.out = Nout_rate
+      N.in =  Nin_rate
       
       #calculated variables to use for model fitting and analysis
       NEE = Re - GPP
@@ -76,7 +77,7 @@ solvemodel <- function(params, state, times) {
       dBiomass_N = Uptake  - Litterfall_N 
       dSOM_C = Litterfall_C  - Rh
       dSOM_N = Litterfall_N - Ntrans
-      dAvailable_N = Ntrans - Uptake
+      dAvailable_N = Ntrans + N.in + - Uptake - N.out
       
       
       #what to output
@@ -87,8 +88,8 @@ solvemodel <- function(params, state, times) {
              dSOM_N,
              dAvailable_N), 
            c(NEE=NEE, GPP=GPP, Re=Re, LAI=LAI, NDVI=NDVI, Ra=Ra, Rh=Rh, Uptake = Uptake, 
-             Ntrans=Ntrans, Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, 
-             DOY=DOY, TFN=TFN, Temp=Temp, scaltemp = scaltemp, scalseason = scalseason, year=Year, propN_fol = propN_fol.T, NDVI_MODIS=NDVI_MODIS))
+             Ntrans=Ntrans, Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, Tavg=Temp_avg,
+             DOY=DOY, TFN=TFN, Temp=Temp, PAR=PAR, scaltemp = scaltemp, scalseason = scalseason, year=Year, propN_fol = propN_fol.T, NDVI_MODIS=NDVI_MODIS))
       
     })  #end of with(as.list(...
   } #end of model
@@ -102,3 +103,12 @@ solvemodel <- function(params, state, times) {
 #####################################################################
 
 out= data.frame(solvemodel(params, state)) #creates table of model output
+
+
+#plot pools
+par(mfrow=c(3,2), mar=c(4,4,1,2))
+plot(out$Biomass_C~out$time, type="l", col="forestgreen", main = "Biomass C", xlab="", ylab="g C m-2")
+plot(out$Biomass_N~out$time, type="l", col="forestgreen",  main = "Biomass N", xlab="", ylab="g N m-2")
+plot(out$SOM_C~out$time, type="l", col="brown", main = "SOM C", xlab="", ylab="g C m-2")
+plot(out$SOM_N~out$time, type="l", col="brown", main = "SOM N", xlab="Time (days)", ylab="g N m-2")
+plot(out$Available_N~out$time, type="l", col="blue", main = "Available_ N", xlab="Time (days)", ylab="g N m-2",lty=2)

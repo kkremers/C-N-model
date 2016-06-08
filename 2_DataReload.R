@@ -79,7 +79,14 @@ for (i in 1:length(Temp.sm)){
   scal.temp.sm[i] = (Temp.sm[i] - Tminsm.mean)/(Tmaxsm.mean-Tminsm.mean) 
 }
 
-plot(scal.temp.sm, type="l")
+#rescale to 1
+minscal = min(scal.temp.sm)
+maxscal = max(scal.temp.sm)
+for (i in 1:length(scal.temp.sm)){
+  scal.temp.sm[i] = (scal.temp.sm[i] - minscal)/(maxscal-minscal) 
+}
+
+plot(scal.temp.sm)
 
 #need to calculate slope for each 7 day period
 start = seq(1, length(Temp.sm), 8) #create a sequence of start iterations for slope calculations
@@ -195,7 +202,7 @@ Temp_avg = NA
 for (i in 1: length(years)){
   year.i = years[i]
   data.year = subset(data, data$year==year.i)
-  Temp_GS = data.year$Temp_ARF[data.year$DOY>=data.year$startDOY[1] & data.year$DOY <= data.year$endDOY[1]]
+  Temp_GS = data.year$Temp_ARF[data.year$DOY>=150 & data.year$DOY <= 240]
   Temp_avg[i] = mean(Temp_GS)
 }
 Temp_avg

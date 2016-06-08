@@ -191,12 +191,15 @@ abline(v=param.best[7], col="red", lwd=3)
 
 param.min_new = apply(param.keep, 2, min)
 param.max_new = apply(param.keep, 2, max)
+apply(param.keep,2,mean)
+apply(param.keep,2,sd)
 
 range.i = param.max-param.min
 range.f = param.max_new - param.min_new
 
 range.f<range.i
 mean(range.f/range.i)
+range.f/range.i
 
 
 ###################Temporal Validation#################
@@ -267,7 +270,7 @@ for (i in 1:length(data.spin$Temp)){
 plot(scal.temp.spin, type="l")
 
 #run model spin up for current parameter set
-numyears = 30
+numyears = 50
 Year.spin = rep(data.spin$Year, numyears)
 DOY.spin = rep(data.spin$DOY, numyears)
 Temp.spin = rep(data.spin$Temp, numyears)
@@ -300,6 +303,7 @@ state <- c( Biomass_C = out.spin$Biomass_C[end.time],
             SOM_N = out.spin$SOM_N[end.time],
             Available_N = out.spin$Available_N[end.time])
 
+state.best = state 
 
 time = seq(1:length(data$time))
 #make into functions so that it will be continuous in the model
@@ -311,7 +315,7 @@ scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
 
-out= data.frame(solvemodel(param.best, state)) #creates table of model output
+out= data.frame(solvemodel(param.best, state.best)) #creates table of model output
 
 
 
@@ -349,16 +353,68 @@ summarytable=data.frame(q05 = q05, q25 = q25, mean = means,
 
 
 #global sensitivity analysis to find confidence intervals
+#first need to figure out state values for each parameter set
+time = seq(1:length(DOY.spin))
+
+Temp.d1 <- approxfun(x=time, y=Temp.spin, method="linear", rule=2)
+TempAvg.d1 <- approxfun(x=time, y=TempAvg.spin, method="linear", rule=2)
+PAR.d1 <- approxfun(x=time, y=PAR.spin, method="linear", rule=2)
+scaltemp.d1 <- approxfun(x=time, y=scal.temp.spin1, method="linear", rule=2)
+scalseason.d1 <- approxfun(x=time, y=scal.seas.spin1, method="linear", rule=2)
+DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
+Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
+
+params.all = param.keep
+Biomass_C = rep(1, length(param.keep[,1]))
+Biomass_N = rep(1, length(param.keep[,1]))
+SOM_C = rep(1, length(param.keep[,1]))
+SOM_N = rep(1, length(param.keep[,1]))
+Available_N = rep(1, length(param.keep[,1]))
+params.all = cbind(params.all, Biomass_C, Biomass_N, SOM_C, SOM_N, Available_N)
+head(params.all)
+
+for(i in 1:length(param.keep[,1])){
+  state  <- c(Biomass_C = 715, 
+              Biomass_N = 14, 
+              SOM_C = 8700, 
+              SOM_N = 355,
+              Available_N = 0.01)
+  
+  out.spin= data.frame(solvemodel(param.keep[i,], state)) #creates table of model output
+  end.time = length(out.spin[,1])
+  params.all[i,8] = out.spin$Biomass_C[end.time] 
+  params.all[i,9] = out.spin$Biomass_N[end.time]
+  params.all[i,10] = out.spin$SOM_C[end.time] 
+  params.all[i,11] = out.spin$SOM_N[end.time]
+  params.all[i,12] = out.spin$Available_N[end.time]
+  
+}
+head(params.all)
+
+time = seq(1:length(data$time))
+#make into functions so that it will be continuous in the model
+Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
+TempAvg.d1 <- approxfun(x=data$time, y=data$Temp_avg, method="linear", rule=2)
+PAR.d1 <- approxfun(x=data$time, y=data$PAR_ARF, method="linear", rule=2)
+scaltemp.d1 <- approxfun(x=data$time, y=scal.temp.sm, method="linear", rule=2)
+scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
+DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
+Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
+
 sensvars = c("NEE",
              "NDVI")
 
-s.global <- sensRange(func=solvemodel, parms=param.best, state=state, sensvar = sensvars, parInput=param.keep, num=760)
+params.sens = c(param.best, state.best)
+params.sens
+
+#run 3_Model_startingvaluesasparams.R
+s.global <- sensRange(func=solvemodel1, parms=params.sens, sensvar = sensvars, parInput=params.all)
 s.global.summ = summary(s.global) #create summary table
 head(s.global.summ) #view first 6 rows
 tail(s.global.summ)
 
 #get model output & confidence intervals organized
-out=data.frame(solvemodel(param.best, state))
+out=data.frame(solvemodel(param.best, state.best))
 NEE_summ = data.frame(Time=s.global.summ[1:2922,1], NEE=out$NEE, sd=s.global.summ[1:2922,3], min=s.global.summ[1:2922,4], max=s.global.summ[1:2922,5], q05=s.global.summ[1:2922,6], q95=s.global.summ[1:2922,10], q25=s.global.summ[1:2922,7], q75=s.global.summ[1:2922,9])
 head(NEE_summ)
 NDVI_summ = data.frame(Time=s.global.summ[2923:5844,1], NDVI=out$NDVI, sd=s.global.summ[2923:5844,3], min=s.global.summ[2923:5844,4], max=s.global.summ[2923:5844,5],q05=s.global.summ[2923:5844,6], q95=s.global.summ[2923:5844,10], q25=s.global.summ[2923:5844,7], q75=s.global.summ[2923:5844,9])
@@ -376,14 +432,17 @@ out.compare_NEE1 = out[match(data.compare_NEE1$Time, out$time),]
 out.compare_NEE2 = out[match(data.compare_NEE2$Time, out$time),]
 out.compare_NDVI1 = out[match(data.compare_NDVI1$Time, out$time),]
 out.compare_NDVI2 = out[match(data.compare_NDVI2$Time, out$time),]
-
-
+data.compare_NEE=data.compare[complete.cases(data.compare[,6]),c(1:5,6)]
+data.compare_NDVI=data.compare[complete.cases(data.compare[,7]),c(1:5,7)]
+out.compare_NEE = out[match(data.compare_NEE$Time, out$time),]
+out.compare_NDVI = out[match(data.compare_NDVI$Time, out$time),]
 
 #linear regressions for years not assimilated
 reg_NEE = lm(out.compare_NEE2$NEE~data.compare_NEE2$NEE)
 reg_NDVI = lm(out.compare_NDVI2$NDVI~data.compare_NDVI2$NDVI)
 
-
+summary(reg_NEE)
+summary(reg_NDVI)
 
 #now need to calculate residuals and determine RMSE for each year
 resid.NEE2 = data.compare_NEE2$NEE - out.compare_NEE2$NEE
@@ -398,13 +457,17 @@ resid.NDVI = c(resid.NDVI1, resid.NDVI2)
 resid_NDVI = data.frame(time=c(out.compare_NDVI1$time, out.compare_NDVI2$time), Year=c(out.compare_NDVI1$year, out.compare_NDVI2$year), DOY=c(out.compare_NDVI1$DOY, out.compare_NDVI2$DOY), resid.NDVI)
 resid_NDVI = resid_NDVI[ order(resid_NDVI[,2]), ]
 
-
+#NEED TO ADD MOVING AVERAGE TO THESE PLOTS
+residNEE.means = tapply(resid_NEE$resid.NEE, resid_NEE$DOY, mean)
+residNDVI.means = tapply(resid_NDVI$resid.NDVI, resid_NDVI$DOY, mean)
+days = seq(150, 240, 1)
 par(mfrow=c(2,1), mar=c(4,4,2,2))
-plot(resid_NEE$DOY, resid_NEE$resid.NEE, main="NEE Residuals", ylab="Residuals", xlab="DOY")
-abline(h=0, col="red")
+plot(resid_NEE$DOY[-1], resid_NEE$resid.NEE[-1], main="NEE Residuals", ylab="Residuals", xlab="DOY")
+abline(h=0, lwd=2)
+lines(residNEE.means[-1]~days, col="red", lwd=3)
 plot(resid_NDVI$DOY, resid_NDVI$resid.NDVI, main="NDVI Residuals", ylab="Residuals", xlab="DOY")
-abline(h=0, col="red")
-
+abline(h=0, lwd=2)
+lines(residNDVI.means~days, col="red", lwd=3)
 
 #calculate RMSE by year:
 rmse <- function(x){
@@ -438,12 +501,13 @@ mtext("2013", side=1, at=2007, cex=1.5, line=0.5)
 mtext("2014", side=1, at=2372, cex=1.5, line=0.5)
 mtext("2015", side=1, at=2737, cex=1.5, line=0.5) 
 axis(2, cex.axis=1.5)
+arrows(data.compare$Time,data.compare$NEE+sigma.compare$NEE, data.compare$Time, data.compare$NEE-sigma.compare$NEE, angle=90, code=3, length=0.01, col="gray20")
 #make polygon where coordinates start with lower limit and then upper limit in reverse order
-with(NEE_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = "grey75", border = "gray75"))
-points(NEE~time, data=out, pch=16, cex=0.75)
-points(NEE~Time, data=data.compare_NEE1, pch=16, col="aquamarine4", cex=0.75)
-points(NEE~Time, data=data.compare_NEE2, pch=16, col="darkorange3", cex=0.75)
-legend("topleft", cex=1.5, legend=c("CCaN NEE 90% C.I.", "CCaN NEE", "Assimilated NEE Measurements", "NEE Measurements Not Assimilated"), bty="n", pch=c(15,16,16,16), col=c("gray75", "black", "aquamarine4", "darkorange3"))
+with(NEE_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = adjustcolor("gray75",alpha.f=0.75), border = adjustcolor("gray75",alpha.f=0.75)))
+#lines(NEE~time, data=out, pch=16, cex=0.75)
+points(NEE~Time, data=data.compare_NEE1, pch=16, col="aquamarine4", cex=0.5)
+points(NEE~Time, data=data.compare_NEE2, pch=16, col="darkorange3", cex=0.5)
+legend("topleft", cex=1.5, legend=c("CCaN NEE 90% C.I.", "Assimilated NEE Measurements", "NEE Measurements Not Assimilated"), bty="n", pch=c(15,16,16,16), col=c("gray75","aquamarine4", "darkorange3"))
 
 par(las=3)
 barplot(NEE_yrRMSE, ylim=c(0,max(NEE_yrRMSE)+0.5), ylab="RMSE", cex=1.5, cex.axis=1.5, cex.lab = 1.5, col=c("darkorange3", "aquamarine4", "darkorange3", "aquamarine4", "darkorange3", "aquamarine4", "darkorange3", "aquamarine4"))
@@ -453,7 +517,7 @@ plot(out.compare_NEE2$NEE~data.compare_NEE2$NEE, pch=16, cex.lab=1.5, cex=0.75, 
 axis(1, cex.axis = 1.5)
 axis(2, cex.axis = 1.5)
 abline(0,1, col="red", lty=2, lwd=2)
-legend("topleft", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(reg_NEE)$adj.r.squared, digits=2))))
+#legend("topleft", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(reg_NEE)$adj.r.squared, digits=2))))
 
 
 plot(NDVI~time,data=out, type="p", pch=16, cex=1.5, axes=FALSE, xlab="",ylim=c(0,1), cex.lab=1.5, col="white")
@@ -467,12 +531,13 @@ mtext("2013", side=1, at=2007, cex=1.5, line=0.5)
 mtext("2014", side=1, at=2372, cex=1.5, line=0.5)
 mtext("2015", side=1, at=2737, cex=1.5, line=0.5) 
 axis(2, cex.axis=1.5)
+arrows(data.compare$Time,data.compare$NDVI+sigma.compare$NDVI, data.compare$Time, data.compare$NDVI-sigma.compare$NDVI, angle=90, code=3, length=0.01, col="gray20")
 #make polygon where coordinates start with lower limit and then upper limit in reverse order
-with(NDVI_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = "grey75", border = "gray75"))
-points(NDVI~time, data=out, pch=16, cex=0.75)
-points(NDVI~Time, data=data.compare_NDVI1, pch=16, col="aquamarine4", cex=0.75)
-points(NDVI~Time, data=data.compare_NDVI2, pch=16, col="darkorange3", cex=0.75)
-legend("topleft", cex=1.5, legend=c("CCaN NDVI 90% C.I.", "CCaN NDVI", "Assimilated NDVI Measurements", "NDVI Measurements Not Assimilated"), bty="n", pch=c(15,16,16,16), col=c("gray75", "black", "aquamarine4", "darkorange3"))
+with(NDVI_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = adjustcolor("gray75",alpha.f=0.75), border = adjustcolor("gray75",alpha.f=0.75)))
+#points(NDVI~time, data=out, pch=16, cex=0.75)
+points(NDVI~Time, data=data.compare_NDVI1, pch=16, col="aquamarine4", cex=0.5)
+points(NDVI~Time, data=data.compare_NDVI2, pch=16, col="darkorange3", cex=0.5)
+legend("topleft", cex=1.5, legend=c("CCaN NDVI 90% C.I.", "Assimilated NDVI Measurements", "NDVI Measurements Not Assimilated"), bty="n", pch=c(15,16,16,16), col=c("gray75",  "aquamarine4", "darkorange3"))
 
 par(las=3)
 barplot(NDVI_yrRMSE, ylim=c(0,max(NDVI_yrRMSE)+0.02), ylab="RMSE", cex=1.5, cex.axis=1.5, cex.lab=1.5, col=c("darkorange3", "aquamarine4", "darkorange3", "aquamarine4", "darkorange3", "aquamarine4", "darkorange3", "aquamarine4"))
@@ -482,7 +547,82 @@ plot(out.compare_NDVI2$NDVI~data.compare_NDVI2$NDVI, axes=FALSE, pch=16, cex.lab
 axis(1, cex.axis = 1.5)
 axis(2, cex.axis = 1.5)
 abline(0,1, col="red", lty=2, lwd=2)
-legend("topleft", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(reg_NDVI)$adj.r.squared, digits=2))))
+#legend("topleft", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(reg_NDVI)$adj.r.squared, digits=2))))
+
+
+###ALSO MAKE A PLOT OF HOW R2 VARIES BY TIMESTEP###
+#calculate 8 day average modelled and measured
+nr = length(out.compare_NEE$NEE)
+gr = rep(1:floor(nr/8), each = 8)
+mod8day_NEE = aggregate(out.compare_NEE$NEE[-c(1:3)] ~ gr, FUN=mean)[,-1]
+nr = length(data.compare_NEE$NEE)
+gr = rep(1:floor(nr/8), each = 8)
+dat8day_NEE = aggregate(data.compare_NEE$NEE[-c(1:3)] ~ gr, FUN=mean)[,-1]
+
+nr = length(out.compare_NDVI$NDVI)
+gr = rep(1:floor(nr/8), each = 8)
+mod8day_NDVI = aggregate(out.compare_NDVI$NDVI[-c(1:5)] ~ gr, FUN=mean)[,-1]
+nr = length(data.compare_NDVI$NDVI)
+gr = rep(1:floor(nr/8), each = 8)
+dat8day_NDVI = aggregate(data.compare_NDVI$NDVI[-c(1:5)] ~ gr, FUN=mean)[,-1]
+
+cor_8dayNEE = cor(mod8day_NEE, dat8day_NEE)
+cor_8dayNDVI = cor(mod8day_NDVI, dat8day_NDVI)
+
+#calculate 14 day average modelled and measured
+nr = length(out.compare_NEE$NEE)
+gr = rep(1:floor(nr/14), each = 14)
+mod14day_NEE = aggregate(out.compare_NEE$NEE[-c(1:9)] ~ gr, FUN=mean)[,-1]
+nr = length(data.compare_NEE$NEE)
+gr = rep(1:floor(nr/14), each = 14)
+dat14day_NEE = aggregate(data.compare_NEE$NEE[-c(1:9)] ~ gr, FUN=mean)[,-1]
+
+nr = length(out.compare_NDVI$NDVI)
+gr = rep(1:floor(nr/14), each = 14)
+mod14day_NDVI = aggregate(out.compare_NDVI$NDVI[-c(1:11)] ~ gr, FUN=mean)[,-1]
+nr = length(data.compare_NDVI$NDVI)
+gr = rep(1:floor(nr/14), each = 14)
+dat14day_NDVI = aggregate(data.compare_NDVI$NDVI[-c(1:11)] ~ gr, FUN=mean)[,-1]
+
+
+cor_14dayNEE = cor(mod14day_NEE, dat14day_NEE)
+cor_14dayNDVI = cor(mod14day_NDVI, dat14day_NDVI)
+
+
+#calculate 30 day average modelled and measured
+nr = length(out.compare_NEE$NEE)
+gr = rep(1:floor(nr/30), each = 30)
+mod30day_NEE = aggregate(out.compare_NEE$NEE[-c(1:7)] ~ gr, FUN=mean)[,-1]
+nr = length(data.compare_NEE$NEE)
+gr = rep(1:floor(nr/30), each = 30)
+dat30day_NEE = aggregate(data.compare_NEE$NEE[-c(1:7)] ~ gr, FUN=mean)[,-1]
+
+nr = length(out.compare_NDVI$NDVI)
+gr = rep(1:floor(nr/30), each = 30)
+mod30day_NDVI = aggregate(out.compare_NDVI$NDVI[-c(1:9)] ~ gr, FUN=mean)[,-1]
+nr = length(data.compare_NDVI$NDVI)
+gr = rep(1:floor(nr/30), each = 30)
+dat30day_NDVI = aggregate(data.compare_NDVI$NDVI[-c(1:9)] ~ gr, FUN=mean)[,-1]
+
+
+cor_30dayNEE = cor(mod30day_NEE, dat30day_NEE)
+cor_30dayNDVI = cor(mod30day_NDVI, dat30day_NDVI)
+
+
+
+cor_NEE = cor(out.compare_NEE$NEE, data.compare_NEE$NEE)
+cor_NDVI = cor(out.compare_NDVI$NDVI, data.compare_NDVI$NDVI)
+#side by side barplot
+names=c("Daily", "8 Day Avg", "14 Day Avg", "30 day Avg")
+bars <- matrix(1, 2, length(names))
+bars[1,]=c(cor_NEE, cor_8dayNEE, cor_14dayNEE, cor_30dayNEE)
+bars[2,]=c(cor_NDVI, cor_8dayNDVI, cor_14dayNDVI, cor_30dayNDVI)
+colnames(bars)=names
+head(bars)
+par(mfrow=c(1,1), mar=c(5,6,3,3))
+barplot(bars, cex.lab=2.5, cex.axis=2, cex.names=1.5, ylab = "r", col=c("gray","gray20"),beside=TRUE, ylim=c(0, 1), legend=c("NEE", "NDVI"), args.legend=c(horiz=TRUE, cex=1.5))
+
+
 
 ################Spatial Validation######################
 
@@ -608,12 +748,11 @@ for(i in 1:length(latitudes)){
   
   params = param.best
   
-  
-  state  <- c(Biomass_C = 500, 
-              Biomass_N = 10, 
-              SOM_C = 16000, 
-              SOM_N = 800,
-              Available_N = 1)
+  state  <- c(Biomass_C = 715, 
+              Biomass_N = 14, 
+              SOM_C = 8700, 
+              SOM_N = 355,
+              Available_N = 0.01)
   
   out.spin= data.frame(solvemodel(params, state)) #creates table of model output
   
@@ -670,7 +809,7 @@ for(i in 1:length(latitudes)){
 
 #############
 summary=summary[-1,]
-write.csv(summary, "CaTT_Summary_042216") #save CSV 
+write.csv(summary, "CaTT_Summary_060716") #save CSV 
 
 #plots of spatial data
 par(mfrow=c(2,1), mar=c(4,5,2,2))
@@ -711,12 +850,23 @@ NIR = lm(residuals~band2, data=resid.dat)
 SWIR = lm(residuals~band7, data=resid.dat)
 NDWI = lm(residuals~NDWI, data=resid.dat)
 
+
 summary(red)
 summary(NIR)
 summary(SWIR)
 summary(NDWI)
 
-par(mfrow=c(2,2))
+summary1 = read.csv("CaTT_Summary_060716")
+head(summary1)
+head(resid.dat)
+length(summary1[,1])
+length(resid.dat[,1])
+resid.dat=data.frame(cbind(resid.dat, Tmax = summary1$Tmax, Tavg = summary1$Tavg))
+Tavg = lm(residuals~Tavg, data=resid.dat)
+Tmax = lm(residuals~Tmax, data=resid.dat)
+
+
+par(mfrow=c(2,3))
 plot(resid.dat$residuals~resid.dat$band1, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="MODIS Band 1 (Red)")
 abline(red, col="red", lwd=2)
 legend("topright", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(red)$adj.r.squared, digits=2))))
@@ -729,6 +879,12 @@ legend("topright", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summ
 plot(resid.dat$residuals~resid.dat$NDWI, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="NDWI")
 abline(NDWI, col="red", lwd=2)
 legend("topright", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(NDWI)$adj.r.squared, digits=2))))
+plot(resid.dat$residuals~resid.dat$Tavg, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="Tavg")
+abline(Tavg, col="red", lwd=2)
+legend("topright", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(Tavg)$adj.r.squared, digits=2))))
+plot(resid.dat$residuals~resid.dat$Tmax, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="Tmax")
+abline(Tmax, col="red", lwd=2)
+legend("topright", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(Tmax)$adj.r.squared, digits=2))))
 
 
 
@@ -748,17 +904,70 @@ legend("topright", cex=1.5, legend=c("CCaN NDVI", "MODIS NDVI", "MODIS NDWI", "M
 ###########Temperature Sensitivity Comparison################
 #regressions with temperature - NDVI
 reg_MODIS.temp = lm(summary$MODIS_avg~summary$Tavg)
-reg_CCaN.temp = lm(summary$CCaN_avg~summary$Tavg)
 
 #regression stats
 summary(reg_MODIS.temp) #slope is sensitivity
-summary(reg_CCaN.temp) #slope is sensitivity
 
-Sample = c("CCaN", "LTER", "Goetz", "MODIS")
-Sensitivity = c(0.030, 0.022, 0.02, 0.033)
-ErrorBars = c(0.0006,0.0004, 0, 0.004 )
+#load in Goetz data
+Goetz_dat = data.frame(read.csv("GoetzTempSens.csv"))
+Goetz_dat
+reg_Goetz.temp = lm(Goetz_dat$NDVI~Goetz_dat$Temp)
+summary(reg_Goetz.temp)
+
+#calculate seasonal temperature sensitivity using tower NDVI
+head(data.compare_NDVI)
+tail(data.compare_NDVI)
+temp.data = read.csv("InputData_Processed.csv") 
+head(temp.data)
+temp.compare = temp.data[match(data.compare_NDVI$Time, temp.data$time),]
+head(temp.compare)
+length(temp.compare$Temp_ARF); length(data.compare_NDVI$NDVI) #check to make sure length matches
+data.compare_NDVI=cbind(data.compare_NDVI[,1:6], Temp=temp.compare$Temp_ARF)
+head(data.compare_NDVI)
+#smooth data
+filt=rep(1/9,9)#average of current sample, 5 future samples, and 5 past samples
+Temp.smooth = filter(data.compare_NDVI$Temp, filt, sides=2, circular=TRUE)
+NDVI.smooth = filter(data.compare_NDVI$NDVI, filt, sides=2, circular=TRUE)
+data.compare_NDVI = cbind(data.compare_NDVI, Temp.sm = as.numeric(Temp.smooth), NDVI.sm = as.numeric(NDVI.smooth))
+head(data.compare_NDVI)
+
+#calculate yearly deltaNDVI/deltaT for spring green up
+years = unique(data.compare_NDVI$Year)
+years
+NDVIsens=NA
+NDVI.start=NA
+NDVI.end=NA
+Temp.start=NA
+Temp.end=NA
+DOY.start=NA
+DOY.end=NA
+for (i in 1: length(years)){
+  year.i = years[i]
+  data.year = subset(data.compare_NDVI, data.compare_NDVI$Year==year.i)
+  DOY.start[i] = min(data.year$DOY[which(data.year$Temp.sm>0)])
+  DOY.end[i] = data.year$DOY[which(data.year$Temp.sm == max(data.year$Temp.sm))]
+  NDVI.start[i] = data.year$NDVI.sm[data.year$DOY==DOY.start[i]]
+  NDVI.end[i] = data.year$NDVI.sm[data.year$DOY==DOY.end[i]]
+  Temp.start[i] = data.year$Temp.sm[data.year$DOY==DOY.start[i]]
+  Temp.end[i] = data.year$Temp.sm[data.year$DOY==DOY.end[i]]
+  NDVIsens[i] = (NDVI.end[i]-NDVI.start[i])/(Temp.end[i]/Temp.start[i]) 
+}
+DOY.start
+DOY.end
+NDVI.start
+NDVI.end
+Temp.start
+Temp.end
+NDVIsens
+mean(NDVIsens)
+sd(NDVIsens)
+sd(NDVIsens)/sqrt(length(NDVIsens))
+
+Sample = c("LTER", "Spring", "Goetz", "MODIS", "CCaN")
+Sensitivity = c(0.022, 0.023, 0.012, 0.033, 0.010 )
+ErrorBars = c(0.0007, 0.0077*1.65, 0.0037*1.65, 0.0042*1.65, 0.002*1.65)
 par(mfrow=c(1,1))
-barx=barplot(Sensitivity, cex=1.5, names.arg=Sample, ylab="Temperatre Sensitivity", ylim=c(0,0.04), cex.lab=1.5, cex.axis=1.5)
+barx=barplot(Sensitivity, cex=1.5, names.arg=Sample, ylab="Temperatre Sensitivity", ylim=c(0,0.06), cex.lab=1.5, cex.axis=1.5)
 arrows(x0=barx,y0=Sensitivity+ErrorBars,y1=Sensitivity-ErrorBars,angle=90,code=3,length=0.2)
 ##########################VARIANCE DECOMPOSITION ANALYSIS#######################
 
@@ -947,7 +1156,7 @@ tail(perc.all)
 
 par(mfrow=c(3,3), mar=c(4,4,2,2))
 
-for (n in 3:11) { #for each output
+for (n in c(3:8,11)) { #for each output
   sub = perc.all[,c(1,2,n)]
   sub1 = table(sub$Parameter, sub$Month)
   sub1[1,] = sub[1:12,3]
@@ -974,7 +1183,7 @@ sub1[5,] = sub[49:60,3]
 sub1[6,] = sub[61:72,3]
 barplot(sub1, col=c("darkolivegreen3", "aquamarine", "maroon4", "mediumseagreen",
                     "palegreen", "darkblue", "gray"),           
-        main=names(perc.all[11]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100), legend=TRUE, args.legend=c(horiz=TRUE)) #plot the data
+        main=names(perc.all[11]), names.arg=seq(1:12), axisnames=TRUE, ylim=c(0,100), legend=TRUE, args.legend=c(horiz=FALSE)) #plot the data
 
 
 ####ANNUAL ANALYSIS####
@@ -1230,9 +1439,16 @@ barplot(perc.all.NDVI_100$NDVI, names.arg=names, ylim=c(0,50),
         col=c("darkolivegreen3", "aquamarine", "maroon4", "mediumseagreen",
               "palegreen", "darkblue", "gray"), horiz=FALSE, main="NDVI Annual Variance", cex.names=1.5, cex.main=3, cex.axis=1.25,ylab="% of Variance", cex.lab=1.5) #plot the data
 
-
-
-
+#side by side barplot
+bars <- matrix(1, 2, length(names))
+bars[1,]=perc.all.NEE_100$NEE
+bars[2,]=perc.all.NDVI_100$NDVI
+colnames(bars)=names
+head(bars)
+par(las=3)
+par(mfrow=c(1,1), mar=c(8,5,3,3))
+barplot(bars, cex.lab=1.75, cex.axis=1.5, cex.names=1.5, ylab = "% of Total Annual Variance", col=c("gray","gray20"),beside=TRUE, ylim=c(0, 50), legend=c("NEE", "NDVI"), args.legend=c(horiz=TRUE, cex=1.5))
+        
 #bind all together
 varNDVI_100 = (perc.all.NDVI_100$NDVI[2:5]/100)*perc.all.NDVI_100$NDVI[9]
 varNEE_100 = (perc.all.NEE_100$NEE[2:5]/100)*perc.all.NEE_100$NEE[9]
@@ -1295,7 +1511,7 @@ points(var_all$NDVI[var_all$parameter=="propN_roots"]~var_all$range[var_all$para
 lines(var_all$range[var_all$parameter=="propN_roots"], exp(predict(regNDVI_propN_roots,list(range=var_all$range[var_all$parameter=="propN_roots"]))), col="palegreen", lwd=2)
 
 
-save.image(file="PLOTS_033116.Rdata")
+save.image(file="PLOTS_050516.Rdata")
 
 
 
