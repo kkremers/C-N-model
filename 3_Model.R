@@ -8,7 +8,6 @@ params <- c(kplant = 0.2, #0.07-0.34
             propN_fol = 0.035, #0.01-0.23
             propN_roots = 0.01, #0.01-0.022
             netNrate = 0.01, #0.00005-0.015
-            retrans = 0.7, #0.4 - 0.8
             q10 = 2) #1 - 3
 
 state  <- c(Biomass_C = 715, 
@@ -54,7 +53,10 @@ solvemodel <- function(params, state, times) {
       NDVI=0
       if(LAI>0 & !is.na(LAI)){
         NDVI = (log(LAI/0.008)/8.0783)
-      }      
+      }   
+      if(NDVI<0){
+        NDVI = 0
+      }
       
       GPP = LAI*((Pmax*E0*PAR)/(Pmax+(E0*PAR))) * 12
       Ra = ((R0*LAI)*exp(beta*Temp)) * 12
@@ -71,6 +73,9 @@ solvemodel <- function(params, state, times) {
       NEE = Re - GPP
       
       NDVI_MODIS = (1.23846*NDVI)-0.14534
+      if(NDVI_MODIS<0){
+        NDVI_MODIS = 0
+      }
       
       #differential equations
       dBiomass_C = GPP  - Ra  - Litterfall_C 

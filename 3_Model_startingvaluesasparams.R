@@ -8,7 +8,6 @@ params <- c(kplant = 0.2, #0.07-0.34
             propN_fol = 0.035, #0.01-0.23
             propN_roots = 0.01, #0.01-0.022
             netNrate = 0.01, #0.00005-0.015
-            retrans = 0.7, #0.4 - 0.8
             q10=2, #1-3
             Biomass_C = 715, 
             Biomass_N = 14, 
@@ -93,7 +92,7 @@ solvemodel1 <- function(params, times) {
     })  #end of with(as.list(...
   } #end of model
     
-  return(ode(y=params[9:13],times=time,func=model,parms = params[1:8], method="rk4")) #integrate using runge-kutta 4 method
+  return(ode(y=params[8:12],times=time,func=model,parms = params[1:7], method="rk4")) #integrate using runge-kutta 4 method
   
 } #end of solve model
 

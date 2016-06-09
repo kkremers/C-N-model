@@ -809,7 +809,7 @@ for(i in 1:length(latitudes)){
 
 #############
 summary=summary[-1,]
-write.csv(summary, "CaTT_Summary_060716") #save CSV 
+write.csv(summary, "CaTT_Summary_060916") #save CSV 
 
 #plots of spatial data
 par(mfrow=c(2,1), mar=c(4,5,2,2))
@@ -856,7 +856,7 @@ summary(NIR)
 summary(SWIR)
 summary(NDWI)
 
-summary1 = read.csv("CaTT_Summary_060716")
+summary1 = read.csv("CaTT_Summary_060916")
 head(summary1)
 head(resid.dat)
 length(summary1[,1])
