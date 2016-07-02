@@ -280,7 +280,7 @@ for (i in 1:length(data.spin$Temp)){
 plot(scal.temp.spin, type="l")
 
 #run model spin up for current parameter set
-numyears = 25
+numyears = 30
 Year.spin = rep(data.spin$Year, numyears)
 DOY.spin = rep(data.spin$DOY, numyears)
 Temp.spin = rep(data.spin$Temp, numyears)
@@ -301,11 +301,7 @@ DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
 Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
 
 
-state  <- c(Biomass_C = 715, 
-            Biomass_N = 14, 
-            SOM_C = 8700, 
-            SOM_N = 355,
-            Available_N = 0.01)
+state = state.best
 
 #OPEN 3_Model.R and run it the first time
 out.spin= data.frame(solvemodel(param.best, state)) #creates table of model output

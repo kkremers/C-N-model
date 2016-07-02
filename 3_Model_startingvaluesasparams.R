@@ -52,7 +52,10 @@ solvemodel1 <- function(params, times) {
       NDVI=0
       if(LAI>0 & !is.na(LAI)){
         NDVI = (log(LAI/0.008)/8.0783)
-      }      
+      }   
+      if(NDVI<0){
+        NDVI = 0
+      }
       
       GPP = LAI*((Pmax*E0*PAR)/(Pmax+(E0*PAR))) * 12
       Ra = ((R0*LAI)*exp(beta*Temp)) * 12
@@ -69,6 +72,9 @@ solvemodel1 <- function(params, times) {
       NEE = Re - GPP
       
       NDVI_MODIS = (1.23846*NDVI)-0.14534
+      if(NDVI_MODIS<0){
+        NDVI_MODIS = 0
+      }
       
       #differential equations
       dBiomass_C = GPP  - Ra  - Litterfall_C 

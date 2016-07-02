@@ -5,10 +5,7 @@ head(dat) #fiew first 6 rows
 
 
 #put it all into a table
-data.all = data.frame(matrix(1, 1, 12))
-colnames(data.all) = c("Latitude", "Year", "DOY", "LST.avg", "PAR.avg", "NDVI.avg", "senDOY", 
-                       "startDOY", "endDOY", "scal.seas", "scal.temp", "Tavg")
-head(data.all)
+data.all = NULL
 
 #########
 latitudes = unique(dat$Latitude)
@@ -34,7 +31,7 @@ for(i in 1:length(latitudes)){
   PAR.avg = tapply(dat.i$PAR.filled, dat.i$DOY, mean)
   NDVI.avg = tapply(dat.i$NDVI.filled, dat.i$DOY, mean)
   DOY=seq(1:366)
-  Year=rep(2000,length(DOY))
+  Year=rep(2000+i,length(DOY))
   Latitude = rep(lat.i, length(DOY))
   data=data.frame(Latitude, Year,DOY,LST.avg,PAR.avg,NDVI.avg)
   
@@ -109,11 +106,9 @@ for(i in 1:length(latitudes)){
 
 #############
 
-
-data.all = data.all[-1,]
 head(data.all)
 data.sorted = data.all[with(data.all, order(data.all$Tavg, data.all$Latitude, data.all$DOY)), ]
-write.csv(data.sorted, "SpatialTest_060916") #save CSV 
+write.csv(data.sorted, "SpatialTest_061116") #save CSV 
 
 plot(data.sorted$Tavg)
 plot(data.sorted$LST.avg)
@@ -138,12 +133,6 @@ state.best
 out=data.frame(solvemodel(param.best, state.best))
 head(out)
 
-for(i in 1:length(out$NDVI_MODIS)){
-  if(out$NDVI_MODIS[i] < 0){
-    out$NDVI_MODIS[i] = 0
-  }
-}
-
 for(i in 1:length(data.sorted$NDVI.avg)){
   if(data.sorted$NDVI.avg[i] < 0){
     data.sorted$NDVI.avg[i] = 0
@@ -153,7 +142,7 @@ for(i in 1:length(data.sorted$NDVI.avg)){
 par(mar=c(4,5,2,2), las=1)
 layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE), widths=c(2,2))
 
-plot(out$NDVI_MODIS, pch=16, ylim=c(0,0.8), ylab="NDVI", xlab="Time")
+plot(out$NDVI, pch=16, ylim=c(0,0.8), ylab="NDVI", xlab="Time")
 points(data.sorted$NDVI.avg, col="red")
 legend("topleft", cex=1.5, legend=c("CCaN NDVI", "MODIS NDVI"), bty="n", pch=c(16,1), col=c("black", "red"))
 
@@ -161,16 +150,16 @@ legend("topleft", cex=1.5, legend=c("CCaN NDVI", "MODIS NDVI"), bty="n", pch=c(1
 #pull out data for just growing season
 out_GS = out[out$DOY>=140 & out$DOY <=250,]
 data.sorted_GS = data.sorted[data.sorted$DOY>=140 & data.sorted$DOY <=250,]
-reg_GS = lm(out_GS$NDVI_MODIS~data.sorted_GS$NDVI.avg)
+reg_GS = lm(out_GS$NDVI~data.sorted_GS$NDVI.avg)
 summary(reg_GS)
-plot(out_GS$NDVI_MODIS~data.sorted_GS$NDVI.avg, pch=16, ylim=c(0,0.8), xlim=c(0,0.8), ylab="CCaN", xlab="MODIS", main="All Growing Season NDVI")
+plot(out_GS$NDVI~data.sorted_GS$NDVI.avg, pch=16, ylim=c(0,0.8), xlim=c(0,0.8), ylab="CCaN", xlab="MODIS", main="All Growing Season NDVI")
 abline(0,1, col="red", lty=2, lwd=2)
 legend("topleft", bty="n", cex=1.25, legend= bquote(italic(R)^2 == .(format(summary(reg_GS)$adj.r.squared, digits=2))))
 
 
 
 #calculate GS avg NDVI
-out_avg = tapply(out_GS$NDVI_MODIS, out_GS$Tavg, mean)
+out_avg = tapply(out_GS$NDVI, out_GS$Tavg, mean)
 data_avg = tapply(data.sorted_GS$NDVI.avg, data.sorted_GS$Tavg, mean)
 reg_avg = lm(out_avg~data_avg)
 summary(reg_avg)
@@ -180,8 +169,19 @@ legend("topleft", bty="n", cex=1.25, legend= bquote(italic(R)^2 == .(format(summ
 
 
 #calculate temperature sensitivity
-Temp_avg = unique(data.sorted$Tavg)
+Temp_avg=NULL
+Temps = unique(data.sorted_GS$Tavg)
+for(i in 1:length(Temps)){
+  Temps.i = Temps[i]
+  dat.i = subset(data.sorted_GS, data.sorted_GS$Tavg == Temps.i)
+  
+  Temp.avg = mean(dat.i$LST.avg)
+  Temp_avg = c(Temp_avg, Temp.avg)
+}
 
+out.nospin_avg = data.frame(Tavg = Temp_avg, NDVI = as.numeric(out_avg))
+head(out.nospin_avg)
+write.csv(out.nospin_avg, "SpatialTest_061116_NDVI_NOSPIN") #save CSV 
 
 sens.CCaN = lm(out_avg~Temp_avg)
 summary(sens.CCaN)
@@ -196,3 +196,115 @@ plot(data.sorted$PAR.avg, pch=16, col="blue", ylab="PAR", xlab="Time")
 
 head(data.sorted)
 
+
+#now re-run using model spin-up for each site and compare
+
+time = seq(1:length(data.sorted$DOY))
+
+#Step 4: make into functions so that it will be continuous in the model
+Temp.d1 <- approxfun(x=time, y=data.sorted$LST.avg, method="linear", rule=2)
+PAR.d1 <- approxfun(x=time, y=data.sorted$PAR.avg, method="linear", rule=2)
+scaltemp.d1 <- approxfun(x=time, y=data.sorted$scal.temp, method="linear", rule=2)
+scalseason.d1 <- approxfun(x=time, y=data.sorted$scal.seas, method="linear", rule=2)
+DOY.d1 <- approxfun(x=time, y=data.sorted$DOY, method="linear", rule=2)
+Year.d1 <- approxfun(x=time, y=data.sorted$Year, method="linear", rule=2)
+TempAvg.d1 <- approxfun(x=time, y=data.sorted$Tavg, method="linear", rule=2)
+
+param.best
+state.best
+
+#load in summary table created from Manuscript1_plots.R
+spatial.summ = read.csv("CaTT_Summary_061116")
+head(spatial.summ)
+head(data.sorted)
+#need to re-sort spatial.summ in the same order as data.sorted
+spatial.summ = spatial.summ[with(spatial.summ, order(spatial.summ$Tavg, spatial.summ$Latitude)), ]
+head(spatial.summ)
+
+NDVI.out = NULL
+DOY.out = NULL
+Tavg.out = NULL
+
+#now need to run model for each year using the different starting values
+latitudes = unique(dat$Latitude)
+
+for(i in 1:length(latitudes)){
+  lat.i = latitudes[i]  
+  dat.i = subset(data.sorted, Latitude==lat.i)
+  state.i = subset(spatial.summ, Latitude==lat.i)
+  state = as.numeric((state.i[3:7]))
+  names(state) = names(state.best)
+  
+  
+  time = seq(1:length(dat.i$DOY))
+  
+  #Step 4: make into functions so that it will be continuous in the model
+  Temp.d1 <- approxfun(x=time, y=dat.i$LST.avg, method="linear", rule=2)
+  PAR.d1 <- approxfun(x=time, y=dat.i$PAR.avg, method="linear", rule=2)
+  scaltemp.d1 <- approxfun(x=time, y=dat.i$scal.temp, method="linear", rule=2)
+  scalseason.d1 <- approxfun(x=time, y=dat.i$scal.seas, method="linear", rule=2)
+  DOY.d1 <- approxfun(x=time, y=dat.i$DOY, method="linear", rule=2)
+  Year.d1 <- approxfun(x=time, y=dat.i$Year, method="linear", rule=2)
+  TempAvg.d1 <- approxfun(x=time, y=dat.i$Tavg, method="linear", rule=2)
+
+  out=data.frame(solvemodel(param.best, state))
+
+  
+  NDVI.out = c(NDVI.out, out$NDVI)
+  DOY.out = c(DOY.out, out$DOY)
+  Tavg.out = c(Tavg.out, out$Tavg)
+  
+}
+ 
+length(data.sorted[,1])
+length(NDVI.out) 
+length(DOY.out)
+length(Tavg.out)
+
+spinup.run = data.frame(Tavg = Tavg.out, DOY = DOY.out, NDVI = NDVI.out)
+head(spinup.run) #need to sort this by Tavg and DOY
+
+spinup.sorted = spinup.run[with(spinup.run, order(spinup.run$Tavg, spinup.run$DOY)), ]
+head(spinup.sorted)
+data.sorted.all = cbind(data.sorted, NDVI_CCaN = spinup.sorted$NDVI)
+head(data.sorted.all)
+write.csv(data.sorted.all, "SpatialTest_061116") #save CSV 
+
+par(mar=c(4,5,2,2), las=1)
+layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE), widths=c(2,2))
+
+plot(data.sorted.all$NDVI_CCaN, pch=16, ylim=c(0,0.8), ylab="NDVI", xlab="Time")
+points(data.sorted$NDVI.avg, col="red")
+legend("topleft", cex=1.5, legend=c("CCaN NDVI", "MODIS NDVI"), bty="n", pch=c(16,1), col=c("black", "red"))
+
+
+#pull out data for just growing season
+data.sorted_GS = data.sorted.all[data.sorted.all$DOY>=140 & data.sorted.all$DOY <=250,]
+reg_GS = lm(data.sorted_GS$NDVI_CCaN~data.sorted_GS$NDVI.avg)
+summary(reg_GS)
+plot(data.sorted_GS$NDVI_CCaN~data.sorted_GS$NDVI.avg, pch=16, ylim=c(0,0.8), xlim=c(0,0.8), ylab="CCaN", xlab="MODIS", main="All Growing Season NDVI")
+abline(0,1, col="red", lty=2, lwd=2)
+legend("topleft", bty="n", cex=1.25, legend= bquote(italic(R)^2 == .(format(summary(reg_GS)$adj.r.squared, digits=2))))
+
+
+
+#calculate GS avg NDVI
+out_avg = tapply(data.sorted_GS$NDVI_CCaN, data.sorted_GS$Tavg, mean)
+data_avg = tapply(data.sorted_GS$NDVI.avg, data.sorted_GS$Tavg, mean)
+reg_avg = lm(out_avg~data_avg)
+summary(reg_avg)
+plot(out_avg~data_avg, pch=16, ylim=c(0.2,0.8), xlim=c(0.2,0.8), ylab="CCaN", xlab="MODIS", main="Growing Season Average NDVI")
+abline(0,1, col="red", lty=2, lwd=2)
+legend("topleft", bty="n", cex=1.25, legend= bquote(italic(R)^2 == .(format(summary(reg_avg)$adj.r.squared, digits=2))))
+
+Temp_avg
+
+
+sens.CCaN = lm(out_avg~Temp_avg)
+summary(sens.CCaN)
+
+sens.MODIS = lm(data_avg~Temp_avg)
+summary(sens.MODIS)
+
+data.sorted_GS
+head(data.sorted.all)

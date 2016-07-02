@@ -31,35 +31,30 @@ abline(v=param.best[13], col="red", lwd=3)
 
 ##########Plot effects of estimated parameters on model output###################
 
-sensvars = c("Biomass_C", 
-             "Biomass_N", 
-             "SOM_C", 
-             "SOM_N",
-             "Available_N",
-             "NEE",
+sensvars = c("NEE",
              "NDVI")
 
 #local sensitivity analysis
-s.local <- sensFun(func=solvemodel, parms=param.best, sensvar = sensvars)
+s.local <- sensFun(func=solvemodel, parms=param.best, state=state.best, sensvar = sensvars)
 
 head(s.local); tail(s.local)
 s.local.summ = data.frame(summary(s.local, var=T))
 head(s.local.summ); tail(s.local.summ)
 s.loc.summ.ordered = data.frame(s.local.summ[order(s.local.summ$var, abs(s.local.summ$Mean)),] )
-write.csv(s.loc.summ.ordered, "LocalSensitivityAnalysis_NEENDVI.csv") #univariate sensitivity
+write.csv(s.loc.summ.ordered, "LocalSensitivityAnalysis_061416.csv") #univariate sensitivity
 #make a bar graph 
 
 
-#NEE
-sub = subset(s.local.summ, var=="NEE")
-barplot(abs(sub$Mean), names.arg=names(params), cex.names=0.5, 
-        col="forestgreen", horiz=TRUE, main="NEE") #plot the data
-
-
-#NDVI
-sub = subset(s.local.summ, var=="NDVI")
-barplot(abs(sub$Mean), names.arg=names(params), cex.names=0.5, 
-        col="forestgreen", horiz=TRUE, main="NDVI") #plot the data
+#plot
+names = c("kplant", "LitterRate", "UptakeRate", "propN_fol0", "propN_roots", "netNrate", "Q10")
+bars <- matrix(1, 2, length(names))
+bars[1,]=abs(subset(s.local.summ, var=="NDVI")$Mean)
+bars[2,]=abs(subset(s.local.summ, var=="NEE")$Mean)
+colnames(bars)=names
+head(bars)
+par(las=3)
+par(mfrow=c(1,1), mar=c(8,5,3,3))
+barplot(bars, cex.lab=1.75, cex.axis=1.5, cex.names=1.5, ylab = "Mean Sensitivity", col=c("gray","gray20"),beside=TRUE, ylim=c(0, 1), legend=c("NEE", "NDVI"), args.legend=c(horiz=TRUE, cex=1.5))
 abline(v=0)
 
 

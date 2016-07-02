@@ -196,7 +196,7 @@ reject=0 #reset reject counter
 t=0.5
 
 
-for (i in 7313:M) {
+for (i in 45215:M) {
   repeat{
     for(p in 1:n.param){ #for each parameter
       param.est[i,p] = param.est[i-1,p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
@@ -334,4 +334,4 @@ i
 t
 acceptance
 
-save.image(file="Step1_060916_SPIN.Rdata")
+save.image(file="Step1_061516_SPIN.Rdata")

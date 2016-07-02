@@ -7,36 +7,6 @@ require(deSolve)
 head(data.assim)
 head(data.sigma)
 
-#run model spin up for current parameter set
-time = seq(1:length(DOY.spin))
-Temp.d1 <- approxfun(x=time, y=Temp.spin, method="linear", rule=2)
-TempAvg.d1 <- approxfun(x=time, y=TempAvg.spin, method="linear", rule=2)
-PAR.d1 <- approxfun(x=time, y=PAR.spin, method="linear", rule=2)
-scaltemp.d1 <- approxfun(x=time, y=scal.temp.spin1, method="linear", rule=2)
-scalseason.d1 <- approxfun(x=time, y=scal.seas.spin1, method="linear", rule=2)
-DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
-Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
-
-
-#OPEN 3_Model.R and run it the first time
-state  <- c(Biomass_C = 715, 
-            Biomass_N = 14, 
-            SOM_C = 8700, 
-            SOM_N = 355,
-            Available_N = 0.01)
-
-out.spin= data.frame(solvemodel(param.best, state)) #creates table of model output
-plot(out.spin$Biomass_C)
-end.time = length(out.spin[,1])
-#adjust starting values
-state <- c( Biomass_C = out.spin$Biomass_C[end.time], 
-            Biomass_N = out.spin$Biomass_N[end.time], 
-            SOM_C = out.spin$SOM_C[end.time], 
-            SOM_N = out.spin$SOM_N[end.time],
-            Available_N = out.spin$Available_N[end.time])
-
-state.best=state
-
 time = seq(1:length(data$time))
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
 TempAvg.d1 <- approxfun(x=data$time, y=data$Temp_avg, method="linear", rule=2)
@@ -46,7 +16,7 @@ scalseason.d1 <- approxfun(x=data$time, y=scal.seas, method="linear", rule=2)
 DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
 
-out= data.frame(solvemodel(param.best, state)) #creates table of model output
+out= data.frame(solvemodel(param.best, state.best)) #creates table of model output
 head(out)
 out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
 head(out1)
@@ -133,11 +103,7 @@ repeat { #repeat until desired number of parameter sets are accepted
       DOY.d1 <- approxfun(x=time, y=DOY.spin, method="linear", rule=2)
       Year.d1 <- approxfun(x=time, y=Year.spin, method="linear", rule=2)
       
-      state  <- c(Biomass_C = 715, 
-                  Biomass_N = 14, 
-                  SOM_C = 8700, 
-                  SOM_N = 355,
-                  Available_N = 0.01)
+      state  = state.best
       
       out.spin= data.frame(solvemodel(parms, state)) #creates table of model output
       #adjust starting values
@@ -233,5 +199,7 @@ repeat { #repeat until desired number of parameter sets are accepted
 
 head(param.keep)
 tail(param.keep)
+head(state.keep)
+tail(state.keep)
 
-save.image(file="Step2_NEE_NDVI_060616.Rdata")
+save.image(file="Step2_061116.Rdata")
