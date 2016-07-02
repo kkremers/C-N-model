@@ -786,8 +786,9 @@ head(summary)
 
 summary=read.csv("CaTT_Summary_061516")
 NDVI.CCaNuncertainty = read.csv("CaTT_uncertainty_summary")
+pHdata = read.csv("CaTT_sitelocations_ph.csv")
 head(NDVI.CCaNuncertainty)
-par(mfrow=c(1,1), mar=c(5,5,2,2))
+par(mfrow=c(1,1), mar=c(5,8,2,2))
 plot(summary$CCaN_avg~summary$Latitude, pch=16, cex.lab=1.5, xlab="Latitude", ylab="NDVI", ylim=c(0,1.1), xlim=c(65,71), axes=FALSE)
 with(NDVI.CCaNuncertainty,polygon(c(Latitude, rev(Latitude)),c(p05,rev(p95)),col = adjustcolor("gray75",alpha.f=0.75), border = adjustcolor("gray75",alpha.f=0.75)))
 points(summary$CCaN_avg~summary$Latitude, pch=16, col="gray50")
@@ -796,6 +797,15 @@ with(summary, arrows(Latitude,MODIS_avg+(MODIS_sd/sqrt(32)*1.65), Latitude, MODI
 points(summary$MODIS_avg~summary$Latitude, pch=17, col="black")
 axis(1, cex.axis = 1.5)
 axis(2, cex.axis = 1.5)
+par(new=T)
+plot(pHdata$avg_ph~pHdata$lat, col="red", pch=16, axes=FALSE, xlab="", ylab="")
+axis(2, line=5, ylim=c(4,9))
+mtext(2,text="pH",line=5.5, cex=1.5, col="red")
+
+
+
+
+
 legend("topleft", cex=1.5, legend=c("CCaN", "MODIS"), bty="n", pch=c(16,17), col=c("gray50","black"))
 par(fig=c(0.6, 1, 0.6, 1), new = T)
 plot(summary$CCaN_avg~summary$MODIS_avg, pch=16, cex.lab=1.25, ylab="CCaN NDVI", xlab="MODIS NDVI", ylim=c(0.3,0.8), xlim=c(0.3,0.8), axes=FALSE)
@@ -832,6 +842,18 @@ red = lm(residuals~band1, data=resid.dat)
 NIR = lm(residuals~band2, data=resid.dat)
 SWIR = lm(residuals~band7, data=resid.dat)
 NDWI = lm(residuals~NDWI, data=resid.dat)
+
+pH = lm(residuals~pHdata$avg_ph)
+summary(pH)
+plot(residuals~pHdata$avg_ph, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="pH")
+abline(pH, col="red", lwd=2)
+
+
+tempcheck = lm(residuals~summary$Tavg)
+summary(tempcheck)
+plot(residuals~pHdata$avg_ph, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="pH")
+abline(pH, col="red", lwd=2)
+
 
 
 summary(red)
