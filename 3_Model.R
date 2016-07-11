@@ -1,20 +1,20 @@
 require(deSolve)
 require(FME)
 
+#best parameter set and starting values from model optimization on June 11, 2016
+params <- c(kplant = 0.104, #0.07-0.34
+            LitterRate = 0.001599, #0.0001-0.0024
+            UptakeRate = 0.0103, #0.002-0.012
+            propN_fol = 0.129, #0.01-0.23
+            propN_roots = 0.0209, #0.01-0.022
+            netNrate = 0.008428, #0.00005-0.015
+            q10 = 2.8417) #1 - 3
 
-params <- c(kplant = 0.2, #0.07-0.34
-            LitterRate = 0.0005, #0.0001-0.0024
-            UptakeRate = 0.01, #0.002-0.012
-            propN_fol = 0.035, #0.01-0.23
-            propN_roots = 0.01, #0.01-0.022
-            netNrate = 0.01, #0.00005-0.015
-            q10 = 2) #1 - 3
-
-state  <- c(Biomass_C = 715, 
-            Biomass_N = 14, 
-            SOM_C = 8700, 
-            SOM_N = 355,
-            Available_N = 0.01)
+state  <- c(Biomass_C = 196.61, 
+            Biomass_N = 5.387, 
+            SOM_C = 20501.8, 
+            SOM_N = 808.17,
+            Available_N = 0.0024)
 
 ####################MODEL#################################
 
@@ -109,11 +109,3 @@ solvemodel <- function(params, state, times) {
 
 out= data.frame(solvemodel(params, state)) #creates table of model output
 
-
-#plot pools
-par(mfrow=c(3,2), mar=c(4,4,1,2))
-plot(out$Biomass_C~out$time, type="l", col="forestgreen", main = "Biomass C", xlab="", ylab="g C m-2")
-plot(out$Biomass_N~out$time, type="l", col="forestgreen",  main = "Biomass N", xlab="", ylab="g N m-2")
-plot(out$SOM_C~out$time, type="l", col="brown", main = "SOM C", xlab="", ylab="g C m-2")
-plot(out$SOM_N~out$time, type="l", col="brown", main = "SOM N", xlab="Time (days)", ylab="g N m-2")
-plot(out$Available_N~out$time, type="l", col="blue", main = "Available_ N", xlab="Time (days)", ylab="g N m-2",lty=2)
