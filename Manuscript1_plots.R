@@ -757,7 +757,7 @@ head(dat) #fiew first 6 rows
 
 #put it all into a table
 summary = data.frame(matrix(1, 1, 16))
-colnames(summary) = c("Latitude", "Biomass_C", "Biomass_N", "SOM_C", "SOM_N", "Available_N", "CCaN_max", "CCaN.MODIS_max", "MODIS_max", "CCaN_avg", "CCaN.MODIS_avg", "MODIS_avg", "MODIS_sd", "Tmax", "Tavg", "PARavg")
+colnames(summary) = c("Latitude", "Biomass_C", "Biomass_N", "SOM_C", "SOM_N", "Available_N", "CCaN_NDVImax", "CCaN_LAImax", "MODIS_max", "CCaN_NDVIavg", "CCaN_LAIavg", "MODIS_avg", "MODIS_sd", "Tmax", "Tavg", "PARavg")
 head(summary)
 
 #########
@@ -931,7 +931,7 @@ for(i in 1:length(latitudes)){
 #############
 summary=summary[-1,]
 length(summary[,1])
-write.csv(summary, "CaTT_Summary_080416") #save CSV 
+write.csv(summary, "CaTT_Summary_081216") #save CSV 
 
 #plots of spatial data
 par(mfrow=c(2,1), mar=c(4,5,2,2))
