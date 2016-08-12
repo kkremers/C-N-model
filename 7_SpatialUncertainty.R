@@ -1,5 +1,5 @@
 ###############MODEL UNCERTAINTY###################
-load("Step2_061116.Rdata")
+load("Step2_080316.Rdata")
 head(param.keep)
 dat = data.frame(read.csv("Summary_AllSites.csv")) #select data file
 head(dat) #fiew first 6 rows
@@ -166,7 +166,7 @@ head(summary)
 summary=summary[-1,]
 head(summary)
 tail(summary)
-write.csv(summary, "CaTT_uncertainty_062316") #save CSV 
+write.csv(summary, "CaTT_uncertainty_080716") #save CSV 
 #now, for each latitude, need to calculate mean and 90% CI
 NDVI.mean = tapply(summary$CCaN_avg, summary$Latitude, mean)
 NDVI.sd = tapply(summary$CCaN_avg, summary$Latitude, sd)

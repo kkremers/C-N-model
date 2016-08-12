@@ -132,8 +132,8 @@ plot(out$NEE)
 
 ####DATA EXPLORATION###
 #set up vectors with min and max values for each parameter (basically, using a uniform distribution as your "prior")
-param.max=c(0.34,0.0024,0.012,0.23,0.022,0.015,3)
-param.min=c(0.07,0.0001,0.002,0.01,0.01,0.00005,1)
+param.max=c(0.34,0.0024,0.012,0.23,0.022,1.875E-5,3)
+param.min=c(0.07,0.0001,0.002,0.01,0.01,6.25E-8,1)
 
 ##STEP 1: Explore with BOTH NEE and NDVI
 
@@ -313,8 +313,8 @@ for (i in 45215:M) {
 } #end of exploration
 
 
-plot(all.draws[1:i,1])
-lines(param.est[1:i,1], col="red")
+plot(all.draws[1:i,6])
+lines(param.est[1:i,6], col="red")
 
 
 steps=seq(1:i) #create a vector that represents the number of steps or iterations run
@@ -334,4 +334,4 @@ i
 t
 acceptance
 
-save.image(file="Step1_061516_SPIN.Rdata")
+save.image(file="Step1_080316_SPIN.Rdata")

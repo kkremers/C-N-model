@@ -7,7 +7,7 @@ params <- c(kplant = 0.104, #0.07-0.34
             UptakeRate = 0.0103, #0.002-0.012
             propN_fol = 0.129, #0.01-0.23
             propN_roots = 0.0209, #0.01-0.022
-            netNrate = 0.008428, #0.00005-0.015
+            netNrate = 1.053E-5, #6.25E-8 to 1.875E-5
             q10 = 2.8417) #1 - 3
 
 state  <- c(Biomass_C = 196.61, 
@@ -30,7 +30,7 @@ solvemodel <- function(params, state, times) {
       PAR=PAR.d1(t)
       DOY = DOY.d1(t)
       scaltemp=scaltemp.d1(t)
-      scalseason=scalseason.d1(t)
+      scalseason= scalseason.d1(t)
       Year = Year.d1(t)
       
       #constants for PLIRTLE model - Loranty 2011 - will not try to estimate these
@@ -63,7 +63,7 @@ solvemodel <- function(params, state, times) {
       Rh = (Rx*exp(beta*Temp)) * 12 
       Re = Ra+Rh
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) )
-      Ntrans = netNrate * q10^(Temp/10)
+      Ntrans = netNrate * SOM_N * q10^(Temp/10)
       Litterfall_C =  LitterRate * Biomass_C
       Litterfall_N  =  LitterRate * Biomass_N
       N.out = Nout_rate
@@ -72,10 +72,6 @@ solvemodel <- function(params, state, times) {
       #calculated variables to use for model fitting and analysis
       NEE = Re - GPP
       
-      NDVI_MODIS = (1.23846*NDVI)-0.14534
-      if(NDVI_MODIS<0){
-        NDVI_MODIS = 0
-      }
       
       #differential equations
       dBiomass_C = GPP  - Ra  - Litterfall_C 
@@ -94,7 +90,7 @@ solvemodel <- function(params, state, times) {
              dAvailable_N), 
            c(NEE=NEE, GPP=GPP, Re=Re, LAI=LAI, NDVI=NDVI, Ra=Ra, Rh=Rh, Uptake = Uptake, 
              Ntrans=Ntrans, Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, Tavg=Temp_avg,
-             DOY=DOY, TFN=TFN, Temp=Temp, PAR=PAR, scaltemp = scaltemp, scalseason = scalseason, year=Year, propN_fol = propN_fol.T, NDVI_MODIS=NDVI_MODIS))
+             DOY=DOY, TFN=TFN, Temp=Temp, PAR=PAR, scaltemp = scaltemp, scalseason = scalseason, year=Year, propN_fol = propN_fol.T))
       
     })  #end of with(as.list(...
   } #end of model

@@ -2,18 +2,18 @@ require(deSolve)
 require(FME)
 
 
-params <- c(kplant = 0.2, #0.07-0.34
-            LitterRate = 0.0005, #0.0001-0.0024
-            UptakeRate = 0.01, #0.002-0.012
-            propN_fol = 0.035, #0.01-0.23
-            propN_roots = 0.01, #0.01-0.022
-            netNrate = 0.01, #0.00005-0.015
-            q10=2, #1-3
-            Biomass_C = 715, 
-            Biomass_N = 14, 
-            SOM_C = 16000, 
-            SOM_N = 800,
-            Available_N = 0.03)
+params <- c(kplant = 0.104, #0.07-0.34
+            LitterRate = 0.001599, #0.0001-0.0024
+            UptakeRate = 0.0103, #0.002-0.012
+            propN_fol = 0.129, #0.01-0.23
+            propN_roots = 0.0209, #0.01-0.022
+            netNrate = 1.053E-5, #0.00005-0.015
+            q10=2.8417, #1-3
+            Biomass_C = 196.61, 
+            Biomass_N = 5.387, 
+            SOM_C = 20501.8, 
+            SOM_N = 808.17,
+            Available_N = 0.0024)
 
 ####################MODEL#################################
 
@@ -62,7 +62,7 @@ solvemodel1 <- function(params, times) {
       Rh = (Rx*exp(beta*Temp)) * 12 
       Re = Ra+Rh
       Uptake =  UptakeRate * (Biomass_C*propN_roots) * ( Available_N / ( kplant + Available_N ) )
-      Ntrans = netNrate * q10^(Temp/10)
+      Ntrans = netNrate * SOM_N * q10^(Temp/10)
       Litterfall_C =  LitterRate * Biomass_C
       Litterfall_N  =  LitterRate * Biomass_N
       N.out = Nout_rate

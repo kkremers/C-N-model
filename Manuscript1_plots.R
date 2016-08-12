@@ -8,62 +8,41 @@ head(data) #view table
 data1 = read.csv("InputData_Processed.csv") #This is the "FluxData.csv" file, but with added calculations of GDD
 head(data1)
 
+
 data2 = data.frame(read.csv("VPD_Precip_Daily.csv"))
 head(data2)
 data2$VPD_Avg = as.numeric(as.character(data2$VPD_Avg))
-data2$VPD_Max = as.numeric(as.character(data2$VPD_Max))
-data2$VPD_Min = as.numeric(as.character(data2$VPD_Min))
+
 
 
 #plot
-par(mar=c(2,4,2,2), las=1, mfrow=c(4,1))
+par(mar=c(2,4,2,2), las=1, mfrow=c(2,1), oma=c(0,0,0,0))
 plot(data1$Temp_ARF~data1$time, cex.axis = 1.5, type="l", ylim=c(-40,25), ylab = "", col="black", xlab="", axes=FALSE)
 axis(1, at=c(0,365,730,1096,1461,1826,2191,2556,2922), labels=c("","","","","","","","",""))
-mtext("2008", side=1, at=182, cex=1.25, line=0.8)
-mtext("2009", side=1, at=547, cex=1.25, line=0.8) 
-mtext("2010", side=1, at=912, cex=1.25, line=0.8) 
-mtext("2011", side=1, at=1277, cex=1.25, line=0.8) 
-mtext("2012", side=1, at=1642, cex=1.25, line=0.8) 
-mtext("2013", side=1, at=2007, cex=1.25, line=0.8) 
-mtext("2014", side=1, at=2372, cex=1.25, line=0.8)
-mtext("2015", side=1, at=2737, cex=1.25, line=0.8) 
+mtext("2008", side=1, at=182, cex=2, line=0.8)
+mtext("2009", side=1, at=547, cex=2, line=0.8) 
+mtext("2010", side=1, at=912, cex=2, line=0.8) 
+mtext("2011", side=1, at=1277, cex=2, line=0.8) 
+mtext("2012", side=1, at=1642, cex=2, line=0.8) 
+mtext("2013", side=1, at=2007, cex=2, line=0.8) 
+mtext("2014", side=1, at=2372, cex=2, line=0.8)
+mtext("2015", side=1, at=2737, cex=2, line=0.8) 
 axis(2, cex.axis=1.5)
-points(data$Temp_ARF~data$time, pch=16, col="gray60", cex=0.75)
+points(data$Temp_ARF~data$time, pch=16, col="gray40", cex=0.75)
 abline(h=0, lty=2)
 plot(data1$PAR_ARF~data1$time, cex.axis=1.5,type="l", axes=FALSE, ylab = "", col="black", xlab = "")
 axis(1, at=c(0,365,730,1096,1461,1826,2191,2556,2922), labels=c("","","","","","","","",""))
-mtext("2008", side=1, at=182, cex=1.25, line=0.8)
-mtext("2009", side=1, at=547, cex=1.25, line=0.8) 
-mtext("2010", side=1, at=912, cex=1.25, line=0.8) 
-mtext("2011", side=1, at=1277, cex=1.25, line=0.8) 
-mtext("2012", side=1, at=1642, cex=1.25, line=0.8) 
-mtext("2013", side=1, at=2007, cex=1.25, line=0.8) 
-mtext("2014", side=1, at=2372, cex=1.25, line=0.8)
-mtext("2015", side=1, at=2737, cex=1.25, line=0.8) 
+mtext("2008", side=1, at=182, cex=2, line=0.8)
+mtext("2009", side=1, at=547, cex=2, line=0.8) 
+mtext("2010", side=1, at=912, cex=2, line=0.8) 
+mtext("2011", side=1, at=1277, cex=2, line=0.8) 
+mtext("2012", side=1, at=1642, cex=2, line=0.8) 
+mtext("2013", side=1, at=2007, cex=2, line=0.8) 
+mtext("2014", side=1, at=2372, cex=2, line=0.8)
+mtext("2015", side=1, at=2737, cex=2, line=0.8) 
 axis(2, cex.axis=1.5)
-points(data$PAR_ARF*(1E-6)*86400~data$time, pch=16, col="gray60", cex=0.75)
-plot(data2$Precip_Tot~data2$Time, cex.axis = 1.5, ylim=c(0,70), ylab = "", pch=16, col="gray60", cex=0.75, xlab="", axes=FALSE)
-axis(1, at=c(0,365,730,1096,1461,1826,2191,2556,2922), labels=c("","","","","","","","",""))
-mtext("2008", side=1, at=182, cex=1.25, line=0.8)
-mtext("2009", side=1, at=547, cex=1.25, line=0.8) 
-mtext("2010", side=1, at=912, cex=1.25, line=0.8) 
-mtext("2011", side=1, at=1277, cex=1.25, line=0.8) 
-mtext("2012", side=1, at=1642, cex=1.25, line=0.8) 
-mtext("2013", side=1, at=2007, cex=1.25, line=0.8) 
-mtext("2014", side=1, at=2372, cex=1.25, line=0.8)
-mtext("2015", side=1, at=2737, cex=1.25, line=0.8) 
-axis(2, cex.axis=1.5)
-plot(data2$VPD_Avg~data2$Time, ylim=c(0,2), cex.axis = 1.5, pch=16, col="gray60", cex=0.75, ylab = "", xlab="", axes=FALSE)
-axis(1, at=c(0,365,730,1096,1461,1826,2191,2556,2922), labels=c("","","","","","","","",""))
-mtext("2008", side=1, at=182, cex=1.25, line=0.8)
-mtext("2009", side=1, at=547, cex=1.25, line=0.8) 
-mtext("2010", side=1, at=912, cex=1.25, line=0.8) 
-mtext("2011", side=1, at=1277, cex=1.25, line=0.8) 
-mtext("2012", side=1, at=1642, cex=1.25, line=0.8) 
-mtext("2013", side=1, at=2007, cex=1.25, line=0.8) 
-mtext("2014", side=1, at=2372, cex=1.25, line=0.8)
-mtext("2015", side=1, at=2737, cex=1.25, line=0.8) 
-axis(2, cex.axis=1.5)
+points(data$PAR_ARF*(1E-6)*86400~data$time, pch=16, col="gray40", cex=0.75)
+
 
 
 
@@ -78,6 +57,7 @@ GS_Tavg = NA
 OS_Tavg = NA
 GS_PARavg = NA
 GS_Precip = NA
+GS_VPD = NA
 Tmax=NA
 
 
@@ -90,11 +70,13 @@ for (i in 1: length(years)){
   Temp_OS = data.year$Temp_ARF[data.year$DOY<data.year$startDOY[1] | data.year$DOY > data.year$endDOY[1]]
   PAR_GS = data.year$PAR_ARF[data.year$DOY>=data.year$startDOY[1] & data.year$DOY <= data.year$endDOY[1]]
   Precip_GS = data2.year$Precip_Tot[data2.year$DOY>=data.year$startDOY[1] & data2.year$DOY <= data.year$endDOY[1]]
-    
+  VPD_GS = data2.year$Precip_Tot[data2.year$DOY>=data.year$startDOY[1] & data2.year$DOY <= data.year$endDOY[1]]
+  
   GS_Tavg[i] = mean(Temp_GS)
   OS_Tavg[i] = mean(Temp_OS)
   GS_PARavg[i] = mean(PAR_GS)
   GS_Precip[i] = sum(Precip_GS, na.rm=TRUE)
+  GS_VPD[i] = mean(VPD_GS, na.rm=TRUE)
   Tmax[i] = max(data.year$Temp_ARF)
 }
 
@@ -103,6 +85,7 @@ GS_Tavg
 OS_Tavg
 GS_PARavg
 GS_Precip
+GS_VPD
 Tmax
 years
 assim = c(0,1,0,1,0,1,0,1) #0=NO, 1=YES
@@ -447,62 +430,85 @@ sigmaNDVI.VPD.smooth = tapply(resid_NDVI$sigma, (cut(resid_NDVI$VPD, seq(min(res
 timeNDVI.VPD.smooth=seq(0.06, length=length(residNDVI.VPD.smooth), by=0.1) #create corresponding time series
 
 
-par(mfrow=c(4,2), mar=c(4,4,2,2))
-plot(resid_NEE$DOY, resid_NEE$resid.NEE, main="", ylab="", xlab="", pch=16, cex.axis=1.5)
+par(mfrow=c(4,2), mar=c(4,4,2,2), oma=c(0,0,0,0), las=0)
+plot(resid_NEE$DOY, resid_NEE$resid.NEE, main="", ylab="", xlab="", pch=16, cex.axis=2)
 abline(h=0, lwd=2)
-lines(sigmaNEE.DOY.smooth~timeNEE.DOY.smooth, col="gray60", lwd=3)
-lines((-1*sigmaNEE.DOY.smooth)~timeNEE.DOY.smooth, col="gray60", lwd=3)
+lines(sigmaNEE.DOY.smooth~timeNEE.DOY.smooth, col="white", lwd=7)
+lines(sigmaNEE.DOY.smooth~timeNEE.DOY.smooth, col="gray50", lwd=3)
+lines((-1*sigmaNEE.DOY.smooth)~timeNEE.DOY.smooth, col="white", lwd=7)
+lines((-1*sigmaNEE.DOY.smooth)~timeNEE.DOY.smooth, col="gray50", lwd=3)
+lines(residNEE.DOY.smooth~timeNEE.DOY.smooth, col="white", lwd=7)
 lines(residNEE.DOY.smooth~timeNEE.DOY.smooth, col="red", lwd=3)
 
 
-plot(resid_NDVI$DOY, resid_NDVI$resid.NDVI, main="", ylab="", xlab="", pch=16, cex.axis=1.5)
+plot(resid_NDVI$DOY, resid_NDVI$resid.NDVI, main="", ylab="", xlab="", pch=16, cex.axis=2)
 abline(h=0, lwd=2)
-lines(sigmaNDVI.DOY.smooth~timeNDVI.DOY.smooth, col="gray60", lwd=3)
-lines((-1*sigmaNDVI.DOY.smooth)~timeNDVI.DOY.smooth, col="gray60", lwd=3)
+lines(sigmaNDVI.DOY.smooth~timeNDVI.DOY.smooth, col="white", lwd=7)
+lines(sigmaNDVI.DOY.smooth~timeNDVI.DOY.smooth, col="gray50", lwd=3)
+lines((-1*sigmaNDVI.DOY.smooth)~timeNDVI.DOY.smooth, col="white", lwd=7)
+lines((-1*sigmaNDVI.DOY.smooth)~timeNDVI.DOY.smooth, col="gray50", lwd=3)
+lines(residNDVI.DOY.smooth~timeNDVI.DOY.smooth, col="white", lwd=7)
 lines(residNDVI.DOY.smooth~timeNDVI.DOY.smooth, col="red", lwd=3)
 
 
-plot(resid_NEE$Temp, resid_NEE$resid.NEE,  ylab="", xlab="", pch=16, cex.axis=1.5)
+plot(resid_NEE$Temp, resid_NEE$resid.NEE,  ylab="", xlab="", pch=16, cex.axis=2)
 abline(h=0, lwd=2)
-lines(sigmaNEE.Temp.smooth~timeNEE.Temp.smooth, col="gray60", lwd=3)
-lines((-1*sigmaNEE.Temp.smooth)~timeNEE.Temp.smooth, col="gray60", lwd=3)
+lines(sigmaNEE.Temp.smooth~timeNEE.Temp.smooth, col="white", lwd=7)
+lines(sigmaNEE.Temp.smooth~timeNEE.Temp.smooth, col="gray50", lwd=3)
+lines((-1*sigmaNEE.Temp.smooth)~timeNEE.Temp.smooth, col="white", lwd=7)
+lines((-1*sigmaNEE.Temp.smooth)~timeNEE.Temp.smooth, col="gray50", lwd=3)
+lines(residNEE.Temp.smooth~timeNEE.Temp.smooth, col="white", lwd=7)
 lines(residNEE.Temp.smooth~timeNEE.Temp.smooth, col="red", lwd=3)
 
 
-plot(resid_NDVI$Temp, resid_NDVI$resid.NDVI, ylab="", xlab="", pch=16, cex.axis=1.5)
+plot(resid_NDVI$Temp, resid_NDVI$resid.NDVI, ylab="", xlab="", pch=16, cex.axis=2)
 abline(h=0, lwd=2)
-lines(sigmaNDVI.Temp.smooth~timeNDVI.Temp.smooth, col="gray60", lwd=3)
-lines((-1*sigmaNDVI.Temp.smooth)~timeNDVI.Temp.smooth, col="gray60", lwd=3)
+lines(sigmaNDVI.Temp.smooth~timeNDVI.Temp.smooth, col="white", lwd=7)
+lines(sigmaNDVI.Temp.smooth~timeNDVI.Temp.smooth, col="gray50", lwd=3)
+lines((-1*sigmaNDVI.Temp.smooth)~timeNDVI.Temp.smooth, col="white", lwd=7)
+lines((-1*sigmaNDVI.Temp.smooth)~timeNDVI.Temp.smooth, col="gray50", lwd=3)
+lines(residNDVI.Temp.smooth~timeNDVI.Temp.smooth, col="white", lwd=7)
 lines(residNDVI.Temp.smooth~timeNDVI.Temp.smooth, col="red", lwd=3)
 
 
-plot(resid_NEE$PAR, resid_NEE$resid.NEE,  ylab="", xlab="", pch=16, cex.axis=1.5)
+plot(resid_NEE$PAR, resid_NEE$resid.NEE,  ylab="", xlab="", pch=16, cex.axis=2)
 abline(h=0, lwd=2)
-lines(sigmaNEE.PAR.smooth~timeNEE.PAR.smooth, col="gray60", lwd=3)
-lines((-1*sigmaNEE.PAR.smooth)~timeNEE.PAR.smooth, col="gray60", lwd=3)
+lines(sigmaNEE.PAR.smooth~timeNEE.PAR.smooth, col="white", lwd=7)
+lines((-1*sigmaNEE.PAR.smooth)~timeNEE.PAR.smooth, col="white", lwd=7)
+lines(residNEE.PAR.smooth~timeNEE.PAR.smooth, col="white", lwd=7)
+lines(sigmaNEE.PAR.smooth~timeNEE.PAR.smooth, col="gray50", lwd=3)
+lines((-1*sigmaNEE.PAR.smooth)~timeNEE.PAR.smooth, col="gray50", lwd=3)
 lines(residNEE.PAR.smooth~timeNEE.PAR.smooth, col="red", lwd=3)
 
 
-plot(resid_NDVI$PAR, resid_NDVI$resid.NDVI, ylab="", xlab="", pch=16, cex.axis=1.5)
+plot(resid_NDVI$PAR, resid_NDVI$resid.NDVI, ylab="", xlab="", pch=16, cex.axis=2)
 abline(h=0, lwd=2)
-lines(sigmaNDVI.PAR.smooth~timeNDVI.PAR.smooth, col="gray60", lwd=3)
-lines((-1*sigmaNDVI.PAR.smooth)~timeNDVI.PAR.smooth, col="gray60", lwd=3)
+lines(sigmaNDVI.PAR.smooth~timeNDVI.PAR.smooth, col="white", lwd=7)
+lines((-1*sigmaNDVI.PAR.smooth)~timeNDVI.PAR.smooth, col="white", lwd=7)
+lines(residNDVI.PAR.smooth~timeNDVI.PAR.smooth, col="white", lwd=7)
+lines(sigmaNDVI.PAR.smooth~timeNDVI.PAR.smooth, col="gray50", lwd=3)
+lines((-1*sigmaNDVI.PAR.smooth)~timeNDVI.PAR.smooth, col="gray50", lwd=3)
 lines(residNDVI.PAR.smooth~timeNDVI.PAR.smooth, col="red", lwd=3)
 
 
-plot(resid_NEE$VPD, resid_NEE$resid.NEE,  ylab="", xlab="", pch=16, cex.axis=1.5)
+plot(resid_NEE$VPD, resid_NEE$resid.NEE,  ylab="", xlab="", pch=16, cex.axis=2)
 abline(h=0, lwd=2)
-lines(sigmaNEE.VPD.smooth~timeNEE.VPD.smooth, col="gray60", lwd=3)
-lines((-1*sigmaNEE.VPD.smooth)~timeNEE.VPD.smooth, col="gray60", lwd=3)
+lines(sigmaNEE.VPD.smooth~timeNEE.VPD.smooth, col="white", lwd=7)
+lines((-1*sigmaNEE.VPD.smooth)~timeNEE.VPD.smooth, col="white", lwd=7)
+lines(residNEE.VPD.smooth~timeNEE.VPD.smooth, col="white", lwd=7)
+lines(sigmaNEE.VPD.smooth~timeNEE.VPD.smooth, col="gray50", lwd=3)
+lines((-1*sigmaNEE.VPD.smooth)~timeNEE.VPD.smooth, col="gray50", lwd=3)
 lines(residNEE.VPD.smooth~timeNEE.VPD.smooth, col="red", lwd=3)
 
 
-plot(resid_NDVI$VPD, resid_NDVI$resid.NDVI, ylab="", xlab="", pch=16, cex.axis=1.5)
+plot(resid_NDVI$VPD, resid_NDVI$resid.NDVI, ylab="", xlab="", pch=16, cex.axis=2)
 abline(h=0, lwd=2)
-lines(sigmaNDVI.VPD.smooth~timeNDVI.VPD.smooth, col="gray60", lwd=3)
-lines((-1*sigmaNDVI.VPD.smooth)~timeNDVI.VPD.smooth, col="gray60", lwd=3)
+lines(sigmaNDVI.VPD.smooth~timeNDVI.VPD.smooth, col="white", lwd=7)
+lines((-1*sigmaNDVI.VPD.smooth)~timeNDVI.VPD.smooth, col="white", lwd=7)
+lines(residNDVI.VPD.smooth~timeNDVI.VPD.smooth, col="white", lwd=7)
+lines(sigmaNDVI.VPD.smooth~timeNDVI.VPD.smooth, col="gray50", lwd=3)
+lines((-1*sigmaNDVI.VPD.smooth)~timeNDVI.VPD.smooth, col="gray50", lwd=3)
 lines(residNDVI.VPD.smooth~timeNDVI.VPD.smooth, col="red", lwd=3)
-
 
 
 
@@ -512,17 +518,6 @@ rmse <- function(x){
 }
 NEE_yrRMSE = tapply(resid_NEE$resid.NEE, resid_NEE$Year, rmse)
 NDVI_yrRMSE = tapply(resid_NDVI$resid.NDVI, resid_NDVI$Year, rmse)
-
-head(stats)
-par(mfrow=c(4,2))
-barplot(NEE_yrRMSE, cex.names = 2, ylim=c(0,max(NEE_yrRMSE)+0.2), ylab="RMSE", cex=1.5, cex.axis=2, cex.lab = 2, col=c("darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan"))
-barplot(NDVI_yrRMSE, cex.names = 2, ylim=c(0,max(NDVI_yrRMSE)+0.01), ylab="RMSE", cex=1.5, cex.axis=2, cex.lab = 2, col=c("darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan"))
-barplot(stats$GSlength, cex.names = 2, ylab="GS length", cex=1.5, cex.axis=2, cex.lab = 2, col=c("darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan"))
-barplot(stats$GS_Tavg, cex.names = 2,  ylab="GS Tavg", cex=1.5, cex.axis=2, cex.lab = 2, col=c("darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan"))
-barplot(stats$OS_Tavg, cex.names = 2,  ylab="OS Tavg", cex=1.5, cex.axis=2, cex.lab = 2, col=c("darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan"))
-barplot(stats$GS_PARavg, cex.names = 2,  ylab="GS PARavg", cex=1.5, cex.axis=2, cex.lab = 2, col=c("darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan"))
-barplot(stats$GS_Precip, cex.names = 2,  ylab="GS Precip", cex=1.5, cex.axis=2, cex.lab = 2, col=c("darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan"))
-barplot(stats$Tmax, cex.names = 2, ylab="Tmax", cex=1.5, cex.axis=2, cex.lab = 2, col=c("darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan"))
 
 
 #calculate overall RMSE
@@ -535,11 +530,10 @@ RMSE.NDVI2 = rmse(resid.NDVI2)
 
 
 #plot
-par(mar=c(5,5,2,2), las=1)
-layout(matrix(c(1,2,3,4,5,6), 2, 3, byrow = TRUE), widths=c(3,1,1.5))
-#layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE), widths=c(2,1))
+par(mar=c(5,5,1,1), las=1)
+layout(matrix(c(1,2,3,4), 2, 2, byrow = TRUE), widths=c(3,1.25))
 
-plot(NEE~time,data=out, type="p", pch=16, cex=1.5, axes=FALSE, xlab="", ylim=c(-6,4), cex.lab=1.5, col="white")
+plot(NEE~time,data=out, type="p", ylab="", pch=16, cex=1.5, axes=FALSE, xlab="", ylim=c(-5,6), cex.lab=1.5, col="white")
 axis(1, at=c(0,365,730,1096,1461,1826,2191,2556,2922), labels=c("","","","","","","","",""))
 mtext("2008", side=1, at=182, cex=1.5, line=0.8)
 mtext("2009", side=1, at=547, cex=1.5, line=0.8) 
@@ -551,28 +545,18 @@ mtext("2014", side=1, at=2372, cex=1.5, line=0.8)
 mtext("2015", side=1, at=2737, cex=1.5, line=0.8) 
 axis(2, cex.axis=2)
 #make polygon where coordinates start with lower limit and then upper limit in reverse order
-arrows(data.compare$Time,data.compare$NEE+sigma.compare$NEE, data.compare$Time, data.compare$NEE-sigma.compare$NEE, angle=90, code=3, length=0.01, col="gray50")
-with(NEE_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = adjustcolor("gray75",alpha.f=0.75), border = adjustcolor("gray75",alpha.f=0.75)))
-lines(NEE~time, data=out, pch=16, cex=0.75)
-points(NEE~Time, data=data.compare_NEE1, pch=16, col="darkcyan", cex=0.75)
-points(NEE~Time, data=data.compare_NEE2, pch=16, col="darkgoldenrod2", cex=0.75)
-legend("topleft", cex=1.5, legend=c("CCaN NEE 90% C.I.", "Measurement Error Bars", "CCaN NEE Estimate", "Assimilated NEE Measurements", "NEE Measurements Not Assimilated"), bty="n", pch=c(15,15,15,16,16), col=c("gray75", "gray50", "white", "darkcyan", "darkgoldenrod2"))
-
-
-plot(out.compare_NEE2$NEE~data.compare_NEE2$NEE, pch=16, cex.lab=2, cex=0.75, ylab="CCaN NEE", xlab="Measured NEE", ylim=c(-4,2), xlim=c(-4,2), axes=FALSE)
-axis(1, cex.axis = 2)
-axis(2, cex.axis = 2)
-abline(0,1, col="gray50", lty=2, lwd=2)
-abline(reg_NEE, lwd=2)
-#legend("topleft", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(reg_NEE)$adj.r.squared, digits=2))))
-
+#arrows(data.compare$Time,data.compare$NEE+sigma.compare$NEE, data.compare$Time, data.compare$NEE-sigma.compare$NEE, angle=90, code=3, length=0.01, col="gray50")
+with(NEE_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = adjustcolor("gray60",alpha.f=1), border = adjustcolor("gray60",alpha.f=1)))
+lines(NEE~time, data=out, lwd=1, col="black")
+points(NEE~Time, data=data.compare_NEE1, pch=16, col="darkcyan", cex=0.5)
+points(NEE~Time, data=data.compare_NEE2, pch=16, col="darkgoldenrod2", cex=0.5)
+legend(1,5, cex=1.25, legend=c("CCaN NEE 90% C.I.", "CCaN NEE Estimate", "Assimilated NEE Measurements", "NEE Measurements Not Assimilated"), bty="n", pch=c(15,NA,16,16), lty=c(NA,1,NA,NA), col=c("gray60", "black", "darkcyan", "darkgoldenrod2"))
 
 par(las=3)
-barplot(NEE_yrRMSE, cex.names = 2, ylim=c(0,max(NEE_yrRMSE)+0.2), ylab="RMSE", cex=1.5, cex.axis=2, cex.lab = 2, col=c("darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan"))
-
+barplot(NEE_yrRMSE, cex.names = 1.75, ylim=c(0,max(NEE_yrRMSE)+0.2), ylab="RMSE", cex=1.5, cex.axis=2, cex.lab = 2, col=c("darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan"))
 
 par(las=0)
-plot(NDVI~time,data=out, type="p", pch=16, cex=1.5, axes=FALSE, xlab="",ylim=c(0,1), cex.lab=1.5, col="white")
+plot(NDVI~time,data=out, type="p", pch=16, cex=1.5, axes=FALSE, xlab="",ylim=c(0,1), cex.lab=1.5, col="white", ylab="")
 axis(1, at=c(0,365,730,1096,1461,1826,2191,2556,2922), labels=c("","","","","","","","",""))
 mtext("2008", side=1, at=182, cex=1.5, line=0.8)
 mtext("2009", side=1, at=547, cex=1.5, line=0.8) 
@@ -584,32 +568,73 @@ mtext("2014", side=1, at=2372, cex=1.5, line=0.8)
 mtext("2015", side=1, at=2737, cex=1.5, line=0.8) 
 axis(2, cex.axis=2)
 #make polygon where coordinates start with lower limit and then upper limit in reverse order
-arrows(data.compare$Time,data.compare$NDVI+sigma.compare$NDVI, data.compare$Time, data.compare$NDVI-sigma.compare$NDVI, angle=90, code=3, length=0.01, col="gray50")
-with(NDVI_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = adjustcolor("gray75",alpha.f=0.75), border = adjustcolor("gray75",alpha.f=0.75)))
+#arrows(data.compare$Time,data.compare$NDVI+sigma.compare$NDVI, data.compare$Time, data.compare$NDVI-sigma.compare$NDVI, angle=90, code=3, length=0.01, col="gray50")
+with(NDVI_summ,polygon(c(Time,rev(Time)),c(q05,rev(q95)),col = adjustcolor("gray60",alpha.f=1), border = adjustcolor("gray60",alpha.f=1)))
 lines(NDVI~time, data=out, pch=16, cex=0.75)
-points(NDVI~Time, data=data.compare_NDVI1, pch=16, col="darkcyan", cex=0.75)
-points(NDVI~Time, data=data.compare_NDVI2, pch=16, col="darkgoldenrod2", cex=0.75)
-legend("topleft", cex=1.5, legend=c("CCaN NDVI 90% C.I.", "Measurement Error Bars", "CCaN NDVI Estiamte", "Assimilated NDVI Measurements", "NDVI Measurements Not Assimilated"), bty="n", pch=c(15,15,15,16,16), col=c("gray75", "gray50", "white", "darkcyan", "darkgoldenrod2"))
-
-plot(out.compare_NDVI2$NDVI~data.compare_NDVI2$NDVI, axes=FALSE, pch=16, cex.lab=2, cex=0.75, ylab="CCaN NDVI", xlab="Measured NDVI", ylim=c(0.2,0.7), xlim=c(0.2,0.7))
-axis(1, cex.axis = 2)
-axis(2, cex.axis = 2)
-abline(0,1, col="gray50", lty=2, lwd=2)
-abline(reg_NDVI, lwd=2)
-
+points(NDVI~Time, data=data.compare_NDVI1, pch=16, col="darkcyan", cex=0.5)
+points(NDVI~Time, data=data.compare_NDVI2, pch=16, col="darkgoldenrod2", cex=0.5)
+legend(1,0.95, cex=1.25, legend=c("CCaN NDVI 90% C.I.", "CCaN NDVI Estiamte", "Assimilated NDVI Measurements", "NDVI Measurements Not Assimilated"), bty="n", pch=c(15,NA,16,16), lty=c(NA,1,NA,NA), col=c("gray60", "black", "darkcyan", "darkgoldenrod2"))
 par(las=3)
-barplot(NDVI_yrRMSE, cex.names = 2, ylim=c(0,max(NDVI_yrRMSE)+0.01), ylab="RMSE", cex=1.5, cex.axis=2, cex.lab=2, col=c("darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan"))
+barplot(NDVI_yrRMSE, cex.names = 1.75, ylim=c(0,max(NDVI_yrRMSE)+0.01), ylab="RMSE", cex=1.5, cex.axis=2, cex.lab=2, col=c("darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan", "darkgoldenrod2", "darkcyan"))
+
+par(fig=c(0.45, 0.65, 0.75, 0.99), new = T, las=1)
+plot(out.compare_NEE2$NEE,data.compare_NEE2$NEE, pch=16, cex.lab=1.25, cex=0.75, ylab="Measured NEE", xlab="",ylim=c(-4,2), xlim=c(-4,2), axes=FALSE)
+axis(1, cex.axis = 1.25, at=c(-4,2), labels=c(-4,2))
+axis(2, cex.axis = 1.25, at=c(-4,2), labels=c(-4,2))
+abline(0,1, col="gray50", lty=2, lwd=2)
+title(xlab="CCaN NEE", cex.lab = 1.25, line = 2)
+
+par(fig=c(0.45, 0.65, 0.3, 0.54), new = T, las=1)
+plot(out.compare_NDVI2$NDVI,data.compare_NDVI2$NDVI, axes=FALSE, pch=16, cex.lab=1.25, cex=0.75, ylab="Measured NDVI", xlab="", ylim=c(0.2,0.7), xlim=c(0.2,0.7))
+axis(1, cex.axis = 1.25, at=c(0.2,0.7), labels=c(0.2,0.7))
+axis(2, cex.axis = 1.25, at=c(0.2,0.7), labels=c(0.2,0.7))
+abline(0,1, col="gray50", lty=2, lwd=2)
+title(xlab="CCaN NDVI", cex.lab = 1.25, line = 2)
 
 
-#legend("topleft", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(reg_NDVI)$adj.r.squared, digits=2))))
-par(las=0)
+#want to calculate the proportion of measurements that fall inside model CI
+head(NEE_summ)
+head(data.compare_NEE)
+head(sigma.compare_NEE)
+NEE.check = NEE_summ[match(data.compare_NEE$Time, NEE_summ$Time),]
+head(NEE.check)
+NEE.check=cbind(NEE.check, NEEmeas = data.compare_NEE$NEE, NEEsigma = sigma.compare_NEE$NEE)
+test1 = (NEE.check$NEEmeas-NEE.check$NEEsigma)>=NEE.check$q05 & (NEE.check$NEEmeas-NEE.check$NEEsigma)<=NEE.check$q95
+test2 = (NEE.check$NEEmeas+NEE.check$NEEsigma)>=NEE.check$q05 & (NEE.check$NEEmeas+NEE.check$NEEsigma)<=NEE.check$q95
+yes=rep(0, length(NEE.check[,1]))
+for(i in 1:length(yes)){
+  if(test1[i]==TRUE | test2[i]==TRUE){
+    yes[i]=1
+  }
+}
+yes
+sum(yes)/length(yes) #76.6%
 
-###ALSO MAKE A PLOT OF HOW R2 VARIES BY TIMESTEP###
+head(NDVI_summ)
+head(data.compare_NDVI)
+head(sigma.compare_NDVI)
+NDVI.check = NDVI_summ[match(data.compare_NDVI$Time, NDVI_summ$Time),]
+head(NDVI.check)
+NDVI.check=cbind(NDVI.check, NDVImeas = data.compare_NDVI$NDVI, NDVIsigma = sigma.compare_NDVI$NDVI)
+test1 = (NDVI.check$NDVImeas-NDVI.check$NDVIsigma)>=NDVI.check$q05 & (NDVI.check$NDVImeas-NDVI.check$NDVIsigma)<=NDVI.check$q95
+test2 = (NDVI.check$NDVImeas+NDVI.check$NDVIsigma)>=NDVI.check$q05 & (NDVI.check$NDVImeas+NDVI.check$NDVIsigma)<=NDVI.check$q95
+yes=rep(0, length(NDVI.check[,1]))
+for(i in 1:length(yes)){
+  if(test1[i]==TRUE | test2[i]==TRUE){
+    yes[i]=1
+  }
+}
+yes
+sum(yes)/length(yes) #84.6%
+
+###ALSO MAKE A PLOT OF HOW RMSE and R2 VARIES BY TIMESTEP###
 
 #RMSE for daily timestep
 #calculate overall RMSE
 RMSE_NEE = rmse(resid.NEE)
 RMSE_NDVI = rmse(resid.NDVI)
+R2_NEE = cor(out.compare_NEE$NEE, data.compare_NEE$NEE)^2
+R2_NDVI = cor(out.compare_NDVI$NDVI, data.compare_NDVI$NDVI)^2
 
 #calculate 8 day average modelled and measured
 nr = length(out.compare_NEE$NEE)
@@ -628,6 +653,8 @@ dat8day_NDVI = aggregate(data.compare_NDVI$NDVI[-c(1:5)] ~ gr, FUN=mean)[,-1]
 
 RMSE_8dayNEE = rmse(dat8day_NEE-mod8day_NEE)
 RMSE_8dayNDVI = rmse(dat8day_NDVI-mod8day_NDVI)
+R2_8dayNEE = cor(dat8day_NEE,mod8day_NEE)^2
+R2_8dayNDVI = cor(dat8day_NDVI,mod8day_NDVI)^2
 
 #calculate 14 day average modelled and measured
 nr = length(out.compare_NEE$NEE)
@@ -647,6 +674,9 @@ dat14day_NDVI = aggregate(data.compare_NDVI$NDVI[-c(1:11)] ~ gr, FUN=mean)[,-1]
 
 RMSE_14dayNEE = rmse(dat14day_NEE-mod14day_NEE)
 RMSE_14dayNDVI = rmse(dat14day_NDVI-mod14day_NDVI)
+R2_14dayNEE = cor(dat14day_NEE,mod14day_NEE)^2
+R2_14dayNDVI = cor(dat14day_NDVI,mod14day_NDVI)^2
+
 
 
 #calculate 30 day average modelled and measured
@@ -667,6 +697,8 @@ dat30day_NDVI = aggregate(data.compare_NDVI$NDVI[-c(1:9)] ~ gr, FUN=mean)[,-1]
 
 RMSE_30dayNEE = rmse(dat30day_NEE-mod30day_NEE)
 RMSE_30dayNDVI = rmse(dat30day_NDVI-mod30day_NDVI)
+R2_30dayNEE = cor(dat30day_NEE,mod30day_NEE)^2
+R2_30dayNDVI = cor(dat30day_NDVI,mod30day_NDVI)^2
 
 
 #calculate 90 day modelled and measured
@@ -687,18 +719,34 @@ dat90day_NDVI = aggregate(data.compare_NDVI$NDVI[-c(1:39)] ~ gr, FUN=mean)[,-1]
 
 RMSE_90dayNEE = rmse(dat90day_NEE-mod90day_NEE)
 RMSE_90dayNDVI = rmse(dat90day_NDVI-mod90day_NDVI)
+R2_90dayNEE = cor(dat90day_NEE,mod90day_NEE)^2
+R2_90dayNDVI = cor(dat90day_NDVI,mod90day_NDVI)^2
 
 
 #side by side barplot
 names=c("1", "8", "14", "30", "90")
-bars <- matrix(1, 2, length(names))
+bars <- matrix(1, 4, length(names))
 bars[1,]=c(RMSE_NEE, RMSE_8dayNEE, RMSE_14dayNEE, RMSE_30dayNEE, RMSE_90dayNEE)
-bars[2,]=c(RMSE_NDVI, RMSE_8dayNDVI, RMSE_14dayNDVI, RMSE_30dayNDVI, RMSE_90dayNDVI)
+bars[2,]=c(RMSE_NDVI*10, RMSE_8dayNDVI*10, RMSE_14dayNDVI*10, RMSE_30dayNDVI*10, RMSE_90dayNDVI*10)
+bars[3,]=c(R2_NEE, R2_8dayNEE, R2_14dayNEE, R2_30dayNEE, R2_90dayNEE)
+bars[4,]=c(R2_NDVI, R2_8dayNDVI, R2_14dayNDVI, R2_30dayNDVI, R2_90dayNDVI)
 colnames(bars)=names
 head(bars)
-par(mfrow=c(1,1), mar=c(8,6,3,3),las=0)
-barplot(bars, cex.lab=2.5, cex.axis=2, cex.names=2, ylab = "RMSE", xlab="Time Averaged (days)", col=c("gray","gray20"),beside=TRUE, ylim=c(0, 1))
-legend("topright", legend=c("NEE", "NDVI"), horiz=TRUE, cex=2, bty="n", pch=c(15, 15), col=c("gray", "gray20"))
+
+par(mfrow=c(1,1), mar=c(8,15,3,6),las=0)
+barplot(bars[1:2,], cex.lab=2.5, axes=FALSE, cex.names=2, ylab = "", xlab="", col=c("gray50","gray20"),beside=TRUE, ylim=c(0, 1))
+title(xlab="Time Averaged (days)", line=3.5, cex.lab=2.5)
+axis(2, lwd=2, at=c(0,0.2,0.4,0.6,0.8,1), labels=c(0,0.2,0.4,0.6,0.8,1), line=1, col="gray50", cex.axis=2.5, las=1, col.axis="gray50")
+axis(2, lwd=2, at=c(0,0.2,0.4,0.6), labels=c(0,0.02,0.04,0.06), line=5.5, col="gray20", cex.axis=2.5, las=1, col.axis="gray20")
+title(ylab="NDVI RMSE                            ", line=11, cex.lab=2.5, col.lab="gray20")
+title(ylab="                                       NEE RMSE", line=5, cex.lab=2.5, col.lab="gray50")
+par(new=TRUE, mar=c(6.7,11,1.9,6))
+plot(bars[3,]~c(1,1.9,2.8,3.7,4.6), pch=1, cex=1.5, xlim=c(0,5), ylim=c(0,1),axes=FALSE, xlab="", ylab="")
+lines(bars[3,]~c(1,1.9,2.8,3.7,4.6), xlim=c(0,5), lwd=2)
+par(new=TRUE)
+plot(bars[4,]~c(1.3,2.2,3.1,4,4.9), cex=1.5, pch=19, xlim=c(0,5), ylim=c(0,1),axes=FALSE, xlab="", ylab="")
+lines(bars[4,]~c(1.3,2.2,3.1,4,4.9), xlim=c(0,5), lwd=2)
+axis(4, lwd=2, at=c(0,0.2,0.4,0.6,0.8,1), labels=c(0,0.2,0.4,0.6,0.8,1), line=1, col="black", cex.axis=2.5, las=1, col.axis="black")
 
 
 ################Spatial Validation######################
@@ -855,17 +903,17 @@ for(i in 1:length(latitudes)){
   out= data.frame(solvemodel(params, state)) #creates table of model output
   
   #determine max NDVI & record in spreadsheet
-  CCaN_max = max(out$NDVI)
-  CCaN.MODIS_max = max(out$NDVI_MODIS)
+  CCaN_NDVImax = max(out$NDVI)
+  CCaN_LAImax = max(out$LAI)
   MODIS_max = max(data$NDVI)
   
   #determine GS average NDVI 
   #pull out GS data (DOY > 160 & DOY < 245)
   CCaN_gsNDVI = out$NDVI[out$DOY>=150 & out$DOY <=240]
-  CCaN_gsNDVI.MOD = out$NDVI_MODIS[out$DOY>=150 & out$DOY <=240]
+  CCaN_gsLAI = out$LAI[out$DOY>=150 & out$DOY <=240]
   MODIS_gsNDVI = data$NDVI.avg[data$DOY>=150 & data$DOY <=240]
-  CCaN_avg = mean(CCaN_gsNDVI)
-  CCaN.MODIS_avg = mean(CCaN_gsNDVI.MOD)
+  CCaN_NDVIavg = mean(CCaN_gsNDVI)
+  CCaN_LAIavg = mean(CCaN_gsLAI)
   MODIS_avg = mean(MODIS_gsNDVI)
   MODIS_sd = sd(MODIS_gsNDVI)
   
@@ -877,13 +925,13 @@ for(i in 1:length(latitudes)){
   Tavg = mean(Temp_GS)
   PARavg = mean(PAR_GS)
   
-  summary = rbind(summary, c(lat.i, state, CCaN_max, CCaN.MODIS_max, MODIS_max, CCaN_avg, CCaN.MODIS_avg, MODIS_avg, MODIS_sd, Tmax, Tavg, PARavg)) #bind new row to table
+  summary = rbind(summary, c(lat.i, state, CCaN_NDVImax, CCaN_LAImax, MODIS_max, CCaN_NDVIavg, CCaN_LAIavg, MODIS_avg, MODIS_sd, Tmax, Tavg, PARavg)) #bind new row to table
 }
 
 #############
 summary=summary[-1,]
 length(summary[,1])
-write.csv(summary, "CaTT_Summary_061516") #save CSV 
+write.csv(summary, "CaTT_Summary_080416") #save CSV 
 
 #plots of spatial data
 par(mfrow=c(2,1), mar=c(4,5,2,2))
@@ -891,198 +939,56 @@ plot(summary$Tavg~summary$Latitude, pch=16, xlab="Latitude", ylab="GS Avg Temp")
 plot(summary$PARavg~summary$Latitude, pch=16, xlab="Latitude", ylab="GS Avg PAR")
 
 #modelled vs. measured
-reg_NDVI = lm(summary$CCaN_avg~summary$MODIS_avg)
+reg_NDVI = lm(summary$MODIS_avg~summary$CCaN_avg)
 summary(reg_NDVI)
+
+#modelled vs temp
+reg_modtemp = lm(summary$CCaN_avg~summary$Tavg)
+summary(reg_modtemp)
+
+#measured vs temp
+reg_meastemp = lm(summary$MODIS_avg~summary$Tavg)
+summary(reg_meastemp)
+
+
 head(summary)
 
 
-summary=read.csv("CaTT_Summary_061516")
+
+
+summary=read.csv("CaTT_Summary_080416")
 NDVI.CCaNuncertainty = read.csv("CaTT_uncertainty_summary")
 head(NDVI.CCaNuncertainty)
-par(mfrow=c(1,1), mar=c(5,5,2,2))
-plot(summary$CCaN_avg~summary$Latitude, pch=16, cex.lab=1.5, xlab="Latitude", ylab="NDVI", ylim=c(0,1.1), xlim=c(65,71), axes=FALSE)
-with(NDVI.CCaNuncertainty,polygon(c(Latitude, rev(Latitude)),c(p05,rev(p95)),col = adjustcolor("gray75",alpha.f=0.75), border = adjustcolor("gray75",alpha.f=0.75)))
-points(summary$CCaN_avg~summary$Latitude, pch=16, col="gray50")
-#with(summary,polygon(c(Latitude, rev(Latitude)),c(MODIS_avg-(MODIS_sd/sqrt(32)*1.65),rev(MODIS_avg+(MODIS_sd/sqrt(32)*1.65))),col = adjustcolor("gray30",alpha.f=0.75), border = adjustcolor("gray75",alpha.f=0.75)))
-with(summary, arrows(Latitude,MODIS_avg+(MODIS_sd/sqrt(32)*1.65), Latitude, MODIS_avg-(MODIS_sd/sqrt(32)*1.65), angle=90, code=3, length=0.01, col="black"))
-points(summary$MODIS_avg~summary$Latitude, pch=17, col="black")
-axis(1, cex.axis = 1.5)
-axis(2, cex.axis = 1.5)
-legend("topleft", cex=1.5, legend=c("CCaN", "MODIS"), bty="n", pch=c(16,17), col=c("gray50","black"))
-par(fig=c(0.6, 1, 0.6, 1), new = T)
-plot(summary$CCaN_avg~summary$MODIS_avg, pch=16, cex.lab=1.25, ylab="CCaN NDVI", xlab="MODIS NDVI", ylim=c(0.3,0.8), xlim=c(0.3,0.8), axes=FALSE)
-axis(1, at=c(0.3,0.4,0.5,0.6,0.7,0.8), labels=c("0.3","","0.5","","0.7",""), cex.axis=1.25)
-axis(2, at=c(0.3,0.4,0.5,0.6,0.7,0.8), labels=c("0.3","","0.5","","0.7",""), cex.axis=1.25)
-abline(0,1, col="gray50", lty=2, lwd=2)
-abline(reg_NDVI, lwd=2)
-
-#legend("topleft", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(reg_NDVI)$adj.r.squared, digits=2))))
-
-#look at relationships of spin-up values with temperature
-par(mfrow=c(3,1), mar=c(4,5,1,1))
-plot(summary$Biomass_C~summary$Tavg, pch=16, ylab="Biomass_C", xlab="", cex.lab=1.5, cex.axis = 1.5)
-plot(summary$Biomass_N~summary$Tavg, pch=16, ylab="Biomass_N", xlab="", cex.lab=1.5, cex.axis = 1.5)
-plot(summary$Available_N~summary$Tavg, pch=16, ylab="Available_N", xlab="GS Average Temperature", cex.lab=1.5, cex.axis = 1.5)
-
-#look at relationships of spin-up values with latitude
-par(mfrow=c(3,1), mar=c(4,5,1,1))
-plot(summary$Biomass_C~summary$Latitude, pch=16, ylab="Biomass_C", xlab="", cex.lab=1.5, cex.axis = 1.5)
-plot(summary$Biomass_N~summary$Latitude, pch=16, ylab="Biomass_N", xlab="", cex.lab=1.5, cex.axis = 1.5)
-plot(summary$Available_N~summary$Latitude, pch=16, ylab="Available_N", xlab="Latitude", cex.lab=1.5, cex.axis = 1.5)
-
-
-
-
-#look at how residuals relate to other MODIS bands
-MODISbands = data.frame(read.csv("MODISbands_gsmeans.csv"))
-head(MODISbands)
 head(summary)
-#calculate residuals
-residuals = abs(summary$MODIS_avg-summary$CCaN.MODIS_avg)
-resid.dat = data.frame(Latitude=summary$Latitude, residuals, MODISbands[,3:10])
-resid.dat
 
-red = lm(residuals~band1, data=resid.dat)
-NIR = lm(residuals~band2, data=resid.dat)
-SWIR = lm(residuals~band7, data=resid.dat)
-NDWI = lm(residuals~NDWI, data=resid.dat)
+par(mar=c(6,6,2,2))
+layout(matrix(c(1,1,2,3), 2, 2, byrow = FALSE), widths=c(3,1.5))
 
-pH = lm(residuals~pHdata$avg_ph)
-summary(pH)
-plot(residuals~pHdata$avg_ph, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="pH")
-abline(pH, col="red", lwd=2)
+plot(summary$CCaN_avg~summary$Latitude, pch=16, cex=2, cex.lab=3, xlab="", ylab="", ylim=c(0.2,0.8), xlim=c(65,71), axes=FALSE)
+with(NDVI.CCaNuncertainty,polygon(c(Latitude, rev(Latitude)),c(p05,rev(p95)),col = adjustcolor("gray75",alpha.f=0.75), border = adjustcolor("gray75",alpha.f=0.75)))
+points(summary$CCaN_avg~summary$Latitude, pch=16, col="gray50", cex=2)
+#with(summary,polygon(c(Latitude, rev(Latitude)),c(MODIS_avg-(MODIS_sd/sqrt(32)*1.65),rev(MODIS_avg+(MODIS_sd/sqrt(32)*1.65))),col = adjustcolor("gray30",alpha.f=0.75), border = adjustcolor("gray75",alpha.f=0.75)))
+with(summary, arrows(Latitude,MODIS_avg+(MODIS_sd/sqrt(32)*1.65), Latitude, MODIS_avg-(MODIS_sd/sqrt(32)*1.65), angle=90, code=3, length=0.05, col="black", lwd=2))
+points(summary$MODIS_avg~summary$Latitude, pch=17, col="black", cex=2)
+axis(1, at=c(65,67,69,71), labels = c(65,67,69,71), cex.axis = 3, line=0, padj=0.5, lwd=2)
+axis(2, at=c(0.2,0.4, 0.6, 0.8), labels=c(0.2,0.4,0.6,0.8), cex.axis = 3, line=0, lwd=2)
+legend(65,0.4, cex=3, legend=c("CCaN", "MODIS"), bty="n", pch=c(16,17), col=c("gray50","black"))
 
+plot(summary$Tavg,summary$MODIS_avg, pch=17, col="black", cex=2, cex.lab=2, ylim=c(0.3,0.8), xlim=c(8,18),xlab="", ylab="",axes=FALSE)
+points(summary$Tavg,summary$CCaN_avg, pch=16, col="gray50", cex=2)
+axis(1, at=c(8,18), labels=c(8,18), cex.axis=2, padj=0.5, lwd=2)
+axis(2, at=c(0.3,0.8), labels=c(0.3,0.8), cex.axis=2, lwd=2)
+abline(reg_modtemp, lwd=4, col="gray50")
+abline(reg_meastemp, lwd=4, col="black")
 
-tempcheck = lm(residuals~summary$Tavg)
-summary(tempcheck)
-plot(residuals~pHdata$avg_ph, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="pH")
-abline(pH, col="red", lwd=2)
-
-
-
-summary(red)
-summary(NIR)
-summary(SWIR)
-summary(NDWI)
-
-summary1 = read.csv("CaTT_Summary_061116")
-head(summary1)
-head(resid.dat)
-length(summary1[,1])
-length(resid.dat[,1])
-resid.dat=data.frame(cbind(resid.dat, Tmax = summary1$Tmax, Tavg = summary1$Tavg))
-Tavg = lm(residuals~Tavg, data=resid.dat)
-Tmax = lm(residuals~Tmax, data=resid.dat)
-
-
-par(mfrow=c(2,3))
-plot(resid.dat$residuals~resid.dat$band1, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="MODIS Band 1 (Red)")
-abline(red, col="red", lwd=2)
-legend("topright", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(red)$adj.r.squared, digits=2))))
-plot(resid.dat$residuals~resid.dat$band2, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="MODIS Band 2 (NIR)")
-abline(NIR, col="red", lwd=2)
-legend("topright", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(NIR)$adj.r.squared, digits=2))))
-plot(resid.dat$residuals~resid.dat$band7, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="MODIS Band 7 (SWIR)")
-abline(SWIR, col="red", lwd=2)
-legend("topright", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(SWIR)$adj.r.squared, digits=2))))
-plot(resid.dat$residuals~resid.dat$NDWI, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="NDWI")
-abline(NDWI, col="red", lwd=2)
-legend("topright", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(NDWI)$adj.r.squared, digits=2))))
-plot(resid.dat$residuals~resid.dat$Tavg, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="Tavg")
-abline(Tavg, col="red", lwd=2)
-legend("topright", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(Tavg)$adj.r.squared, digits=2))))
-plot(resid.dat$residuals~resid.dat$Tmax, pch=16, cex.lab=1.5, cex.axis=1.5, ylab="Absolute Residuals", xlab="Tmax")
-abline(Tmax, col="red", lwd=2)
-legend("topright", bty="n", cex=1.5, legend= bquote(italic(R)^2 == .(format(summary(Tmax)$adj.r.squared, digits=2))))
+plot(summary$CCaN_avg,summary$MODIS_avg, pch=16, cex=2, cex.lab=1.5, xlab="", ylab="", ylim=c(0.3,0.8), xlim=c(0.3,0.8), axes=FALSE)
+axis(1, at=c(0.3,0.8), labels=c(0.3,0.8), cex.axis=2, lwd=2, padj=0.5)
+axis(2, at=c(0.3,0.8), labels=c(0.3,0.8), cex.axis=2, lwd=2)
+abline(0,1, col="gray50", lty=2, lwd=4)
+abline(reg_NDVI, lwd=4)
 
 
 
-
-#regressions with latitude - NDVI
-par(mfrow=c(1,1))
-plot(summary$CCaN.MODIS_avg~summary$Latitude, pch=16, cex.lab=1.5, xlab="Latitude", ylab="", ylim=c(0,0.9), xlim=c(65,71), axes=FALSE)
-points(summary$MODIS_avg~summary$Latitude, pch=16, col="forestgreen")
-points(MODISbands$NDWI~summary$Latitude, pch=16, col="blue")
-points(MODISbands$band2~summary$Latitude, pch=16, col="orange")
-points(MODISbands$band1~summary$Latitude, pch=16, col="red")
-axis(1, cex.axis = 1.5)
-axis(2, cex.axis = 1.5)
-legend("topright", cex=1.5, legend=c("CCaN NDVI", "MODIS NDVI", "MODIS NDWI", "MODIS NIR", "MODIS Red"), bty="n", pch=16, col=c("black", "forestgreen", "blue", "orange", "red"))
-
-
-###########Temperature Sensitivity Comparison################
-#regressions with temperature - NDVI
-reg_MODIS.temp = lm(summary$MODIS_avg~summary$Tavg)
-reg_CCaN.temp = lm(summary$CCaN_avg~summary$Tavg)
-
-#regression stats
-summary(reg_MODIS.temp) #slope is sensitivity
-summary(reg_CCaN.temp) #slope is sensitivity
-
-#load in Goetz data
-Goetz_dat = data.frame(read.csv("GoetzTempSens.csv"))
-Goetz_dat
-reg_Goetz.temp = lm(Goetz_dat$NDVI~Goetz_dat$Temp)
-summary(reg_Goetz.temp)
-
-#calculate seasonal temperature sensitivity using tower NDVI
-head(data.compare_NDVI)
-tail(data.compare_NDVI)
-temp.data = read.csv("InputData_Processed.csv") 
-head(temp.data)
-temp.compare = temp.data[match(data.compare_NDVI$Time, temp.data$time),]
-head(temp.compare)
-length(temp.compare$Temp_ARF); length(data.compare_NDVI$NDVI) #check to make sure length matches
-data.compare_NDVI=cbind(data.compare_NDVI[,1:6], Temp=temp.compare$Temp_ARF)
-head(data.compare_NDVI)
-#smooth data
-filt=rep(1/9,9)#average of current sample, 5 future samples, and 5 past samples
-Temp.smooth = filter(data.compare_NDVI$Temp, filt, sides=2, circular=TRUE)
-NDVI.smooth = filter(data.compare_NDVI$NDVI, filt, sides=2, circular=TRUE)
-data.compare_NDVI = cbind(data.compare_NDVI, Temp.sm = as.numeric(Temp.smooth), NDVI.sm = as.numeric(NDVI.smooth))
-head(data.compare_NDVI)
-
-#calculate yearly deltaNDVI/deltaT for spring green up
-years = unique(data.compare_NDVI$Year)
-years
-NDVIsens=NA
-NDVI.start=NA
-NDVI.end=NA
-Temp.start=NA
-Temp.end=NA
-DOY.start=NA
-DOY.end=NA
-for (i in 1: length(years)){
-  year.i = years[i]
-  data.year = subset(data.compare_NDVI, data.compare_NDVI$Year==year.i)
-  DOY.start[i] = min(data.year$DOY[which(data.year$Temp.sm>0)])
-  DOY.end[i] = data.year$DOY[which(data.year$Temp.sm == max(data.year$Temp.sm))]
-  NDVI.start[i] = data.year$NDVI.sm[data.year$DOY==DOY.start[i]]
-  NDVI.end[i] = data.year$NDVI.sm[data.year$DOY==DOY.end[i]]
-  Temp.start[i] = data.year$Temp.sm[data.year$DOY==DOY.start[i]]
-  Temp.end[i] = data.year$Temp.sm[data.year$DOY==DOY.end[i]]
-  NDVIsens[i] = (NDVI.end[i]-NDVI.start[i])/(Temp.end[i]/Temp.start[i]) 
-}
-DOY.start
-DOY.end
-NDVI.start
-NDVI.end
-Temp.start
-Temp.end
-NDVIsens
-mean(NDVIsens)
-sd(NDVIsens)
-sd(NDVIsens)/sqrt(length(NDVIsens))
-
-par(mar=c(14,4,1,1))
-Sample = c("Boelman et al. (2003)", "Tower Green-up", "Goetz et al. (2005)", "CCaN")
-Sensitivity = c(0.013, 0.023, 0.012, 0.017)
-ErrorBars = c(0.0007, 0.0077*1.65, 0.0037*1.65, 0.0024*1.65)
-par(mfrow=c(1,1))
-barx=barplot(Sensitivity, cex=1.5, names.arg=Sample, ylab="", ylim=c(0,0.04), cex.lab=1.5, cex.axis=1.5, las=2, 
-             col=c("gray25", "gray25", 
-                   "gray60","gray90"))
-arrows(x0=barx,y0=Sensitivity+ErrorBars,y1=Sensitivity-ErrorBars,angle=90,code=3,length=0.2)
 ##########################VARIANCE DECOMPOSITION ANALYSIS#######################
 
 head(param.keep) #view table of accepted parameters
@@ -1565,14 +1471,13 @@ s.loc.summ.ordered = data.frame(s.local.summ[order(s.local.summ$var, abs(s.local
 #plot
 names = c("kplant", "LitterRate", "UptakeRate", "propN_fol0", "propN_roots", "netNrate", "Q10")
 bars <- matrix(1, 2, length(names))
-bars[1,]=abs(subset(s.local.summ, var=="NDVI")$L1)
-bars[2,]=abs(subset(s.local.summ, var=="NEE")$L1)
+bars[1,]=abs(subset(s.local.summ, var=="NEE")$L1)
+bars[2,]=abs(subset(s.local.summ, var=="NDVI")$L1)
 colnames(bars)=names
 head(bars)
-par(las=3)
-par(mfrow=c(1,2), mar=c(8,5,3,3))
-barplot(bars, cex.lab=1.75, cex.axis=1.5, cex.names=1.5, ylab = "Model Sensitivity", col=c("gray","gray20"),beside=TRUE, ylim=c(0, 1.5))
-legend("top", legend=c("NDVI", "NEE"), horiz=TRUE, cex=2, bty="n", pch=c(15, 15), col=c("gray", "gray20"))
+par(las=1)
+par(mfrow=c(2,1), mar=c(4,11,1,2))
+barplot(bars, cex.lab=2, cex.axis=2, cex.names=2, horiz=TRUE, col=c("gray50","gray20"),xlab="Model Sensitivity", beside=TRUE, xlim=c(0, 1.2))
 
 
 bars <- matrix(1, 2, length(names))
@@ -1580,14 +1485,143 @@ bars[2,]=perc.all.NEE_100$NEE
 bars[1,]=perc.all.NDVI_100$NDVI
 colnames(bars)=names
 head(bars)
-barplot(bars, cex.lab=1.75, cex.axis=1.5, cex.names=1.5, ylab = "% of Total Annual Variance", col=c("gray","gray20"),beside=TRUE, ylim=c(0, 50))
+barplot(bars, cex.lab=2, cex.axis=2, horiz=TRUE, cex.names=2, xlab = "% of Total Annual Variance", col=c("gray50","gray20"),beside=TRUE,xlim=c(0, 50))
 
 #correlation plots
 
 head(param.keep)
-pairs(param.keep)
-correlations = cor(param.keep)
-write.csv(correlations, "ParamCorr_NEENDVI.csv")
+correlations = c(cor(param.keep))
+correlations
+correlations=round(correlations, digits=3)
+correlations[abs(correlations)<0.05]<-"<0.05"
+correlations
+matrix(correlations, 7,7)
+
+par(mfrow=c(7,7), oma=c(5,5,3,3), mar=c(0.5,0.5,0.5,0.5))
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n",yaxt="n")
+text(0,0,names[1], cex=1.5, font=2)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[2], cex=1.5)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[3], cex=1.5)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[4], cex=1.5)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[5], cex=1.5)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[6], cex=1.5)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[7], cex=1.5)
+plot(param.keep[,1], param.keep[,2], xlim=c(0.25*min(param.keep[,1]), 1.25*max(param.keep[,1])),
+     ylim=c(0.25*min(param.keep[,2]), 1.25*max(param.keep[,2])), xaxt="n", yaxt="n")
+  axis(2,las=1, at=c(0, max(param.keep[,2])),
+     labels=c(0, round(max(param.keep[,2]), 3)), cex.axis=1.5)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n",yaxt="n")
+text(0,0,names[2], cex=1.5, font=2)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[10], cex=1.5)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[11], cex=2)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[12], cex=1.5)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[13], cex=2)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[14], cex=1.5)
+plot(param.keep[,1], param.keep[,3], xlim=c(0.25*min(param.keep[,1]), 1.25*max(param.keep[,1])),
+     ylim=c(0.25*min(param.keep[,3]), 1.25*max(param.keep[,3])), xaxt="n", yaxt="n")
+axis(2,las=1, at=c(0, max(param.keep[,3])),
+     labels=c(0, round(max(param.keep[,3]), 3)), cex.axis=1.5)
+plot(param.keep[,2], param.keep[,3], xlim=c(0.25*min(param.keep[,2]), 1.25*max(param.keep[,2])),
+     ylim=c(0.25*min(param.keep[,3]), 1.25*max(param.keep[,3])), xaxt="n", yaxt="n")
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n",yaxt="n")
+text(0,0,names[3], cex=1.5, font=2)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[18], cex=1.5)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[19], cex=1.5)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[20], cex=1.5)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[21], cex=1.5)
+plot(param.keep[,1], param.keep[,4], xlim=c(0.25*min(param.keep[,1]), 1.25*max(param.keep[,1])),
+     ylim=c(0.25*min(param.keep[,4]), 1.25*max(param.keep[,4])), xaxt="n", yaxt="n")
+axis(2,las=1, at=c(0, max(param.keep[,4])),
+     labels=c(0, round(max(param.keep[,4]), 3)), cex.axis=1.5)
+plot(param.keep[,2], param.keep[,4], xlim=c(0.25*min(param.keep[,2]), 1.25*max(param.keep[,2])),
+     ylim=c(0.25*min(param.keep[,4]), 1.25*max(param.keep[,4])), xaxt="n", yaxt="n")
+plot(param.keep[,3], param.keep[,4], xlim=c(0.25*min(param.keep[,3]), 1.25*max(param.keep[,3])),
+     ylim=c(0.25*min(param.keep[,4]), 1.25*max(param.keep[,4])), xaxt="n", yaxt="n")
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n",yaxt="n")
+text(0,0,names[4], cex=1.5, font=2)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[26], cex=1.5)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[27], cex=1.5)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[28], cex=1.5)
+plot(param.keep[,1], param.keep[,5], xlim=c(0.25*min(param.keep[,1]), 1.25*max(param.keep[,1])),
+     ylim=c(0.25*min(param.keep[,5]), 1.25*max(param.keep[,5])), xaxt="n", yaxt="n")
+axis(2,las=1, at=c(min(param.keep[,5]), max(param.keep[,5])),
+     labels=c(round(min(param.keep[,5]), 3), round(max(param.keep[,5]), 3)), cex.axis=1.5)
+plot(param.keep[,2], param.keep[,5], xlim=c(0.25*min(param.keep[,2]), 1.25*max(param.keep[,2])),
+     ylim=c(0.25*min(param.keep[,5]), 1.25*max(param.keep[,5])), xaxt="n", yaxt="n")
+plot(param.keep[,3], param.keep[,5], xlim=c(0.25*min(param.keep[,3]), 1.25*max(param.keep[,3])),
+     ylim=c(0.25*min(param.keep[,5]), 1.25*max(param.keep[,5])), xaxt="n", yaxt="n")
+plot(param.keep[,4], param.keep[,5], xlim=c(0.25*min(param.keep[,4]), 1.25*max(param.keep[,4])),
+     ylim=c(0.25*min(param.keep[,5]), 1.25*max(param.keep[,5])), xaxt="n", yaxt="n")
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n",yaxt="n")
+text(0,0,names[5], cex=1.5, font=2)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[34], cex=1.5)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[35], cex=1.5)
+plot(param.keep[,1], param.keep[,6], xlim=c(0.25*min(param.keep[,1]), 1.25*max(param.keep[,1])),
+     ylim=c(0.25*min(param.keep[,6]), 1.25*max(param.keep[,6])), xaxt="n", yaxt="n")
+axis(2,las=1, at=c(5E-7, 2E-5),
+     labels=c("5E-7", "2E-5"), cex.axis=1.5)
+plot(param.keep[,2], param.keep[,6], xlim=c(0.25*min(param.keep[,2]), 1.25*max(param.keep[,2])),
+ ylim=c(0.25*min(param.keep[,6]), 1.25*max(param.keep[,6])), xaxt="n", yaxt="n")
+plot(param.keep[,3], param.keep[,6], xlim=c(0.25*min(param.keep[,3]), 1.25*max(param.keep[,3])),
+     ylim=c(0.25*min(param.keep[,6]), 1.25*max(param.keep[,6])), xaxt="n", yaxt="n")
+plot(param.keep[,4], param.keep[,6], xlim=c(0.25*min(param.keep[,4]), 1.25*max(param.keep[,4])),
+     ylim=c(0.25*min(param.keep[,6]), 1.25*max(param.keep[,6])), xaxt="n", yaxt="n")
+plot(param.keep[,5], param.keep[,6], xlim=c(0.25*min(param.keep[,5]), 1.25*max(param.keep[,5])),
+     ylim=c(0.25*min(param.keep[,6]), 1.25*max(param.keep[,6])), xaxt="n", yaxt="n")
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n",yaxt="n")
+text(0,0,names[6], cex=1.5, font=2)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n", yaxt="n")
+text(0,0,correlations[42], cex=1.5)
+plot(param.keep[,1], param.keep[,7], xlim=c(0.25*min(param.keep[,1]), 1.25*max(param.keep[,1])),
+     ylim=c(0.25*min(param.keep[,7]), 1.25*max(param.keep[,7])), xaxt="n", yaxt="n")
+axis(2,las=1, at=c(min(param.keep[,7]), max(param.keep[,7])),
+     labels=c(round(min(param.keep[,7]), 3), round(max(param.keep[,7]), 3)), cex.axis=1.5)
+axis(1,las=1, at=c(min(param.keep[,1]), max(param.keep[,1])),
+     labels=c(round(min(param.keep[,1]), 3), round(max(param.keep[,1]), 3)), cex.axis=1.5)
+plot(param.keep[,2], param.keep[,7], xlim=c(0.25*min(param.keep[,2]), 1.25*max(param.keep[,2])),
+     ylim=c(0.25*min(param.keep[,7]), 1.25*max(param.keep[,7])), xaxt="n", yaxt="n")
+axis(1,las=1, at=c(min(param.keep[,2]), max(param.keep[,2])),
+     labels=c(round(min(param.keep[,2]), 3), round(max(param.keep[,2]), 3)), cex.axis=1.5)
+plot(param.keep[,3], param.keep[,7], xlim=c(0.25*min(param.keep[,3]), 1.25*max(param.keep[,3])),
+     ylim=c(0.25*min(param.keep[,7]), 1.25*max(param.keep[,7])), xaxt="n", yaxt="n")
+axis(1,las=1, at=c(min(param.keep[,3]), max(param.keep[,3])),
+     labels=c(round(min(param.keep[,3]), 3), round(max(param.keep[,3]), 3)), cex.axis=1.5)
+plot(param.keep[,4], param.keep[,7], xlim=c(0.25*min(param.keep[,4]), 1.25*max(param.keep[,4])),
+     ylim=c(0.25*min(param.keep[,7]), 1.25*max(param.keep[,7])), xaxt="n", yaxt="n")
+axis(1,las=1, at=c(min(param.keep[,4]), max(param.keep[,4])),
+     labels=c(round(min(param.keep[,4]), 3), round(max(param.keep[,4]), 3)), cex.axis=1.5)
+plot(param.keep[,5], param.keep[,7], xlim=c(0.25*min(param.keep[,5]), 1.25*max(param.keep[,5])),
+     ylim=c(0.25*min(param.keep[,7]), 1.25*max(param.keep[,7])), xaxt="n", yaxt="n")
+axis(1,las=1, at=c(min(param.keep[,5]), max(param.keep[,5])),
+     labels=c(round(min(param.keep[,5]), 3), round(max(param.keep[,5]), 3)), cex.axis=1.5)
+plot(param.keep[,6], param.keep[,7], xlim=c(0.25*min(param.keep[,6]), 1.25*max(param.keep[,6])),
+     ylim=c(0.25*min(param.keep[,7]), 1.25*max(param.keep[,7])), xaxt="n", yaxt="n")
+axis(1,las=1, at=c(5E-7, 2E-5),
+     labels=c("5E-7", "2E-5"), cex.axis=1.5)
+plot(0,0, type="n", tck=0, xlab="", ylab="", xaxt="n",yaxt="n")
+text(0,0,names[7], cex=1.5, font=2)
+
+
 
 #bind all together
 varNDVI_100 = (perc.all.NDVI_100$NDVI[2:5]/100)*perc.all.NDVI_100$NDVI[9]
