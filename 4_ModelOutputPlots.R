@@ -170,7 +170,42 @@ plot(NDVI~Time,data=data.assim, type="p", pch=16, cex=0.25, ylim=c(0,1))
 arrows(data.assim$Time,data.assim$NDVI+data.sigma$NDVI, data.assim$Time, data.assim$NDVI-data.sigma$NDVI, angle=90, code=3, length=0.01, col="gray47")
 points(NDVI~Time, data=data.assim, pch=16, cex=0.4, col="blue")
 
+check = data.frame(read.csv("FluxData_ALL.csv"))
+head(check)
 
+par(mfrow=c(2,1))
+plot(out$GPP~out$time, type="l", ylim=c(0,5), ylab="GPP")
+points(check$GPP~check$Time, pch=16, col="red", cex=0.5)
+
+plot(-out$Re~out$time, type="l", ylim=c(-3,0), ylab="Re")
+points(-check$Re~check$Time, pch=16, col="red", cex=0.5)
+
+out.check = out[match(check$Time, out$time),]
+GPP.mod = lm(check$GPP~out.check$GPP)
+Re.mod = lm(check$Re~out.check$Re)
+summary(GPP.mod)
+summary(Re.mod)
+
+par(mfrow=c(1,2), mar=c(5,5,5,5))
+plot(out.check$GPP,check$GPP, xlab="CCaN GPP", ylab="Measured GPP")
+abline(GPP.mod, lwd=2, col="red")
+abline(0,1, col="black", lwd=2)
+
+plot(out.check$Re,check$Re, xlab="CCaN Re", ylab="Measured Re")
+abline(Re.mod, lwd=2, col="red")
+abline(0,1, col="black", lwd=2)
+
+#calculate RMSE
+resid.GPP = check$GPP - out.check$GPP
+resid.Re = check$Re - out.check$Re
+
+rmse <- function(x){
+  sqrt(mean(x^2, na.rm=TRUE))
+}
+
+rmse.GPP=rmse(resid.GPP)
+rmse.RE=rmse(resid.Re)
+rmse.GPP;rmse.RE
 
 
 #PLOT DATA FOR ALL YEARS
