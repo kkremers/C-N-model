@@ -1,23 +1,111 @@
-###LOAD REAL DATA###
-data.assim = read.csv("Assimilation_data_all.csv")
-data.sigma = read.csv("Assimilation_sigma_all.csv")
-data.assim = subset(data.assim, Year==2009 | Year==2011 | Year==2013 | Year==2015)
-data.sigma = subset(data.sigma, Year==2009 | Year==2011 | Year==2013 | Year==2015)
+###LOAD DATA###
+dat.all = read.csv("Summary_AllSites.csv")
+head(dat.all)
+#gap fill
+latitudes = unique(dat.all$Latitude)
+LST.filled=NULL
+PAR.filled=NULL
+
+for(i in 1:length(latitudes)){
+  lat.i = latitudes[i]  
+  dat.i = subset(dat.all, Latitude==lat.i)
+  
+  time=seq(1:length(dat.i[,1])) #generate a sequence of x values for interpolation
+  LST.filled.i = approx(time, dat.i$LST_avg, time, method = "linear", rule = 2)$y #fill LST
+  LST.filled.i = LST.filled.i-273.15 #convert to celcius
+  
+  PAR.filled.i = approx(time, dat.i$PAR, time, method = "linear", rule = 2)$y #fill PAR
+  PAR.filled.i = 3.5947*PAR.filled.i #convert to mol m-2 s-1
+  
+  LST.filled = c(LST.filled, LST.filled.i)
+  PAR.filled = c(PAR.filled, PAR.filled.i)
+
+}
+
+dat.all=cbind(dat.all, Temp_filled = LST.filled, PAR_filled=PAR.filled )
+head(dat.all)
+
+
+for(i in 1:length(latitudes)){
+  lat.i = latitudes[i]  
+  dat.i = subset(dat.all, Latitude==lat.i)
+
+#DOY of senescence 
+sen.day=min(dat.i$DOY[which(dat.i$Temp_filled<=10 & dat.i$DOY>200)])
+num.days = max(dat.i$DOY)
+senDOY = rep(sen.day, num.days)
+data = data.frame(data, senDOY = senDOY)
+
+#start day
+start.day=min(data$DOY[which(data$LST.avg>=-5 & data$DOY>120)])
+start.day
+startDOY = rep(start.day, num.days)
+data = data.frame(data, startDOY = startDOY)
+
+#end day
+end.day=min(data$DOY[which(data$LST.avg<=0 & data$DOY>240)])
+end.day
+endDOY = rep(end.day, num.days)
+data = data.frame(data, endDOY = endDOY)
+
+
+
+#create scalar
+scal.seas=rep(1, length(data$DOY))
+for (n in 1:length(data$DOY)){
+  if(data$DOY[n]<data$startDOY[n]){ #prior to snow melt
+    scal.seas[n]=0
+  }
+  if(data$DOY[n]>=data$startDOY[n]){ #after melt
+    if(data$DOY[n]<=data$senDOY[n]){ #prior to peak
+      slope = 1/(data$senDOY[n]-data$startDOY[n])
+      scal.seas[n] = 0+(slope*(data$DOY[n]-data$startDOY[n]))
+    }
+    if(data$DOY[n]>data$senDOY[n] & data$DOY[n]<data$endDOY[n]){ #after peak but before frost
+      slope = 1/(data$endDOY[n]-data$senDOY[n])
+      scal.seas[n] = 0+(slope*(data$endDOY[n]-data$DOY[n]))
+    }
+    if(data$DOY[n]>=data$endDOY[n]){ #after frost
+      scal.seas[n]=0
+    }
+  }
+}
+
+data = data.frame(data, scal.seas = scal.seas)
+
+#temperature scalar
+Tmax = max(data$LST.avg)
+Tmin = min(data$LST.avg)
+scal.temp=NULL
+for (n in 1:length(data$LST.avg)){
+  scal.temp[n] = (data$LST.avg[n] - Tmin)/(Tmax-Tmin) 
+}
+
+data = data.frame(data, scal.temp = scal.temp)
+
+#calculate growing season average temp
+Temp_GS = data$LST.avg[data$DOY>=data$startDOY[1] & data$DOY <= data$endDOY[1]]
+Temp_avg = mean(Temp_GS)
+Tavg = rep(Temp_avg, num.days)
+
+data = data.frame(data, Tavg=Tavg)
+
+
+data.all = rbind(data.all, data) #bind new row to table
+}
+
+
+
+data.assim = dat.all[,c(1,4,5,12)]
 head(data.assim)
+sigma = rep(0.07, length(data.assim[,1]))
+data.sigma = cbind(dat.all[,c(1,4,5)], NDVI=sigma)
 head(data.sigma)
-tail(data.assim)
-tail(data.sigma)
-head(out)
-out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
-head(out1)
-time.assim = out1[match(data.assim$Year_DOY, out1$year_DOY), 1]
-data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,7]))
-sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,7]))
-head(data.compare1)
-head(sigma.obs1)
 
 
-time = seq(1:length(data$time))
+
+
+
 #make into functions so that it will be continuous in the model
 Temp.d1 <- approxfun(x=data$time, y=data$Temp_ARF, method="linear", rule=2)
 TempAvg.d1 <- approxfun(x=data$time, y=data$Temp_avg, method="linear", rule=2)
@@ -28,6 +116,21 @@ DOY.d1 <- approxfun(x=data$time, y=data$DOY, method="linear", rule=2)
 Year.d1 <- approxfun(x=data$time, y=data$year, method="linear", rule=2)
 
 out= data.frame(solvemodel(params, state)) #creates table of model output
+
+
+
+
+head(out)
+out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
+head(out1)
+time.assim = out1[match(data.assim$Year_DOY, out1$year_DOY), 1]
+data.compare1=data.frame(cbind(time=time.assim, NEE=data.assim[,6], NDVI=data.assim[,7]))
+sigma.obs1 = data.frame(cbind(time=time.assim, NEE=data.sigma[,6], NDVI=data.sigma[,7]))
+head(data.compare1)
+head(sigma.obs1)
+
+
+
 
 plot(out$NEE)
 
@@ -180,8 +283,8 @@ for (i in 2:M) {
 } #end of exploration
 
 
-plot(all.draws[1:i,1])
-lines(param.est[1:i,1], col="red")
+plot(all.draws[1:i,6])
+lines(param.est[1:i,6], col="red")
 
 
 steps=seq(1:i) #create a vector that represents the number of steps or iterations run
@@ -199,4 +302,4 @@ i
 t
 acceptance
 
-save.image(file="Step1_082516_ALPHA.Rdata")
+save.image(file="Step1_082016_ALPHA.Rdata")
