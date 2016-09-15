@@ -35,9 +35,6 @@ for(i in 1:length(latitudes)){
   Latitude = rep(lat.i, length(DOY))
   data=data.frame(Latitude, Year,DOY,LST.avg,PAR.avg,NDVI.avg)
   
-  #Step 3: get ready for model input
-  #calculate scalars
-  
   #seasonality scalar
   #DOY of senescence 
   sen.day=min(data$DOY[which(data$LST.avg<=10 & data$DOY>200)])

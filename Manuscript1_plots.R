@@ -741,10 +741,10 @@ axis(2, lwd=2, at=c(0,0.2,0.4,0.6), labels=c(0,0.02,0.04,0.06), line=5.5, col="g
 title(ylab="NDVI RMSE                            ", line=11, cex.lab=2.5, col.lab="gray20")
 title(ylab="                                       NEE RMSE", line=5, cex.lab=2.5, col.lab="gray50")
 par(new=TRUE, mar=c(6.7,11,1.9,6))
-plot(bars[3,]~c(1,1.9,2.8,3.7,4.6), pch=1, cex=1.5, xlim=c(0,5), ylim=c(0,1),axes=FALSE, xlab="", ylab="")
+plot(bars[3,]~c(1,1.9,2.8,3.7,4.6), pch=1, cex=2.5, xlim=c(0,5), ylim=c(0,1),axes=FALSE, xlab="", ylab="")
 lines(bars[3,]~c(1,1.9,2.8,3.7,4.6), xlim=c(0,5), lwd=2)
 par(new=TRUE)
-plot(bars[4,]~c(1.3,2.2,3.1,4,4.9), cex=1.5, pch=19, xlim=c(0,5), ylim=c(0,1),axes=FALSE, xlab="", ylab="")
+plot(bars[4,]~c(1.3,2.2,3.1,4,4.9), cex=2.5, pch=19, xlim=c(0,5), ylim=c(0,1),axes=FALSE, xlab="", ylab="")
 lines(bars[4,]~c(1.3,2.2,3.1,4,4.9), xlim=c(0,5), lwd=2)
 axis(4, lwd=2, at=c(0,0.2,0.4,0.6,0.8,1), labels=c(0,0.2,0.4,0.6,0.8,1), line=1, col="black", cex.axis=2.5, las=1, col.axis="black")
 

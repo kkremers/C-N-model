@@ -1,66 +1,59 @@
 ###LOAD DATA###
-dat.all = read.csv("Summary_AllSites.csv")
-head(dat.all)
-#gap fill
-latitudes = unique(dat.all$Latitude)
-LST.filled=NULL
-PAR.filled=NULL
+dat = data.frame(read.csv("Summary_AllSites.csv")) #select data file
+head(dat) #fiew first 6 rows
+
+
+#put it all into a table
+data.ALL = NULL
+
+#########
+latitudes = unique(dat$Latitude)
 
 for(i in 1:length(latitudes)){
   lat.i = latitudes[i]  
-  dat.i = subset(dat.all, Latitude==lat.i)
+  dat.i = subset(dat, Latitude==lat.i)
   
   time=seq(1:length(dat.i[,1])) #generate a sequence of x values for interpolation
-  LST.filled.i = approx(time, dat.i$LST_avg, time, method = "linear", rule = 2)$y #fill LST
-  LST.filled.i = LST.filled.i-273.15 #convert to celcius
+  LST.filled = approx(time, dat.i$LST_avg, time, method = "linear", rule = 2)$y #fill LST
+  LST.filled = LST.filled-273.15 #convert to celcius
   
-  PAR.filled.i = approx(time, dat.i$PAR, time, method = "linear", rule = 2)$y #fill PAR
-  PAR.filled.i = 3.5947*PAR.filled.i #convert to mol m-2 s-1
+  PAR.filled = approx(time, dat.i$PAR, time, method = "linear", rule = 2)$y #fill PAR
+  PAR.filled = 3.5947*PAR.filled #convert to mol m-2 s-1
+    
+  #bind these columns to dat
+  dat.i=cbind(dat.i, LST.filled, PAR.filled)
   
-  LST.filled = c(LST.filled, LST.filled.i)
-  PAR.filled = c(PAR.filled, PAR.filled.i)
-
-}
-
-dat.all=cbind(dat.all, Temp_filled = LST.filled, PAR_filled=PAR.filled )
-head(dat.all)
-
-data.ALL=NULL
-
-for(i in 1:length(latitudes)){
-  lat.i = latitudes[i]  
-  dat.i = subset(dat.all, Latitude==lat.i)
+  #Step 2: calculate decadal averages
+  LST.avg = tapply(dat.i$LST.filled, dat.i$DOY, mean)
+  PAR.avg = tapply(dat.i$PAR.filled, dat.i$DOY, mean)
+  NDVI.avg = tapply(dat.i$NDVI, dat.i$DOY, mean, na.rm=TRUE)
+  DOY=seq(1:366)
+  Year=rep(2000+i,length(DOY))
+  Latitude = rep(lat.i, length(DOY))
+  data=data.frame(Latitude, Year, DOY, Year_DOY=interaction(Year, DOY, sep="_"), Temp = LST.avg,PAR = PAR.avg,NDVI = NDVI.avg)
   
-  data=data.frame(Latitude = dat.i$Latitude,
-                  Year = dat.i$Year,
-                  DOY = dat.i$DOY,
-                  Temp = dat.i$Temp_filled,
-                  PAR = dat.i$PAR_filled)
-
-  years = unique(data$Year) #tells you which years we have data for 
-  num.days=rep(1,length(years))
-  sen.day=rep(1,length(years))
-  start.day=rep(1,length(years))
-  end.day=rep(1,length(years))
-  Temp_avg=rep(1,length(years))
-  for (j in 1: length(years)){
-    year.i = years[j]
-    data.year = subset(data, data$Year==year.i)
-    num.days[j] = length(data.year[,1])
-    sen.day[j]=min(data.year$DOY[which(data.year$Temp<=10 & data.year$DOY>200)]) #DOY of senescence 
-    start.day[j]=min(data.year$DOY[which(data.year$Temp>=-5 & data.year$DOY>120)]) #start DOY
-    end.day[j]=min(data.year$DOY[which(data.year$Temp<=0 & data.year$DOY>240)])
-    Temp_GS = data.year$Temp[data.year$DOY>=start.day[j] & data.year$DOY <= end.day[j]]
-    Temp_avg[j] = mean(Temp_GS)
-  }
-
+  #seasonality scalar
+  #DOY of senescence 
+  sen.day=min(data$DOY[which(data$Temp<=10 & data$DOY>200)])
+  sen.day
+  num.days = 366
   senDOY = rep(sen.day, num.days)
-  startDOY = rep(start.day, num.days)
-  endDOY = rep(end.day, num.days)
-  Tavg = rep(Temp_avg, num.days)
-  data = data.frame(data, senDOY = senDOY, startDOY = startDOY, endDOY = endDOY, Tavg=Tavg)
+  data = data.frame(data, senDOY = senDOY)
   
-
+  #start day
+  start.day=min(data$DOY[which(data$Temp>=-5 & data$DOY>120)])
+  start.day
+  startDOY = rep(start.day, num.days)
+  data = data.frame(data, startDOY = startDOY)
+  
+  #end day
+  end.day=min(data$DOY[which(data$Temp<=0 & data$DOY>240)])
+  end.day
+  endDOY = rep(end.day, num.days)
+  data = data.frame(data, endDOY = endDOY)
+  
+  
+  
   #create scalar
   scal.seas=rep(1, length(data$DOY))
   for (n in 1:length(data$DOY)){
@@ -83,21 +76,28 @@ for(i in 1:length(latitudes)){
   }
   
   data = data.frame(data, scal.seas = scal.seas)
-
-
-data.ALL = rbind(data.ALL, data) #bind new row to table
+  
+  
+  #calculate growing season average temp
+  Temp_GS = data$Temp[data$DOY>=data$startDOY[1] & data$DOY <= data$endDOY[1]]
+  Temp_avg = mean(Temp_GS)
+  Tavg = rep(Temp_avg, num.days)
+  
+  data = data.frame(data, Tavg=Tavg)
+  
+  
+  data.ALL = rbind(data.ALL, data) #bind new row to table
 }
+
 
 head(data.ALL)
 tail(data.ALL)
 
-head(dat.all)
-dat.all=cbind(dat.all, Year_DOY=interaction(dat.all$Year, dat.all$DOY, sep="_"))
-data.assim = dat.all[,c(1,4,5,15,12)]
+data.assim = data.ALL[,c(1:4,7)]
 head(data.assim)
 
 sigma = rep(0.07, length(data.assim[,1]))
-data.sigma = cbind(dat.all[,c(1,4,5,15)], NDVI=sigma)
+data.sigma = cbind(data.ALL[,c(1:4)], NDVI=sigma)
 head(data.sigma)
 
 state.dat = read.csv("CaTT_Summary_080416")
@@ -127,9 +127,8 @@ for(i in 1:length(latitudes)){
   head(out)
   out1=cbind(out, year_DOY=interaction(out$year, out$DOY, sep="_"))
   head(out1)
-  time.assim = out1[match(data.assim$Year_DOY, out1$year_DOY), 1]
-  data1=data.frame(cbind(time=time.assim, NDVI=data.assim[,5]))
-  sigma1 = data.frame(cbind(time=time.assim, NDVI=data.sigma[,5]))
+  data1=data.frame(cbind(time=time, NDVI=data.assim[data.assim$Latitude==lat.i,5]))
+  sigma1 = data.frame(cbind(time=time, NDVI=data.sigma[data.sigma$Latitude==lat.i,5]))
   lat = rep(lat.i, length(data1[,1]))
   data1 = cbind(Latitude = lat, data1)
   sigma1 = cbind(Latitude = lat, sigma1)
@@ -199,7 +198,7 @@ for(i in 1:length(latitudes)){
 
   out.compare1 = rbind(out.compare1, out1)
 }  
-
+rownames(out.compare1)=rownames(data.compare1)
 head(out.compare1)
 tail(out.compare1)
 head(data.compare1)
@@ -335,8 +334,8 @@ for (i in 2:M) {
 } #end of exploration
 
 
-plot(all.draws[1:i,6])
-lines(param.est[1:i,6], col="red")
+plot(all.draws[1:i,1])
+lines(param.est[1:i,1], col="red")
 
 
 steps=seq(1:i) #create a vector that represents the number of steps or iterations run

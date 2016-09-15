@@ -23,7 +23,6 @@ solvemodel <- function(params, state, times) {
       Temp_avg = TempAvg.d1(t)
       PAR=PAR.d1(t)
       DOY = DOY.d1(t)
-      scaltemp=scaltemp.d1(t)
       scalseason= scalseason.d1(t)
       Year = Year.d1(t)
       
@@ -91,7 +90,7 @@ solvemodel <- function(params, state, times) {
              dAvailable_N), 
            c(NEE=NEE, GPP=GPP, Re=Re, LAI=LAI, NDVI=NDVI, Ra=Ra, Rh=Rh, Uptake = Uptake, 
              Ntrans=Ntrans, Litterfall_C=Litterfall_C, Litterfall_N=Litterfall_N, Tavg=Temp_avg,
-             DOY=DOY, TFN=TFN, Temp=Temp, PAR=PAR, scaltemp = scaltemp, scalseason = scalseason, year=Year, propN_fol = propN_fol.T))
+             DOY=DOY, TFN=TFN, Temp=Temp, PAR=PAR, scalseason = scalseason, year=Year, propN_fol = propN_fol.T))
       
     })  #end of with(as.list(...
   } #end of model
@@ -104,5 +103,4 @@ solvemodel <- function(params, state, times) {
 
 #####################################################################
 
-out= data.frame(solvemodel(params, state)) #creates table of model output
 
