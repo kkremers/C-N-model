@@ -95,6 +95,7 @@ tail(data.ALL)
 
 data.assim = data.ALL[,c(1:4,7)]
 head(data.assim)
+tail(data.assim)
 
 sigma = rep(0.07, length(data.assim[,1]))
 data.sigma = cbind(data.ALL[,c(1:4)], NDVI=sigma)
@@ -147,7 +148,7 @@ tail(sigma.obs1)
 param.max=c(0.046)
 param.min=c(0.0014)
 
-##STEP 1: Explore with BOTH NEE and NDVI
+##STEP 1: Explore
 
 #other necessary knowns
 n.param = length(params)#number of parameters to estimate
@@ -198,7 +199,6 @@ for(i in 1:length(latitudes)){
 
   out.compare1 = rbind(out.compare1, out1)
 }  
-rownames(out.compare1)=rownames(data.compare1)
 head(out.compare1)
 tail(out.compare1)
 head(data.compare1)
@@ -235,7 +235,7 @@ reject=0 #reset reject counter
 t=0.5
 
 
-for (i in 2:M) {
+for (i in 2207:M) {
   repeat{
     for(p in 1:n.param){ #for each parameter
       param.est[i,p] = param.est[i-1,p] + rnorm(1, 0, t*(param.max[p]-param.min[p]))
@@ -268,7 +268,7 @@ for (i in 2:M) {
     state.i = as.numeric(state.i[3:7])
     names(state.i)=names(state) 
     
-    out= data.frame(solvemodel(params, state.i)) #creates table of model output
+    out= data.frame(solvemodel(parms, state.i)) #creates table of model output
     out1 = out[match(data.compare.i$time, out$time),c(1,11)] #these columns need to match the ones that were pulled out before
     lat = rep(lat.i, length(out1[,1]))
     out1 = cbind(Latitude = lat, out1)
@@ -352,5 +352,8 @@ j.best #view the minimum J
 i
 t
 acceptance
+head(J1)
 
-save.image(file="Step1_082016_ALPHA.Rdata")
+
+
+save.image(file="Step1_092916_ALPHA_MODIS.Rdata")
